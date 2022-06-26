@@ -1,0 +1,19 @@
+metadef:
+  commiter:
+    "xxx"
+  team: "metadef"
+  src:
+    release:
+      - graph
+      - inc
+      - ops
+      - register
+      - error_manager
+    unrelease:
+      - register/graph_optimizer
+      - register/op_tiling
+      - inc/register/graph_optimizer
+      - inc/register/op_tiling.h
+  llt:
+    ut_check:true
+    st_check:false
