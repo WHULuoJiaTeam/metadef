@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -311,17 +311,6 @@ RTS_API rtError_t rtMemAllocManaged(void **ptr, uint64_t size, uint32_t flag);
  * @return RT_ERROR_INVALID_VALUE for error input
  */
 RTS_API rtError_t rtMemFreeManaged(void *ptr);
-
-/**
- * @ingroup dvrt_mem
- * @brief Specifies how memory is use
- * @param [in] devPtr   memory pointer
- * @param [in] count    memory size
- * @param [in] advise   memory use mode
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtMemAdvise(void *devPtr, uint64_t count, uint32_t advise);
 /**
  * @ingroup dvrt_mem
  * @brief alloc cached device memory

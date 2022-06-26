@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,6 @@
 #include <vector>
 
 namespace ge {
-using char_t = char;
-using float32_t = float;
-using float64_t = double;
-
 static const int64_t UNKNOWN_DIM = -1;
 static const int64_t UNKNOWN_DIM_NUM = -2;
 static const std::vector<int64_t> UNKNOWN_SHAPE = {-1};
@@ -77,9 +73,6 @@ enum DataType {
   DT_BF16 = 27,            // bf16 type
   DT_UNDEFINED = 28,       // Used to indicate a DataType field has not been set.
   DT_INT4 = 29,            // int4 type
-  DT_UINT1 = 30,           // uint1 type
-  DT_INT2 = 31,            // int2 type
-  DT_UINT2 = 32,           // uint2 type
   DT_MAX                   // Mark the boundaries of data types
 };
 
@@ -115,9 +108,6 @@ inline int GetSizeByDataType(DataType data_type) {
       2,   // DT_BF16 = 27,               bf16 type
       -1,  // DT_UNDEFINED = 28           Used to indicate a DataType field has not been set.
       kDataTypeSizeBitOffset + 4,    // DT_INT4 = 29,             int4 type
-      kDataTypeSizeBitOffset + 1,    // DT_UINT1 = 30,            uint1 type
-      kDataTypeSizeBitOffset + 2,    // DT_INT2 = 31,             int2 type
-      kDataTypeSizeBitOffset + 2,    // DT_UINT2 = 32,            uint2 type
            // DT_MAX
   };
   if (data_type >= DT_MAX) {
@@ -247,13 +237,13 @@ enum Placement {
 /// @return
 ///
 GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY
-const char_t *GetFormatName(Format format);
+const char *GetFormatName(Format format);
 
 class TensorTypeImpl;
 struct TensorType {
   explicit TensorType(DataType dt);
 
-  TensorType(const std::initializer_list<DataType> &initial_types);
+  TensorType(const std::initializer_list<DataType> &types);
 
   static TensorType ALL() {
     return TensorType{DT_BOOL,   DT_COMPLEX128, DT_COMPLEX64, DT_DOUBLE, DT_FLOAT,  DT_FLOAT16, DT_INT16,
@@ -323,9 +313,6 @@ enum class ImplyType : unsigned int {
   HCCL,         // Hccl
   INVALID = 0xFFFFFFFF,
 };
-using char_t = ge::char_t;
-using float32_t = ge::float32_t;
-using float64_t = ge::float64_t;
 }  // namespace domi
 
 #endif  // INC_EXTERNAL_GRAPH_TYPES_H_

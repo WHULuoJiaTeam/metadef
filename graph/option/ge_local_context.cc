@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,27 +15,28 @@
  * limitations under the License.
  */
 
-#include "graph/ge_local_context.h"
+#include "./ge_local_context.h"
 #include <utility>
 
 namespace ge {
-GEThreadLocalContext &GetThreadLocalContext() {
-  static thread_local GEThreadLocalContext thread_context;
-  return thread_context;
+namespace {
+thread_local GEThreadLocalContext thread_context;
 }
 
-graphStatus GEThreadLocalContext::GetOption(const std::string &key, std::string &option) {
-  const std::map<std::string, std::string>::const_iterator graph_iter = graph_options_.find(key);
+GEThreadLocalContext &GetThreadLocalContext() { return thread_context; }
+
+graphStatus GEThreadLocalContext::GetOption(const string &key, string &option) {
+  auto graph_iter = graph_options_.find(key);
   if (graph_iter != graph_options_.end()) {
     option = graph_iter->second;
     return GRAPH_SUCCESS;
   }
-  const std::map<std::string, std::string>::const_iterator session_iter = session_options_.find(key);
+  auto session_iter = session_options_.find(key);
   if (session_iter != session_options_.end()) {
     option = session_iter->second;
     return GRAPH_SUCCESS;
   }
-  const std::map<std::string, std::string>::const_iterator global_iter = global_options_.find(key);
+  auto global_iter = global_options_.find(key);
   if (global_iter != global_options_.end()) {
     option = global_iter->second;
     return GRAPH_SUCCESS;
@@ -43,30 +44,38 @@ graphStatus GEThreadLocalContext::GetOption(const std::string &key, std::string 
   return GRAPH_PARAM_INVALID;
 }
 
-void GEThreadLocalContext::SetGlobalOption(std::map<std::string, std::string> options_map) {
+void GEThreadLocalContext::SetGlobalOption(map<string, string> options_map) {
   global_options_.clear();
   global_options_ = std::move(options_map);
 }
 
-void GEThreadLocalContext::SetSessionOption(std::map<std::string, std::string> options_map) {
+void GEThreadLocalContext::SetSessionOption(map<string, string> options_map) {
   session_options_.clear();
   session_options_ = std::move(options_map);
 }
 
-void GEThreadLocalContext::SetGraphOption(std::map<std::string, std::string> options_map) {
+void GEThreadLocalContext::SetGraphOption(map<std::string, string> options_map) {
   graph_options_.clear();
   graph_options_ = std::move(options_map);
 }
 
-std::map<std::string, std::string> GEThreadLocalContext::GetAllGraphOptions() const {
+map<string, string> GEThreadLocalContext::GetAllGraphOptions() const {
   return graph_options_;
 }
 
-std::map<std::string, std::string> GEThreadLocalContext::GetAllOptions() const {
-  std::map<std::string, std::string> options_all;
-  options_all.insert(graph_options_.cbegin(), graph_options_.cend());
-  options_all.insert(session_options_.cbegin(), session_options_.cend());
-  options_all.insert(global_options_.cbegin(), global_options_.cend());
+map<string, string> GEThreadLocalContext::GetAllSessionOptions() const {
+  return session_options_;
+}
+
+map<string, string> GEThreadLocalContext::GetAllGlobalOptions() const {
+  return global_options_;
+}
+
+map<string, string> GEThreadLocalContext::GetAllOptions() const {
+  map<string, string> options_all;
+  options_all.insert(graph_options_.begin(), graph_options_.end());
+  options_all.insert(session_options_.begin(), session_options_.end());
+  options_all.insert(global_options_.begin(), global_options_.end());
   return options_all;
 }
 }  // namespace ge

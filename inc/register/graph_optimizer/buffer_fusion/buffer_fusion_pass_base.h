@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@
 #ifndef INC_REGISTER_GRAPH_OPTIMIZER_BUFFER_FUSION_PASS_BASE_H_
 #define INC_REGISTER_GRAPH_OPTIMIZER_BUFFER_FUSION_PASS_BASE_H_
 
+#include <algorithm>
 #include <map>
 #include <string>
 #include <vector>
 #include "register/graph_optimizer/buffer_fusion/buffer_fusion_constant.h"
 #include "register/graph_optimizer/buffer_fusion/buffer_fusion_pattern.h"
 #include "register/graph_optimizer/graph_optimize_register_error_codes.h"
-#include "register/graph_optimizer/fusion_common/op_slice_info.h"
 
 namespace fe {
 enum BufferFusionPassType {
@@ -40,19 +40,17 @@ class BufferFusionPassBase {
   explicit BufferFusionPassBase();
   virtual ~BufferFusionPassBase();
   virtual std::vector<BufferFusionPattern *> DefinePatterns() = 0;
-  virtual Status GetFusionNodes(const BufferFusionMapping &mapping, std::vector<ge::NodePtr> &fusion_nodes);
-  virtual Status CalcFusionOpSliceInfo(std::vector<ge::NodePtr> &fusion_nodes, OpCalcInfo &op_slice_info);
-  static std::vector<ge::NodePtr> GetMatchedNodes(const BufferFusionMapping &mapping);
-  static std::vector<ge::NodePtr> GetMatchedNodesByDescName(const std::string &desc_name,
-                                                            const BufferFusionMapping &mapping);
-  static ge::NodePtr GetMatchedHeadNode(const std::vector<ge::NodePtr> &matched_nodes);
+  virtual Status GetFusionNodes(const BufferFusionMapping &mapping, vector<ge::NodePtr> &fusion_nodes);
+  std::vector<ge::NodePtr> GetMatchedNodes(const BufferFusionMapping &mapping);
+  std::vector<ge::NodePtr> GetMatchedNodesByDescName(const std::string &desc_name, const BufferFusionMapping &mapping);
+  ge::NodePtr GetMatchedHeadNode(const std::vector<ge::NodePtr> &matched_nodes);
 
-  void SetName(const std::string &name) { name_ = name; }
+  void SetName(const string &name) { name_ = name; }
 
-  std::string GetName() { return name_; }
+  string GetName() { return name_; }
 
  private:
-  std::string name_;
+  string name_;
 };
 
 }  // namespace fe

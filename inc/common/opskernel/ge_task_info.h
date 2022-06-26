@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,17 @@
 #ifndef INC_COMMON_OPSKERNEL_GE_TASK_INFO_H_
 #define INC_COMMON_OPSKERNEL_GE_TASK_INFO_H_
 
-#include <cstdint>
+#include <runtime/rt.h>
+#include <stdint.h>
 #include <string>
 #include <vector>
-#include "runtime/rt.h"
 
+using std::string;
 namespace ge {
 // when need to eliminate GETaskKernelHcclInfo, so not need DAVINCI_TRAIN/DAVINCI_CLOUD
 struct GETaskKernelHcclInfo {
-  std::string input_name;
-  std::string hccl_type;
+  string input_name;
+  string hccl_type;
   void *inputDataAddr;
   void *outputDataAddr;
   void *workSpaceAddr;
@@ -51,6 +52,16 @@ struct GETaskInfo {
   void *opsKernelStorePtr;
 
   std::vector<GETaskKernelHcclInfo> kernelHcclInfo;
+};
+
+struct HcomOpertion {
+  std::string hcclType;
+  void *inputPtr;
+  void *outputPtr;
+  uint64_t count;
+  int32_t dataType;
+  int32_t opType;
+  int32_t root;
 };
 
 struct HcomRemoteAccessAddrInfo

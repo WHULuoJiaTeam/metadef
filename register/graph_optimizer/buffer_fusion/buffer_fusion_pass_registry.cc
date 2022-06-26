@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,25 +27,25 @@ namespace fe {
 class BufferFusionPassRegistry::BufferFusionPassRegistryImpl {
  public:
   void RegisterPass(const BufferFusionPassType &pass_type, const std::string &pass_name,
-                    const BufferFusionPassRegistry::CreateFn create_fun) {
-    const std::lock_guard<std::mutex> lock(mu_);
-    const auto iter = create_fns_.find(pass_type);
+                    BufferFusionPassRegistry::CreateFn create_fn) {
+    std::lock_guard<std::mutex> lock(mu_);
+    auto iter = create_fns_.find(pass_type);
     if (iter != create_fns_.end()) {
-      create_fns_[pass_type][pass_name] = create_fun;
+      create_fns_[pass_type][pass_name] = create_fn;
       GELOGI("UbFusionPass[type=%d,name=%s]: the pass type already exists.", pass_type, pass_name.c_str());
       return;
     }
 
     std::map<std::string, BufferFusionPassRegistry::CreateFn> create_fn_map;
-    create_fn_map[pass_name] = create_fun;
+    create_fn_map[pass_name] = create_fn;
     create_fns_[pass_type] = create_fn_map;
     GELOGI("UbFusionPass[type=%d,name=%s]: the pass type does not exists.", pass_type, pass_name.c_str());
   }
 
   std::map<std::string, BufferFusionPassRegistry::CreateFn> GetCreateFn(const BufferFusionPassType &pass_type) {
-    const std::lock_guard<std::mutex> lock(mu_);
+    std::lock_guard<std::mutex> lock(mu_);
     std::map<std::string, BufferFusionPassRegistry::CreateFn> result;
-    const auto iter = create_fns_.find(pass_type);
+    auto iter = create_fns_.find(pass_type);
     if (iter == create_fns_.end()) {
       return result;
     }
@@ -69,13 +69,13 @@ BufferFusionPassRegistry &BufferFusionPassRegistry::GetInstance() {
 }
 
 void BufferFusionPassRegistry::RegisterPass(const BufferFusionPassType &pass_type, const std::string &pass_name,
-                                            const CreateFn &create_fun) {
+                                            CreateFn create_fn) {
   if (impl_ == nullptr) {
     GELOGE(ge::MEMALLOC_FAILED, "[Check][Param]UbFusionPass[type=%d,name=%s]: failed to register the ub fusion pass",
            pass_type, pass_name.c_str());
     return;
   }
-  impl_->RegisterPass(pass_type, pass_name, create_fun);
+  impl_->RegisterPass(pass_type, pass_name, create_fn);
 }
 
 std::map<std::string, BufferFusionPassRegistry::CreateFn> BufferFusionPassRegistry::GetCreateFnByType(
@@ -89,8 +89,8 @@ std::map<std::string, BufferFusionPassRegistry::CreateFn> BufferFusionPassRegist
 
 BufferFusionPassRegistrar::BufferFusionPassRegistrar(const BufferFusionPassType &pass_type,
                                                      const std::string &pass_name,
-                                                     BufferFusionPassBase *(*create_fun)()) {
-  if ((pass_type < BUILT_IN_AI_CORE_BUFFER_FUSION_PASS) || (pass_type >= BUFFER_FUSION_PASS_TYPE_RESERVED)) {
+                                                     BufferFusionPassBase *(*create_fn)()) {
+  if (pass_type < BUILT_IN_AI_CORE_BUFFER_FUSION_PASS || pass_type >= BUFFER_FUSION_PASS_TYPE_RESERVED) {
     GELOGE(ge::PARAM_INVALID, "[Check][Param:pass_type] value %d is not supported.", pass_type);
     return;
   }
@@ -100,7 +100,7 @@ BufferFusionPassRegistrar::BufferFusionPassRegistrar(const BufferFusionPassType 
     return;
   }
 
-  BufferFusionPassRegistry::GetInstance().RegisterPass(pass_type, pass_name, create_fun);
+  BufferFusionPassRegistry::GetInstance().RegisterPass(pass_type, pass_name, create_fn);
 }
 
 }  // namespace fe

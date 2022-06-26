@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,11 +110,7 @@ class GE_FUNC_VISIBILITY ModelParser {
    * @return SUCCESS
    * @return Others failed
    */
-  virtual Status ToJson(const char *model_file, const char *json_file) {
-    (void)model_file;
-    (void)json_file;
-    return domi::SUCCESS;
-  }
+  virtual Status ToJson(const char *model_file, const char *json_file) { return domi::SUCCESS; }
 
   /*
    * @ingroup domi_omg
@@ -134,11 +130,7 @@ class GE_FUNC_VISIBILITY ModelParser {
    * @return SUCCESS
    * @return Others failed
    */
-  virtual Status ParseProto(const std::string &serialized_proto, ge::ComputeGraphPtr &graph) {
-    (void)serialized_proto;
-    (void)graph;
-    return UNSUPPORTED;
-  }
+  virtual Status ParseProto(const std::string &serialized_proto, ge::ComputeGraphPtr &graph) { return UNSUPPORTED; }
 
   /**
    * @ingroup domi_omg
@@ -151,9 +143,6 @@ class GE_FUNC_VISIBILITY ModelParser {
    */
   virtual Status ParseProtoWithSubgraph(const std::string &serialized_proto, GetGraphCallbackV2 callback,
                                         ge::ComputeGraphPtr &graph) {
-    (void)serialized_proto;
-    (void)callback;
-    (void)graph;
     return UNSUPPORTED;
   }
 };

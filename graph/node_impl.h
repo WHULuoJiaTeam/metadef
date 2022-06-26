@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,34 +33,34 @@ class Node::NodeImpl {
   bool NodeMembersAreEqual(const NodeImpl &r_node) const;
   bool NodeAnchorIsEqual(const AnchorPtr &left_anchor,
                          const AnchorPtr &right_anchor,
-                         const size_t i) const;
+                         size_t i) const;
 
   graphStatus AddLinkFrom(const NodePtr &input_node, const NodePtr &owner_node);
   graphStatus AddLinkFrom(const uint32_t &index,
                           const NodePtr &input_node,
                           const NodePtr &owner_node);
   graphStatus AddLinkFromForParse(const NodePtr &input_node, const NodePtr &owner_node);
-  graphStatus AddLinkFrom(const std::string &name, const NodePtr &input_node, const NodePtr &owner_node);
+  graphStatus AddLinkFrom(const string &name, const NodePtr &input_node, const NodePtr &owner_node);
 
   ComputeGraphPtr GetOwnerComputeGraph() const;
   graphStatus SetOwnerComputeGraph(const ComputeGraphPtr &graph);
   graphStatus ClearOwnerGraph(const ComputeGraphPtr &graph);
 
-  Node::Vistor<InDataAnchorPtr> GetAllInDataAnchors(const ConstNodePtr &node_ptr) const;
-  Node::Vistor<OutDataAnchorPtr> GetAllOutDataAnchors(const ConstNodePtr &node_ptr) const;
+  Node::Vistor<InDataAnchorPtr> GetAllInDataAnchors(const ConstNodePtr &owner_node) const;
+  Node::Vistor<OutDataAnchorPtr> GetAllOutDataAnchors(const ConstNodePtr &owner_node) const;
   uint32_t GetAllInDataAnchorsSize() const;
   uint32_t GetAllOutDataAnchorsSize() const;
   Node::Vistor<AnchorPtr> GetAllInAnchors(const ConstNodePtr &owner_node) const;
   Node::Vistor<AnchorPtr> GetAllOutAnchors(const ConstNodePtr &owner_node) const;
-  InDataAnchorPtr GetInDataAnchor(const int32_t idx) const;
-  AnchorPtr GetInAnchor(const int32_t idx) const;
-  AnchorPtr GetOutAnchor(const int32_t idx) const;
-  OutDataAnchorPtr GetOutDataAnchor(const int32_t idx) const;
+  InDataAnchorPtr GetInDataAnchor(int idx) const;
+  AnchorPtr GetInAnchor(int idx) const;
+  AnchorPtr GetOutAnchor(int idx) const;
+  OutDataAnchorPtr GetOutDataAnchor(int idx) const;
   InControlAnchorPtr GetInControlAnchor() const;
   OutControlAnchorPtr GetOutControlAnchor() const;
 
   Node::Vistor<NodePtr> GetInNodes(const ConstNodePtr &owner_node) const;
-  bool IsAllInNodesSeen(const std::unordered_set<Node *> &nodes_seen) const;
+  bool IsAllInNodesSeen(std::unordered_set<Node *> &nodes_seen) const;
   Node::Vistor<NodePtr> GetInDataNodes(const ConstNodePtr &owner_node) const;
   Node::Vistor<NodePtr> GetInControlNodes(const ConstNodePtr &owner_node) const;
   Node::Vistor<NodePtr> GetOutNodes(const ConstNodePtr &owner_node) const;
@@ -80,27 +80,27 @@ class Node::NodeImpl {
   Node::Vistor<std::pair<NodePtr, InDataAnchorPtr>>
   GetOutDataNodesAndAnchors(const ConstNodePtr &owner_node) const;
 
-  void AddSendEventId(const uint32_t event_id) { send_event_id_list_.push_back(event_id); }
-  void AddRecvEventId(const uint32_t event_id) { recv_event_id_list_.push_back(event_id); }
+  void AddSendEventId(uint32_t event_id) { send_event_id_list_.push_back(event_id); }
+  void AddRecvEventId(uint32_t event_id) { recv_event_id_list_.push_back(event_id); }
 
   const std::vector<uint32_t> &GetSendEventIdList() const { return send_event_id_list_; }
   const std::vector<uint32_t> &GetRecvEventIdList() const { return recv_event_id_list_; }
 
-  void GetFusionInputFlowList(kFusionDataFlowVec_t &fusion_input_list) const {
+  void GetFusionInputFlowList(kFusionDataFlowVec_t &fusion_input_list) {
     fusion_input_list = fusion_input_dataflow_list_;
   }
-  void GetFusionOutputFlowList(kFusionDataFlowVec_t &fusion_output_list) const {
+  void GetFusionOutputFlowList(kFusionDataFlowVec_t &fusion_output_list) {
     fusion_output_list = fusion_output_dataflow_list_;
   }
-  void SetFusionInputFlowList(const kFusionDataFlowVec_t &fusion_input_list) {
+  void SetFusionInputFlowList(kFusionDataFlowVec_t &fusion_input_list) {
     fusion_input_dataflow_list_ = fusion_input_list;
   }
-  void SetFusionOutputFlowList(const kFusionDataFlowVec_t &fusion_output_list) {
+  void SetFusionOutputFlowList(kFusionDataFlowVec_t &fusion_output_list) {
     fusion_output_dataflow_list_ = fusion_output_list;
   }
 
   bool GetHostNode() const { return host_node_; }
-  void SetHostNode(const bool is_host) { host_node_ = is_host; }
+  void SetHostNode(bool is_host) { host_node_ = is_host; }
 
   void SetOrigNode(const NodePtr &orignode) { orig_node_ = orignode; }
   NodePtr GetOrigNode() { return orig_node_; }
@@ -111,11 +111,11 @@ class Node::NodeImpl {
   friend class OnnxUtils;
   OpDescPtr op_;
   std::weak_ptr<ComputeGraph> owner_graph_;
-  std::vector<InDataAnchorPtr> in_data_anchors_;
-  std::vector<OutDataAnchorPtr> out_data_anchors_;
+  vector<InDataAnchorPtr> in_data_anchors_;
+  vector<OutDataAnchorPtr> out_data_anchors_;
   InControlAnchorPtr in_control_anchor_;
   OutControlAnchorPtr out_control_anchor_;
-  std::map<std::string, GeAttrValue> attrs_;
+  map<string, GeAttrValue> attrs_;  // lint !e1073
   bool has_init_{false};
   bool host_node_{false};
   bool anchor_status_updated_{false};

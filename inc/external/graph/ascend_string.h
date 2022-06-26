@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@
 #include <string>
 #include <memory>
 #include <functional>
-#include "graph/types.h"
 
 namespace ge {
 class AscendString {
@@ -30,11 +29,9 @@ class AscendString {
 
   ~AscendString() = default;
 
-  AscendString(const char_t* const name);
+  AscendString(const char* name);
 
-  const char_t* GetString() const;
-
-  size_t Hash() const;
+  const char* GetString() const;
 
   bool operator<(const AscendString& d) const;
 
@@ -57,7 +54,11 @@ namespace std {
 template <>
 struct hash<ge::AscendString> {
   size_t operator()(const ge::AscendString &name) const {
-    return name.Hash();
+    std::string str_name;
+    if (name.GetString() != nullptr) {
+      str_name = name.GetString();
+    }
+    return hash<string>()(str_name);
   }
 };
 }

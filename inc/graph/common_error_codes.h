@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@
 #include "external/graph/ge_error_codes.h"
 
 namespace ge {
-constexpr graphStatus NO_DEPENDENCE_FUNC = 50331647U;
-constexpr graphStatus NO_OVERLAP_DIM = 50331646U;
-constexpr graphStatus NOT_SUPPORT_SLICE = 50331645U;
+const graphStatus NO_DEPENDENCE_FUNC = 50331647;
+const graphStatus NO_OVERLAP_DIM = 50331646;
+const graphStatus NOT_SUPPORT_SLICE = 50331645;
 }  // namespace ge
 
 #endif  // INC_GRAPH_COMMON_ERROR_CODES_H_

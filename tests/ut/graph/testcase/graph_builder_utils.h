@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,13 +33,8 @@ class GraphBuilder {
   NodePtr AddNode(const std::string &name, const std::string &type, int in_cnt, int out_cnt,
                   Format format = FORMAT_NCHW, DataType data_type = DT_FLOAT,
                   std::vector<int64_t> shape = {1, 1, 224, 224});
-  NodePtr AddNode(const std::string &name, const std::string &type,
-                  std::initializer_list<std::string> input_names,
-                  std::initializer_list<std::string> output_names,
-                  Format format = FORMAT_NCHW, DataType data_type = DT_FLOAT,
-                  std::vector<int64_t> shape = {1, 1, 224, 224});
-  void AddDataEdge(const NodePtr &src_node, int src_idx, const NodePtr &dst_node, int dst_idx);
-  void AddControlEdge(const NodePtr &src_node, const NodePtr &dst_node);
+  void AddDataEdge(NodePtr &src_node, int src_idx, NodePtr &dst_node, int dst_idx);
+  void AddControlEdge(NodePtr &src_node, NodePtr &dst_node);
   ComputeGraphPtr GetGraph() {
     graph_->TopologicalSorting();
     return graph_;

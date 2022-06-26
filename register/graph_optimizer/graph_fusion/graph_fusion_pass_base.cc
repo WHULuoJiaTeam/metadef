@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,16 +36,17 @@ GraphFusionPassBase::~GraphFusionPassBase() {}
  * @brief execute pass
  */
 Status GraphFusionPassBase::Run(ge::ComputeGraph &graph) {
+  Mappings mappings;
   bool is_patterns_ok = true;
   // build Pattern
-  std::vector<FusionPattern *> patterns;
+  vector<FusionPattern *> patterns;
   std::string invalid_patterns;
   pattern_fusion_base_pass_impl_ptr_->GetPatterns(patterns);
   if (patterns.empty()) {
     patterns = DefinePatterns();
     for (FusionPattern *pattern : patterns) {
       if (pattern != nullptr) {
-        const bool ok = pattern->Build();
+        bool ok = pattern->Build();
         if (!ok) {
           GELOGW("[RunFusionPass][Check] pattern: %s build failed", pattern->GetName().c_str());
           invalid_patterns += pattern->GetName() + ",";
@@ -68,10 +69,10 @@ Status GraphFusionPassBase::Run(ge::ComputeGraph &graph) {
   }
   // do matching and fusion for each pattern
   bool final_changed = false;
-  for (const FusionPattern * const pattern : patterns) {
+  for (const FusionPattern *pattern : patterns) {
     if (pattern != nullptr) {
       bool changed = false;
-      const Status ret = RunOnePattern(graph, *pattern, changed);
+      Status ret = RunOnePattern(graph, *pattern, changed);
       if (ret != SUCCESS) {
         GELOGW("[RunFusionPass][Check] run pattern %s failed, graph is not changed by it.", pattern->GetName().c_str());
         return ret;
@@ -90,7 +91,7 @@ Status GraphFusionPassBase::RunOnePattern(ge::ComputeGraph &graph, const FusionP
   changed = false;
   Mappings mappings;
   int32_t effect_times = 0;
-  const uint32_t graph_id = graph.GetGraphID();
+  uint32_t graph_id = graph.GetGraphID();
   FusionInfo fusion_info(graph.GetSessionID(), to_string(graph_id), GetName(), static_cast<int32_t>(mappings.size()),
                          effect_times);
   // match all patterns in graph, and save them to mappings
@@ -109,7 +110,7 @@ Status GraphFusionPassBase::RunOnePattern(ge::ComputeGraph &graph, const FusionP
   (void)GraphPassUtil::GetOpTypeMapToGraph(node_map_info, graph);
   // do fusion for each mapping
   for (Mapping &mapping : mappings) {
-    std::vector<ge::NodePtr> fus_nodes;
+    vector<ge::NodePtr> fus_nodes;
     ge::NodePtr first_node = nullptr;
     for (auto &item : mapping) {
       if (!item.second.empty()) {
@@ -118,8 +119,8 @@ Status GraphFusionPassBase::RunOnePattern(ge::ComputeGraph &graph, const FusionP
       }
     }
 
-    const Status status = Fusion(graph, mapping, fus_nodes);
-    if ((status != SUCCESS) && (status != NOT_CHANGED)) {
+    Status status = Fusion(graph, mapping, fus_nodes);
+    if (status != SUCCESS && status != NOT_CHANGED) {
       GELOGE(status, "[Fuse][Graph]Fail with pattern[%s].", pattern.GetName().c_str());
       return status;
     }
@@ -133,7 +134,7 @@ Status GraphFusionPassBase::RunOnePattern(ge::ComputeGraph &graph, const FusionP
         }
       }
     }
-    changed = changed || (status == SUCCESS);
+    changed = changed || status == SUCCESS;
   }
 
   // get match times and effect times
@@ -150,20 +151,23 @@ Status GraphFusionPassBase::RunOnePattern(ge::ComputeGraph &graph, const FusionP
 /**
  * @ingroup fe
  * @brief match all nodes in graph according to pattern
- * match nodes in graph according to pattern, the algorithm is shown as following:
- * 1. get output node from pattern
- * 2. Search for candidate nodes in Graph (network Graph generated after parsing) according to Op Type and
- * (optional), and add the candidate node to the list of candidates
- * 3. For each Node in the candidate list, check whether the type and the number
- * of precursors are consistent with the description of corresponding Op
- * in pattern. If they are consistent, add the precursor Node to the
- * candidate list, and add "PatternOp-GraphNode" to the mapping; otherwise, return an empty mapping
- * 4. repeat step 3 until all the Ops in pattern are matched
- * 5. if all the Ops in pattern are matched successfully, return the mapping of PatternOp and GraphNode
  */
-bool GraphFusionPassBase::MatchAll(const ge::ComputeGraph &graph, const FusionPattern &pattern,
-    Mappings &mappings) const {
-  std::vector<ge::NodePtr> matched_output_nodes;
+// match nodes in graph according to pattern, the algorithm is shown as
+// following:
+// 1. get output node from pattern
+// 2. Search for candidate nodes in Graph (network Graph generated after
+//    parsing) according to Op Type and
+// (optional), and add the candidate node to the list of candidates
+// 3. For each Node in the candidate list, check whether the type and the number
+//    of precursors are consistent with the description of corresponding Op
+//    in pattern. If they are consistent, add the precursor Node to the
+//    candidate list, and add "PatternOp-GraphNode" to the mapping; otherwise,
+//    return an empty mapping
+// 4. repeat step 3 until all the Ops in pattern are matched
+// 5. if all the Ops in pattern are matched successfully, return the mapping of
+//    PatternOp and GraphNode
+bool GraphFusionPassBase::MatchAll(ge::ComputeGraph &graph, const FusionPattern &pattern, Mappings &mappings) {
+  vector<ge::NodePtr> matched_output_nodes;
 
   // find all the output nodes of pattern in the graph based on Op type
   std::shared_ptr<FusionPattern::OpDesc> output_op_desc = pattern.GetOutput();
@@ -190,10 +194,10 @@ bool GraphFusionPassBase::MatchAll(const ge::ComputeGraph &graph, const FusionPa
  * @ingroup fe
  * @brief get an op from mapping according to ID
  */
-ge::NodePtr GraphFusionPassBase::GetNodeFromMapping(const std::string &id, const Mapping &mapping) {
+ge::NodePtr GraphFusionPassBase::GetNodeFromMapping(const string &id, const Mapping &mapping) {
   for (auto &item : mapping) {
-    const std::shared_ptr<OpDesc> op_desc = item.first;
-    if ((op_desc != nullptr) && (op_desc->id == id)) {
+    std::shared_ptr<OpDesc> op_desc = item.first;
+    if (op_desc != nullptr && op_desc->id == id) {
       if (item.second.empty()) {
         return nullptr;
       } else {

@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,29 +62,29 @@ enum ErrorLevel {
   CRITICAL_LEVEL = 0b100,
 };
 
-// Each module defines error codes using the following macros, name can not be modified to (name)
+// Each module defines error codes using the following macros
 #define GE_ERRORNO_COMMON(name, value, desc) \
-  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, COMMON_MODULE, name, (value), (desc))
+  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, COMMON_MODULE, name, value, desc)
 #define GE_ERRORNO_CLIENT(name, value, desc) \
-  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, CLIENT_MODULE, name, (value), (desc))
+  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, CLIENT_MODULE, name, value, desc)
 #define GE_ERRORNO_INIT(name, value, desc) \
-  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, INIT_MODULE, name, (value), (desc))
+  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, INIT_MODULE, name, value, desc)
 #define GE_ERRORNO_SESSION(name, value, desc) \
-  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, SESSION_MODULE, name, (value), (desc))
+  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, SESSION_MODULE, name, value, desc)
 #define GE_ERRORNO_GRAPH(name, value, desc) \
-  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, GRAPH_MODULE, name, (value), (desc))
+  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, GRAPH_MODULE, name, value, desc)
 #define GE_ERRORNO_ENGINE(name, value, desc) \
-  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, ENGINE_MODULE, name, (value), (desc))
+  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, ENGINE_MODULE, name, value, desc)
 #define GE_ERRORNO_OPS(name, value, desc) \
-  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, OPS_MODULE, name, (value), (desc))
+  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, OPS_MODULE, name, value, desc)
 #define GE_ERRORNO_PLUGIN(name, value, desc) \
-  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, PLUGIN_MODULE, name, (value), (desc))
+  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, PLUGIN_MODULE, name, value, desc)
 #define GE_ERRORNO_RUNTIME(name, value, desc) \
-  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, RUNTIME_MODULE, name, (value), (desc))
+  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, RUNTIME_MODULE, name, value, desc)
 #define GE_ERRORNO_EXECUTOR(name, value, desc) \
-  GE_ERRORNO(RT_DEVICE, ERROR_CODE, COMMON_LEVEL, SYSID_GE, EXECUTOR_MODULE, name, (value), (desc))
+  GE_ERRORNO(RT_DEVICE, ERROR_CODE, COMMON_LEVEL, SYSID_GE, EXECUTOR_MODULE, name, value, desc)
 #define GE_ERRORNO_GENERATOR(name, value, desc) \
-  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, GENERATOR_MODULE, name, (value), (desc))
+  GE_ERRORNO(RT_HOST, ERROR_CODE, COMMON_LEVEL, SYSID_GE, GENERATOR_MODULE, name, value, desc)
 
 // Get error code description
 #define GE_GET_ERRORNO_STR(value) ge::StatusFactory::Instance()->GetErrDesc(value)
@@ -314,7 +314,7 @@ GE_ERRORNO_GENERATOR(GE_GENERATOR_GRAPH_MANAGER_BUILD_GRAPH_FAILED, 3, "Graph ma
 GE_ERRORNO_GENERATOR(GE_GENERATOR_GRAPH_MANAGER_FINALIZE_FAILED, 4, "Graph manager finalize failed.");
 GE_ERRORNO_GENERATOR(GE_GENERATOR_GRAPH_MANAGER_SAVE_MODEL_FAILED, 5, "Graph manager save model failed.");
 
-#define RT_ERROR_TO_GE_STATUS(RT_ERROR) static_cast<const Status>(RT_ERROR)
+#define RT_ERROR_TO_GE_STATUS(RT_ERROR) static_cast<Status>(RT_ERROR)
 }  // namespace ge
 
 #endif  // INC_FRAMEWORK_COMMON_GE_INNER_ERROR_CODES_H_

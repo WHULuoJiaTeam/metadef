@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,23 @@
 namespace ge {
 class AnchorUtils {
  public:
+  // Get anchor format
+  static Format GetFormat(const DataAnchorPtr &dataAnchor);
+
+  // Set anchor format
+  static graphStatus SetFormat(const DataAnchorPtr &dataAnchor, Format dataFormat);
+
   // Get anchor status
-  static AnchorStatus GetStatus(const DataAnchorPtr &data_anchor);
+  static AnchorStatus GetStatus(const DataAnchorPtr &dataAnchor);
 
   // Set anchor status
-  static graphStatus SetStatus(const DataAnchorPtr &data_anchor, const AnchorStatus anchor_status);
+  static graphStatus SetStatus(const DataAnchorPtr &dataAnchor, AnchorStatus anchorStatus);
 
-  static int32_t GetIdx(const AnchorPtr &anchor);
+  static bool HasControlEdge(const AnchorPtr &anchor);
+
+  static bool IsControlEdge(const AnchorPtr &src, const AnchorPtr &dst);
+
+  static int GetIdx(const AnchorPtr &anchor);
 };
 }  // namespace ge
 #endif  // INC_GRAPH_UTILS_ANCHOR_UTILS_H_

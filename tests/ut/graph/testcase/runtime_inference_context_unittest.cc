@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,19 +31,12 @@ class RuntimeInferenceContextTest : public testing::Test {
   void TearDown() {}
 };
 
-
-TEST_F(RuntimeInferenceContextTest, TestSetGetTensor) {
+TEST_F(RuntimeInferenceContextTest, TestSetAndGetTensor) {
   RuntimeInferenceContext ctx;
-  GeTensorDesc desc;
-  GeTensorPtr ge_tensor = std::make_shared<GeTensor>(desc);
-  ASSERT_EQ(ctx.SetTensor(1, 3, ge_tensor), GRAPH_SUCCESS);
-  GeTensorPtr new_tensor;
-  ASSERT_EQ(ctx.GetTensor(1, 3, new_tensor), GRAPH_SUCCESS);
-  ASSERT_NE(ctx.GetTensor(2, 0, new_tensor), GRAPH_SUCCESS);
-  ASSERT_NE(ctx.GetTensor(2, -1, new_tensor), GRAPH_SUCCESS);
-  ASSERT_NE(ctx.GetTensor(1, 4, new_tensor), GRAPH_SUCCESS);
-  ASSERT_NE(ctx.GetTensor(1, 0, new_tensor), GRAPH_SUCCESS);
-  ctx.Release();
-  ASSERT_NE(ctx.GetTensor(1, 3, new_tensor), GRAPH_SUCCESS);
+  Tensor tensor;
+  ASSERT_EQ(ctx.SetTensor(1, 1, std::move(tensor)), GRAPH_SUCCESS);
+  Tensor new_tensor;
+  ASSERT_EQ(ctx.GetTensor(1, 1, new_tensor), GRAPH_SUCCESS);
+  ASSERT_EQ(ctx.GetTensor(1, 0, new_tensor), GRAPH_FAILED);
 }
 } // namespace ge

@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,23 +131,6 @@ typedef enum tagRtDumpKind {
     RT_DATA_DUMP_KIND_DUMP = 0,
     RT_DATA_DUMP_KIND_RESERVED
 } rtDumpKind_t;
-
-/**
- * @ingroup rt_kernel
- * @brief args struct
- */
-typedef struct tagRtArgsWithTiling {
-    void *args;                     // args host mem addr
-    uint32_t argsSize;              // input + output + tiling addr size + tiling data size
-    uint32_t argsSizeWithoutTiling; // input + output + tiling addr size
-    uint16_t tilingAddrOffset;      // tiling addr offset
-    uint16_t tilingDataOffset;      // tiling data offset
-    uint16_t hostInputAddrOffset;
-    uint16_t hostInputDataOffset;
-    uint8_t hasHostMemInput;       // has host memory input data in args or not
-    uint8_t isNoNeedH2DCopy;       // is no need host to device copy
-    uint8_t  reserved[6];
-} rtArgsWithTiling_t;
 
 /**
  * @ingroup rt_kernel
@@ -374,7 +357,7 @@ RTS_API rtError_t rtKernelLaunch(const void *stubFunc, uint32_t blockDim, void *
  * @return RT_ERROR_INVALID_VALUE for error input
  */
 RTS_API rtError_t rtKernelLaunchWithHandle(void *handle, const void *devFunc, uint32_t blockDim, void *args, uint32_t argsSize,
-                                           rtSmDesc_t *smDesc, rtStream_t stream_, const void *kernelInfo);
+                                            rtSmDesc_t *smDesc, rtStream_t stream_, const void *kernelInfo);
 
 /**
  * @ingroup rt_kernel
@@ -665,38 +648,9 @@ RTS_API rtError_t rtStartMDCProfiler(void **addr, uint32_t length);
  */
 RTS_API rtError_t rtStopMDCProfiler(void *addr);
 
-/**
- * @ingroup rt_kernel
- * @brief launch kernel with tiling data to device
- * @param [in] stubFunc   stub function
- * @param [in] blockDim   block dimentions
- * @param [in] argsInfo   argments info address for kernel function
- * @param [in] smDesc   shared memory description
- * @param [in] stream   associated stream
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtKernelLaunchWithTiling(const void *stubFunc, uint32_t blockDim,
-    rtArgsWithTiling_t *argsInfo, rtSmDesc_t *smDesc, rtStream_t stream);
-
-/**
- * @ingroup rt_kernel
- * @brief launch kernel with handle and tiling data to device
- * @param [in] handle   program
- * @param [in] devFunc   device function description.
- * @param [in] blockDim   block dimentions
- * @param [in] argsInfo   argments info address for kernel function
- * @param [in] smDesc   shared memory description
- * @param [in] stream   associated stream
- * @param [in] kernelInfo   kernel info
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtKernelLaunchWithHandleAndTiling(void *handle, const void *devFunc, uint32_t blockDim,
-    rtArgsWithTiling_t *argsInfo, rtSmDesc_t *smDesc, rtStream_t stream_, const void *kernelInfo);
-
 #if defined(__cplusplus) && !defined(COMPILE_OMG_PACKAGE)
 }
 #endif
 
 #endif  // __CCE_RUNTIME_KERNEL_H__
+

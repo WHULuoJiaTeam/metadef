@@ -33,9 +33,6 @@ enum DataType
     DT_VARIANT = 26;           // variant type
     DT_BF16 = 27;              // bf16 type
     DT_INT4 = 28;              // int4 type
-    DT_UINT1 = 29;             // uint1 type
-    DT_INT2 = 30;              // int2 type
-    DT_UINT2 = 31;             // uint2 type
 }
 
 message AttrDef

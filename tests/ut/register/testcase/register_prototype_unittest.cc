@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,25 +33,11 @@ class RegisterPass : public ProtoTypeBasePass {
   Status Run(google::protobuf::Message *message) { return SUCCESS; }
 };
 
-class RegisterFail : public ProtoTypeBasePass {
- public:
-  Status Run(google::protobuf::Message *message) { return FAILED; }
-};
-
 REGISTER_PROTOTYPE_PASS("RegisterPass", RegisterPass, domi::CAFFE);
 REGISTER_PROTOTYPE_PASS("RegisterPass", RegisterPass, domi::CAFFE);
 
 TEST_F(UtestProtoTypeRegister, register_test) {
   auto pass_vec = ProtoTypePassRegistry::GetInstance().GetCreateFnByType(domi::CAFFE);
   EXPECT_EQ(pass_vec.size(), 1);
-}
-
-TEST_F(UtestProtoTypeRegister, register_test_fail) {
-  REGISTER_PROTOTYPE_PASS(nullptr, RegisterPass, domi::CAFFE);
-  REGISTER_PROTOTYPE_PASS("RegisterFail", RegisterFail, domi::CAFFE);
-
-  ProtoTypePassRegistry::GetInstance().RegisterProtoTypePass(nullptr, nullptr, domi::CAFFE);
-  auto pass_vec = ProtoTypePassRegistry::GetInstance().GetCreateFnByType(domi::CAFFE);
-  EXPECT_NE(pass_vec.size(), 1);
 }
 }  // namespace ge

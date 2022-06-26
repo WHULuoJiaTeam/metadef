@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,28 +18,30 @@
 #ifndef INC_FRAMEWORK_COMMON_UTIL_H_
 #define INC_FRAMEWORK_COMMON_UTIL_H_
 
-#include <climits>
-#include <cmath>
+#include <google/protobuf/text_format.h>
+#include <limits.h>
+#include <math.h>
 #include <sstream>
 #include <string>
 #include <vector>
 
-#include <google/protobuf/text_format.h>
+#include "framework/common/debug/ge_log.h"
 #include "framework/common/debug/log.h"
 #include "framework/common/scope_guard.h"
 #include "framework/common/ge_inner_error_codes.h"
+#include "mmpa/mmpa_api.h"
 
-#define GE_CHECK_POSITIVE_SIZE_RANGE(size)                             \
-  do {                                                                 \
-    if (size <= 0) {                                                   \
-      GELOGE(ge::FAILED, "param[%s] is not a positive number", #size); \
-      return PARAM_INVALID;                                            \
-    }                                                                  \
-  } while (false)
+#define GE_CHECK_POSITIVE_SIZE_RANGE(size)                      \
+  do {                                                          \
+    if (size <= 0) {                                            \
+      DOMI_LOGE("param[%s] is not a positive number", #size);   \
+      return PARAM_INVALID;                                     \
+    }                                                           \
+  } while (0)
 
 #define CHECK_FALSE_EXEC(expr, exec_expr, ...) \
   {                                            \
-    const bool b = (expr);                     \
+    bool b = (expr);                           \
     if (!b) {                                  \
       exec_expr;                               \
     }                                          \
@@ -58,133 +60,139 @@
   });
 
 // For propagating errors when calling a function.
-#define GE_RETURN_IF_ERROR(expr)            \
-  do {                                      \
-    const ge::Status _chk_status = (expr);  \
-    if (_chk_status != ge::SUCCESS) {       \
-      return _chk_status;                   \
-    }                                       \
-  } while (false)
+#define GE_RETURN_IF_ERROR(expr)         \
+  do {                                   \
+    const ::ge::Status _status = (expr); \
+    if (_status) return _status;         \
+  } while (0)
 
 #define GE_RETURN_WITH_LOG_IF_ERROR(expr, ...) \
   do {                                         \
-    const ge::Status _chk_status = (expr);     \
-    if (_chk_status != ge::SUCCESS) {          \
-      GELOGE(ge::FAILED, __VA_ARGS__);         \
-      return _chk_status;                      \
+    const ::ge::Status _status = (expr);       \
+    if (_status) {                             \
+      DOMI_LOGE(__VA_ARGS__);                  \
+      return _status;                          \
     }                                          \
-  } while (false)
+  } while (0)
 
 // check whether the parameter is true. If it is, return FAILED and record the error log
 #define GE_RETURN_WITH_LOG_IF_TRUE(condition, ...) \
   do {                                             \
     if (condition) {                               \
-      GELOGE(ge::FAILED, __VA_ARGS__);             \
+      DOMI_LOGE(__VA_ARGS__);                      \
       return ge::FAILED;                           \
     }                                              \
-  } while (false)
+  } while (0)
 
 // Check if the parameter is false. If yes, return FAILED and record the error log
 #define GE_RETURN_WITH_LOG_IF_FALSE(condition, ...) \
   do {                                              \
-    const bool _condition = (condition);            \
+    bool _condition = (condition);                  \
     if (!_condition) {                              \
-      GELOGE(ge::FAILED, __VA_ARGS__);              \
+      DOMI_LOGE(__VA_ARGS__);                       \
       return ge::FAILED;                            \
     }                                               \
-  } while (false)
+  } while (0)
 
 // Checks whether the parameter is true. If so, returns PARAM_INVALID and records the error log
 #define GE_RT_PARAM_INVALID_WITH_LOG_IF_TRUE(condition, ...) \
   do {                                                       \
     if (condition) {                                         \
-      GELOGE(ge::FAILED, __VA_ARGS__);                       \
+      DOMI_LOGE(__VA_ARGS__);                                \
       return ge::PARAM_INVALID;                              \
     }                                                        \
-  } while (false)
+  } while (0)
 
 // Check if the parameter is false. If yes, return PARAM_INVALID and record the error log
 #define GE_RT_PARAM_INVALID_WITH_LOG_IF_FALSE(condition, ...) \
   do {                                                        \
-    const bool _condition = (condition);                      \
+    bool _condition = (condition);                            \
     if (!_condition) {                                        \
-      GELOGE(ge::FAILED, __VA_ARGS__);                        \
+      DOMI_LOGE(__VA_ARGS__);                                 \
       return ge::PARAM_INVALID;                               \
     }                                                         \
-  } while (false)
+  } while (0)
 
 // Check if the parameter is null. If yes, return PARAM_INVALID and record the error
-#define GE_CHECK_NOTNULL(val)                                                   \
-  do {                                                                          \
-    if (val == nullptr) {                                                       \
-      REPORT_INNER_ERROR("E19999", "Param:%s is nullptr, check invalid", #val); \
-      GELOGE(ge::FAILED, "[Check][Param:%s]null is invalid.", #val);            \
-      return ge::PARAM_INVALID;                                                 \
-    }                                                                           \
-  } while (false)
+#define GE_CHECK_NOTNULL(val)                           \
+  do {                                                  \
+    if (val == nullptr) {                               \
+      DOMI_LOGE("param[%s] must not be null.", #val);   \
+      return ge::PARAM_INVALID;                         \
+    }                                                   \
+  } while (0)
 
 // Check if the parameter is null. If yes, just return and record the error
-#define GE_CHECK_NOTNULL_JUST_RETURN(val)                      \
-  do {                                                         \
-    if (val == nullptr) {                                      \
-      GELOGE(ge::FAILED, "param[%s] must not be null.", #val); \
-      return;                                                  \
-    }                                                          \
-  } while (false)
+#define GE_CHECK_NOTNULL_JUST_RETURN(val)               \
+  do {                                                  \
+    if (val == nullptr) {                               \
+      DOMI_LOGE("param[%s] must not be null.", #val);   \
+      return;                                           \
+    }                                                   \
+  } while (0)
 
 // Check whether the parameter is null. If so, execute the exec_expr expression and record the error log
-#define GE_CHECK_NOTNULL_EXEC(val, exec_expr)                  \
-  do {                                                         \
-    if (val == nullptr) {                                      \
-      GELOGE(ge::FAILED, "param[%s] must not be null.", #val); \
-      exec_expr;                                               \
-    }                                                          \
-  } while (false)
+#define GE_CHECK_NOTNULL_EXEC(val, exec_expr)           \
+  do {                                                  \
+    if (val == nullptr) {                               \
+      DOMI_LOGE("param[%s] must not be null.", #val);   \
+      exec_expr;                                        \
+    }                                                   \
+  } while (0)
 
 // Check whether the parameter is null. If yes, return directly and record the error log
-#define GE_RT_VOID_CHECK_NOTNULL(val)                          \
-  do {                                                         \
-    if (val == nullptr) {                                      \
-      GELOGE(ge::FAILED, "param[%s] must not be null.", #val); \
-      return;                                                  \
-    }                                                          \
-  } while (false)
+#define GE_RT_VOID_CHECK_NOTNULL(val)                   \
+  do {                                                  \
+    if (val == nullptr) {                               \
+      DOMI_LOGE("param[%s] must not be null.", #val);   \
+      return;                                           \
+    }                                                   \
+  } while (0)
 
 // Check if the parameter is null. If yes, return false and record the error log
-#define GE_RT_FALSE_CHECK_NOTNULL(val)                         \
-  do {                                                         \
-    if (val == nullptr) {                                      \
-      GELOGE(ge::FAILED, "param[%s] must not be null.", #val); \
-      return false;                                            \
-    }                                                          \
-  } while (false)
+#define GE_RT_FALSE_CHECK_NOTNULL(val)                  \
+  do {                                                  \
+    if (val == nullptr) {                               \
+      DOMI_LOGE("param[%s] must not be null.", #val);   \
+      return false;                                     \
+    }                                                   \
+  } while (0)
 
 // Check if the parameter is out of bounds
-#define GE_CHECK_SIZE(size)                                   \
-  do {                                                        \
-    if (size == 0) {                                          \
-      GELOGE(ge::FAILED, "param[%s] is out of range", #size); \
-      return ge::PARAM_INVALID;                               \
-    }                                                         \
-  } while (false)
+#define GE_CHECK_SIZE(size)                             \
+  do {                                                  \
+    if (size == 0) {                                    \
+      DOMI_LOGE("param[%s] is out of range", #size);    \
+      return ge::PARAM_INVALID;                         \
+    }                                                   \
+  } while (0)
+
+// Check if the container is empty
+#define GE_CHECK_VECTOR_NOT_EMPTY(vector)               \
+  do {                                                  \
+    if (vector.empty()) {                               \
+      DOMI_LOGE("param[%s] is empty!", #vector);        \
+      return ge::FAILED;                                \
+    }                                                   \
+  } while (0)
 
 // Check if the value on the left is greater than or equal to the value on the right
-#define GE_CHECK_GE(lhs, rhs)                                       \
-  do {                                                              \
-    if (lhs < rhs) {                                                \
-      GELOGE(ge::FAILED, "param[%s] is less than[%s]", #lhs, #rhs); \
-      return ge::PARAM_INVALID;                                     \
-    }                                                               \
-  } while (false)
+#define GE_CHECK_GE(lhs, rhs)                               \
+  do {                                                      \
+    if (lhs < rhs) {                                        \
+      DOMI_LOGE("param[%s] is less than[%s]", #lhs, #rhs);  \
+      return ge::PARAM_INVALID;                             \
+    }                                                       \
+  } while (0)
 
 // Check if the value on the left is less than or equal to the value on the right
-#define GE_CHECK_LE(lhs, rhs)                                          \
-  do {                                                                 \
-    if (lhs > rhs) {                                                   \
-      GELOGE(ge::FAILED, "param[%s] is greater than[%s]", #lhs, #rhs); \
-      return ge::PARAM_INVALID;                                        \
-    }                                                                  \
-  } while (false)
+#define GE_CHECK_LE(lhs, rhs)                                   \
+  do {                                                          \
+    if (lhs > rhs) {                                            \
+      DOMI_LOGE("param[%s] is greater than[%s]", #lhs, #rhs);   \
+      return ge::PARAM_INVALID;                                 \
+    }                                                           \
+  } while (0)
 
 #define GE_DELETE_NEW_SINGLE(var) \
   do {                            \
@@ -192,7 +200,7 @@
       delete var;                 \
       var = nullptr;              \
     }                             \
-  } while (false)
+  } while (0)
 
 #define GE_DELETE_NEW_ARRAY(var) \
   do {                           \
@@ -200,18 +208,7 @@
       delete[] var;              \
       var = nullptr;             \
     }                            \
-  } while (false)
-
-#define GE_FREE_RT_LOG(addr)                                        \
-  do {                                                              \
-    if (addr != nullptr) {                                          \
-      const rtError_t error = rtFree(addr);                         \
-      if (error != RT_ERROR_NONE) {                                 \
-        GELOGE(RT_FAILED, "Call rtFree failed, error: %#x", error); \
-      }                                                             \
-      addr = nullptr;                                               \
-    }                                                               \
-  } while (false)
+  } while (0)
 
 /**
  * @ingroup domi_common
@@ -226,6 +223,22 @@ static constexpr int32_t OM_PROTO_VERSION = 2;
 
 namespace ge {
 using google::protobuf::Message;
+
+///
+/// @ingroup domi_common
+/// @brief Maximum file path length
+///
+const int32_t DOMI_MAX_PATH_LEN = 256;
+
+///
+/// @ingroup domi_common
+/// @brief proto file in bianary format
+/// @param [in] file path of proto file
+/// @param [out] proto memory for storing the proto file
+/// @return true success
+/// @return false fail
+///
+GE_FUNC_VISIBILITY bool ReadProtoFromBinaryFile(const char *file, Message *proto);
 
 ///
 /// @ingroup domi_common
@@ -247,6 +260,8 @@ GE_FUNC_VISIBILITY bool ReadProtoFromArray(const void *data, int size, Message *
 /// @return false fail
 ///
 GE_FUNC_VISIBILITY bool ReadProtoFromText(const char *file, google::protobuf::Message *message);
+
+GE_FUNC_VISIBILITY bool ReadProtoFromMem(const char *data, int size, google::protobuf::Message *message);
 
 ///
 /// @ingroup: domi_common
@@ -299,10 +314,10 @@ GE_FUNC_VISIBILITY std::string ToString(std::vector<T> &v) {
     ss << x;
     ss << ", ";
   }
-  // Delete the two extra characters at the end of the line.
-  std::string str = ss.str().substr(0U, ss.str().length() - 2U);
-  str += "]";
-  return str;
+  std::string strRet =
+    ss.str().substr(0, ss.str().length() - 2);  // Delete the two extra characters at the end of the line.
+  strRet += "]";
+  return strRet;
 }
 
 ///
@@ -319,29 +334,10 @@ GE_FUNC_VISIBILITY std::string ToString(const google::protobuf::RepeatedField<T>
     ss << x;
     ss << ", ";
   }
-  // Delete the two extra characters at the end of the line.
-  std::string str = ss.str().substr(0U, ss.str().length() - 2U);
-  str += "]";
-  return str;
-}
-
-///
-///  @ingroup ge_ir_utils
-///  @brief RepeatedPtrField->String
-///  @param [in] const rpd_field  RepeatedPtrField
-///  @return String
-///
-template <typename T>
-GE_FUNC_VISIBILITY std::string ToString(const google::protobuf::RepeatedPtrField<T> &rpd_ptr_field) {
-  std::stringstream ss;
-  ss << "[";
-  for (const T &x : rpd_ptr_field) {
-    ss << x;
-    ss << ", ";
-  }
-  std::string str_ret = ss.str().substr(0U, ss.str().length() - 2U);
-  str_ret += "]";
-  return str_ret;
+  std::string strRet =
+    ss.str().substr(0, ss.str().length() - 2);  // Delete the two extra characters at the end of the line.
+  strRet += "]";
+  return strRet;
 }
 
 ///
@@ -403,6 +399,14 @@ GE_FUNC_VISIBILITY bool CheckOutputPathValid(const std::string &file_path, const
 /// @param [out] result
 ///
 GE_FUNC_VISIBILITY bool ValidateStr(const std::string &filePath, const std::string &mode);
+
+///
+/// @ingroup domi_common
+/// @brief Check whether the file is normal file.
+/// @param [in] file_path file path
+/// @param [out] result
+///
+GE_FUNC_VISIBILITY bool IsValidFile(const char *file_path);
 
 ///
 /// @ingroup domi_common

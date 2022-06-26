@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ class FMK_FUNC_HOST_VISIBILITY FMK_FUNC_DEV_VISIBILITY OpKernelRegistry {
 
   bool IsRegistered(const std::string &op_type);
 
-  void RegisterHostCpuOp(const std::string &op_type, const CreateFn create_fn);
+  void RegisterHostCpuOp(const std::string &op_type, CreateFn create_fn);
 
   std::unique_ptr<HostCpuOp> CreateHostCpuOp(const std::string &op_type);
 

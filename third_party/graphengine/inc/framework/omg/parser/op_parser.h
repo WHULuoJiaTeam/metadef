@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 
 #include <google/protobuf/text_format.h>
 #include "framework/omg/parser/parser_types.h"
-#include "framework/omg/omg_inner_types.h"
+#include "omg/omg_inner_types.h"
 #include "proto/om.pb.h"
 #include "graph/ge_tensor.h"
 #include "graph/op_desc.h"

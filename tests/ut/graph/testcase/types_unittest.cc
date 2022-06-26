@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,11 +131,8 @@ TEST_F(UtestTypes, GetSizeByDataType) {
   EXPECT_EQ(GetSizeByDataType(DT_BF16), 2);
   EXPECT_EQ(GetSizeByDataType(DT_UNDEFINED), -1);
   EXPECT_EQ(GetSizeByDataType(DT_INT4), kDataTypeSizeBitOffset + 4);
-  EXPECT_EQ(GetSizeByDataType(DT_INT2), kDataTypeSizeBitOffset + 2);
-  EXPECT_EQ(GetSizeByDataType(DT_UINT2), kDataTypeSizeBitOffset + 2);
-  EXPECT_EQ(GetSizeByDataType(DT_UINT1), kDataTypeSizeBitOffset + 1);
   EXPECT_EQ(GetSizeByDataType(DT_MAX), -1);
-  EXPECT_EQ(DT_MAX, 33);
+  EXPECT_EQ(DT_MAX, 30);
 }
 
 TEST_F(UtestTypes, GetSizeInBytes) {
@@ -146,10 +143,5 @@ TEST_F(UtestTypes, GetSizeInBytes) {
   EXPECT_EQ(GetSizeInBytes(10, DT_INT4), 5);
   EXPECT_EQ(GetSizeInBytes(9, DT_INT4), 5);
   EXPECT_EQ(GetSizeInBytes(INT64_MAX, DT_INT4), -1);
-  EXPECT_EQ(GetSizeInBytes(10, DT_INT2), 3);
-  EXPECT_EQ(GetSizeInBytes(9, DT_INT2), 3);
-  EXPECT_EQ(GetSizeInBytes(INT64_MAX, DT_INT2), -1);
-  EXPECT_EQ(GetSizeInBytes(10, DT_UINT1), 2);
-  EXPECT_EQ(GetSizeInBytes(9, DT_UINT1), 2);
 }
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ std::string ScopeUtil::StringReplaceAll(std::string str, const std::string &old_
   return ge::StringUtils::ReplaceAll(str, old_value, new_value);
 }
 
-AscendString ScopeUtil::StringReplaceAll(const char_t *str, const char_t *old_value, const char_t *new_value) {
+AscendString ScopeUtil::StringReplaceAll(const char *str, const char *old_value, const char *new_value) {
   std::string tmp_str;
   if (str != nullptr) {
     tmp_str = str;
@@ -40,7 +40,7 @@ AscendString ScopeUtil::StringReplaceAll(const char_t *str, const char_t *old_va
   if (new_value != nullptr) {
     tmp_new_value = new_value;
   }
-  const std::string ret = ge::StringUtils::ReplaceAll(tmp_str, tmp_old_value, tmp_new_value);
+  std::string ret = ge::StringUtils::ReplaceAll(tmp_str, tmp_old_value, tmp_new_value);
   return AscendString(ret.c_str());
 }
 

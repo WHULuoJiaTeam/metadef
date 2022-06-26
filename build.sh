@@ -1,5 +1,6 @@
 #!/bin/bash
-# Copyright 2019-2020 Huawei Technologies Co., Ltd
+# Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+# Copyright 2021, 2022 Huawei Technologies Co., Ltd
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -148,7 +149,7 @@ build_metadef()
   fi
 
   if [ "X$ENABLE_METADEF_UT" = "Xon" ]; then
-    make ut_graph ut_register ut_error_manager -j${THREAD_NUM}
+    make ut_graph ut_register -j8
   else
     make ${VERBOSE} -j${THREAD_NUM} && make install
   fi
@@ -176,11 +177,9 @@ echo "---------------- Metadef output generated ----------------"
 if [[ "X$ENABLE_METADEF_UT" = "Xon" || "X$ENABLE_METADEF_COV" = "Xon" ]]; then
     cp ${BUILD_PATH}/tests/ut/graph/ut_graph ${OUTPUT_PATH}
     cp ${BUILD_PATH}/tests/ut/register/ut_register ${OUTPUT_PATH}
-    cp ${BUILD_PATH}/tests/ut/error_manager/ut_error_manager ${OUTPUT_PATH}
 
     RUN_TEST_CASE=${OUTPUT_PATH}/ut_graph && ${RUN_TEST_CASE} &&
-    RUN_TEST_CASE=${OUTPUT_PATH}/ut_register && ${RUN_TEST_CASE} &&
-    RUN_TEST_CASE=${OUTPUT_PATH}/ut_error_manager && ${RUN_TEST_CASE}
+    RUN_TEST_CASE=${OUTPUT_PATH}/ut_register && ${RUN_TEST_CASE}
     if [[ "$?" -ne 0 ]]; then
         echo "!!! UT FAILED, PLEASE CHECK YOUR CHANGES !!!"
         echo -e "\033[31m${RUN_TEST_CASE}\033[0m"
@@ -190,27 +189,31 @@ if [[ "X$ENABLE_METADEF_UT" = "Xon" || "X$ENABLE_METADEF_COV" = "Xon" ]]; then
     cd ${BASEPATH}
     rm -rf ${BASEPATH}/cov
     mkdir ${BASEPATH}/cov
-    lcov -c -d build/graph/CMakeFiles/graph_static.dir -d build/register/CMakeFiles/register_static.dir/ -d build/error_manager/CMakeFiles/error_manager_static.dir/ -o cov/tmp.info
-    lcov -r cov/tmp.info '*/output/*' '*/build/opensrc/*' '*/build/proto/*' '*/third_party/*' '*/tests/*' '/usr/*' '*/ops/*' -o cov/coverage.info
+    lcov -c -d build/tests/ut/graph -d build/tests/ut/register -o cov/tmp.info
+    lcov -r cov/tmp.info '*/output/*' '*/build/opensrc/*' '*/build/proto/*' '*/third_party/*' '*/tests/*' '/usr/local/*' -o cov/coverage.info
     cd ${BASEPATH}/cov
     genhtml coverage.info
 fi
 
-# generate output package in tar form, including ut/st libraries/executables for cann
+# generate output package in tar form, including ut/st libraries/executables
 generate_package()
 {
   cd "${BASEPATH}"
 
   METADEF_LIB_PATH="lib"
-  COMPILER_PATH="compiler/lib64"
-  RUNTIME_PATH="runtime/lib64"
+  ACL_PATH="acllib/lib64"
+  FWK_PATH="fwkacllib/lib64"
+  ATC_PATH="atc/lib64"
+
   COMMON_LIB=("libgraph.so" "libregister.so" "liberror_manager.so")
 
-  rm -rf ${OUTPUT_PATH:?}/${COMPILER_PATH}/
-  rm -rf ${OUTPUT_PATH:?}/${RUNTIME_PATH}/
+  rm -rf ${OUTPUT_PATH:?}/${FWK_PATH}/
+  rm -rf ${OUTPUT_PATH:?}/${ACL_PATH}/
+  rm -rf ${OUTPUT_PATH:?}/${ATC_PATH}/
 
-  mk_dir "${OUTPUT_PATH}/${COMPILER_PATH}"
-  mk_dir "${OUTPUT_PATH}/${RUNTIME_PATH}"
+  mk_dir "${OUTPUT_PATH}/${FWK_PATH}"
+  mk_dir "${OUTPUT_PATH}/${ATC_PATH}"
+  mk_dir "${OUTPUT_PATH}/${ACL_PATH}"
 
   find output/ -name metadef_lib.tar -exec rm {} \;
 
@@ -218,14 +221,13 @@ generate_package()
 
   for lib in "${COMMON_LIB[@]}";
   do
-    find ${OUTPUT_PATH}/${METADEF_LIB_PATH} -maxdepth 1 -name "$lib" -exec cp -f {} ${OUTPUT_PATH}/${COMPILER_PATH} \;
-    find ${OUTPUT_PATH}/${METADEF_LIB_PATH} -maxdepth 1 -name "$lib" -exec cp -f {} ${OUTPUT_PATH}/${RUNTIME_PATH} \;
+    find ${OUTPUT_PATH}/${METADEF_LIB_PATH} -maxdepth 1 -name "$lib" -exec cp -f {} ${OUTPUT_PATH}/${FWK_PATH} \;
+    find ${OUTPUT_PATH}/${METADEF_LIB_PATH} -maxdepth 1 -name "$lib" -exec cp -f {} ${OUTPUT_PATH}/${ATC_PATH} \;
   done
 
-  find ${OUTPUT_PATH}/${METADEF_LIB_PATH} -maxdepth 1 -name "libc_sec.so" -exec cp -f {} ${OUTPUT_PATH}/${COMPILER_PATH} \;
-  find ${OUTPUT_PATH}/${METADEF_LIB_PATH} -maxdepth 1 -name "libc_sec.so" -exec cp -f {} ${OUTPUT_PATH}/${RUNTIME_PATH} \;
+  find ${OUTPUT_PATH}/${METADEF_LIB_PATH} -maxdepth 1 -name "libc_sec.so" -exec cp -f {} ${OUTPUT_PATH}/${ATC_PATH} \;
 
-  tar -cf metadef_lib.tar compiler runtime
+  tar -cf metadef_lib.tar fwkacllib atc
 }
 
 if [[ "X$ENABLE_METADEF_UT" = "Xoff" ]]; then

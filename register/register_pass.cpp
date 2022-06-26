@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,9 @@
 */
 
 #include "external/register/register_pass.h"
-#include <climits>
 #include "register/custom_pass_helper.h"
+#include <climits>
 #include "graph/debug/ge_log.h"
-#include "graph/debug/ge_util.h"
 
 namespace ge {
 PassReceiver::PassReceiver(PassRegistrationData &reg_data) {
@@ -33,8 +32,6 @@ class PassRegistrationDataImpl {
 
   explicit PassRegistrationDataImpl(const std::string &pass_name);
 
-private:
-  friend class PassRegistrationData;
   std::string pass_name_;
   int32_t priority_ = INT_MAX;
   CustomPassFunc custom_pass_fn_ = nullptr;
@@ -46,7 +43,7 @@ PassRegistrationDataImpl::PassRegistrationDataImpl(const std::string &pass_name)
       custom_pass_fn_(nullptr) {}
 
 PassRegistrationData::PassRegistrationData(std::string pass_name) {
-  impl_ = ge::ComGraphMakeShared<PassRegistrationDataImpl>(pass_name);
+  impl_ = std::shared_ptr<PassRegistrationDataImpl>(new (std::nothrow) PassRegistrationDataImpl(pass_name));
   if (impl_ == nullptr) {
     GELOGW("[Check][Param] make impl failed, pass_name:%s", pass_name.c_str());
   }
@@ -97,13 +94,13 @@ CustomPassHelper &CustomPassHelper::Instance() {
 }
 
 void CustomPassHelper::Insert(const PassRegistrationData &reg_data) {
-  (void)registration_datas_.insert(reg_data);
+  registration_datas_.insert(reg_data);
 }
 
 Status CustomPassHelper::Run(ge::GraphPtr &graph) {
   for (auto &item : registration_datas_) {
     GELOGD("Start to run custom pass [%s]!", item.GetPassName().c_str());
-    const auto custom_pass_fn = item.GetCustomPassFn();
+    auto custom_pass_fn = item.GetCustomPassFn();
     if (custom_pass_fn == nullptr) {
       GELOGW("[Check][Param] Get custom_pass_fn of custom pass %s failed", item.GetPassName().c_str());
       continue;

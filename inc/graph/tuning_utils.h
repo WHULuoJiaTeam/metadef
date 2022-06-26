@@ -29,26 +29,40 @@
 #include "graph/utils/tensor_utils.h"
 namespace ge {
 // Configure build mode, default value is "normal"
-constexpr char_t BUILD_MODE[] = "ge.buildMode";
-constexpr char_t BUILD_STEP[] = "ge.buildStep";
+const char *const BUILD_MODE = "ge.buildMode";
+const char *const BUILD_STEP = "ge.buildStep";
 // Configure tuning path
-constexpr char_t TUNING_PATH[] = "ge.tuningPath";
+const char *const TUNING_PATH = "ge.tuningPath";
 // for interface: aclgrphBuildModel
-extern const std::set<std::string> ir_builder_supported_options_for_lx_fusion;
+const std::set<std::string> ir_builder_supported_options_for_lx_fusion = {
+  BUILD_MODE,
+  BUILD_STEP,
+  TUNING_PATH
+};
 
 // Build model
-constexpr char_t BUILD_MODE_NORMAL[] = "normal";
-constexpr char_t BUILD_MODE_TUNING[] = "tuning";
-constexpr char_t BUILD_MODE_BASELINE[] = "baseline";
-extern const std::set<std::string> build_mode_options;
+const char *const BUILD_MODE_NORMAL = "normal";
+const char *const BUILD_MODE_TUNING = "tuning";
+const char *const BUILD_MODE_BASELINE = "baseline";
+const std::set<std::string> build_mode_options = {
+    BUILD_MODE_NORMAL,
+    BUILD_MODE_TUNING,
+    BUILD_MODE_BASELINE
+};
 
 // Build step
-constexpr char_t BUILD_STEP_BEFORE_UB_MATCH[] = "before_ub_match";
-constexpr char_t BUILD_STEP_AFTER_UB_MATCH[] = "after_ub_match";
-constexpr char_t BUILD_STEP_AFTER_BUILDER[] = "after_builder";
-constexpr char_t BUILD_STEP_AFTER_BUILDER_SUB[] = "after_builder_sub";
-constexpr char_t BUILD_STEP_AFTER_MERGE[] = "after_merge";
-extern const std::set<std::string> build_step_options;
+const char *const BUILD_STEP_BEFORE_UB_MATCH = "before_ub_match";
+const char *const BUILD_STEP_AFTER_UB_MATCH = "after_ub_match";
+const char *const BUILD_STEP_AFTER_BUILDER = "after_builder";
+const char *const BUILD_STEP_AFTER_BUILDER_SUB = "after_builder_sub";
+const char *const BUILD_STEP_AFTER_MERGE = "after_merge";
+const std::set<std::string> build_step_options = {
+    BUILD_STEP_BEFORE_UB_MATCH,
+    BUILD_STEP_AFTER_UB_MATCH,
+    BUILD_STEP_AFTER_BUILDER,
+    BUILD_STEP_AFTER_BUILDER_SUB,
+    BUILD_STEP_AFTER_MERGE
+};
 
 using SubgraphCreateOutNode = std::unordered_map<ComputeGraphPtr, NodePtr>;
 using NodetoNodeMap = std::unordered_map<NodePtr, NodePtr>;
@@ -64,63 +78,44 @@ class TuningUtils {
   // `tuning_path` means path to save the graphs
   static graphStatus ConvertGraphToFile(std::vector<ComputeGraphPtr> tuning_subgraphs,
                                         std::vector<ComputeGraphPtr> non_tuning_subgraphs = {},
-                                        const bool exe_flag = false,
+                                        bool exe_flag = false,
                                         const std::string &path = "",
                                         const std::string &user_path = "");
   // Recovery `graph` from graph dump files configured in options
-  static graphStatus ConvertFileToGraph(const std::map<int64_t, std::string> &options, ge::Graph &graph);
+  static graphStatus ConvertFileToGraph(const map<int64_t, string> &options, ge::Graph &graph);
 
-private:
+ private:
   // part 1
-  class HelpInfo {
-    HelpInfo(const int64_t index, const bool exe_flag, const bool is_tuning_graph, const std::string &path,
-             const std::string &user_path) : index_(index),
-                                             exe_flag_(exe_flag),
-                                             is_tuning_graph_(is_tuning_graph),
-                                             path_(path),
-                                             user_path_(user_path) {}
-    ~HelpInfo() = default;
-   private:
-    int64_t index_;
-    bool exe_flag_;
-    bool is_tuning_graph_;
-    const std::string &path_;
-    const std::string &user_path_;
-    friend class TuningUtils;
+  struct HelpInfo {
+    int64_t index;
+    bool exe_flag;
+    bool is_tuning_graph;
+    const std::string &path;
+    const std::string &user_path;
   };
   static graphStatus MakeExeGraph(ComputeGraphPtr &exe_graph,
                                   const HelpInfo& help_info);
-  static graphStatus ConvertConstToWeightAttr(const ComputeGraphPtr &exe_graph);
   static graphStatus HandlePld(NodePtr &node);
   static graphStatus HandleEnd(NodePtr &node);
-  static graphStatus ChangePld2Data(const NodePtr &node, const NodePtr &data_node);
-  static graphStatus ChangeEnd2NetOutput(NodePtr &end_node, NodePtr &out_node);
-  static graphStatus LinkEnd2NetOutput(NodePtr &end_node, NodePtr &out_node);
+  static graphStatus ChangePld2Data(NodePtr &node, NodePtr &data_node);
+  static graphStatus ChangeEnd2NetOutput(NodePtr &node, NodePtr &out_node);
+  static graphStatus LinkEnd2NetOutput(NodePtr &node, NodePtr &out_node);
   static graphStatus CreateDataNode(NodePtr &node, NodePtr &data_node);
-  static graphStatus CreateNetOutput(const NodePtr &node, NodePtr &out_node);
-  static graphStatus AddAttrToDataNodeForMergeGraph(const NodePtr &pld, const NodePtr &data_node);
-  static graphStatus AddAttrToNetOutputForMergeGraph(const NodePtr &end, const NodePtr &out_node, const int64_t index);
-  static void DumpGraphToPath(const ComputeGraphPtr &exe_graph, const int64_t index,
-                              const bool is_tuning_graph, std::string path);
-  static void TryGetWeight(const NodePtr &node, std::vector<ge::GeTensorPtr> &weight);
+  static graphStatus CreateNetOutput(NodePtr &node, NodePtr &out_node);
+  static graphStatus AddAttrToDataNodeForMergeGraph(const NodePtr &pld, NodePtr &data_node);
+  static graphStatus AddAttrToNetOutputForMergeGraph(const NodePtr &end, NodePtr &out_node, int64_t index);
+  static void DumpGraphToPath(ComputeGraphPtr &exe_graph, int64_t index,
+                              bool is_tuning_graph, std::string path);
 
   static SubgraphCreateOutNode create_output_;
   // part 2
-  static graphStatus MergeGraph(const std::vector<ComputeGraphPtr> &subgraphs,
-                                ComputeGraphPtr &output_merged_compute_graph);
-  static graphStatus MergeAllSubGraph(const std::vector<ComputeGraphPtr> &subgraphs,
-                                      ComputeGraphPtr &output_merged_compute_graph);
-  static graphStatus MergeSubGraph(const ComputeGraphPtr &subgraph);
+  static graphStatus MergeAllSubGraph(std::vector<ComputeGraphPtr> &graphs,
+                                      ComputeGraphPtr &graph);
+  static graphStatus MergeSubGraph(ComputeGraphPtr &graph);
   // Deletes new data and output nodes added by call `MakeExeGraph()` func in part 1
   static graphStatus RemoveDataNetoutputEdge(ComputeGraphPtr &graph);
-  static graphStatus HandleContinuousInputNodeNextData(const NodePtr &node);
+  static graphStatus HandleContinuousInputNodeNextData(NodePtr &node);
   static NodePtr FindNode(const std::string &name, int64_t &in_index);
-  static graphStatus LoadGraphFromFile(const std::map<int64_t, std::string> &options,
-                                       std::vector<ComputeGraphPtr> &root_graphs,
-                                       std::map<std::string, std::vector<ComputeGraphPtr>> &name_to_subgraphs);
-  static bool HasContinueInput(const NodePtr &node, std::vector<std::string> &remove_attr_names);
-  static bool HasContinueOutput(const NodePtr &node, std::vector<std::string> &remove_attr_names);
-  static bool RemoveContinueAndNoTaskAttr(const NodePtr &node, const std::vector<std::string> &remove_attr_names);
 
   static NodeNametoNodeNameMap data_2_end_;
   static NodetoNodeNameMap data_node_2_end_node_;
@@ -130,7 +125,7 @@ private:
   static std::mutex mutex_;
   // for debug
   static std::string PrintCheckLog();
-  static std::string GetNodeNameByAnchor(const Anchor * const anchor);
+  static std::string GetNodeNameByAnchor(const Anchor *anchor);
 };
 }
 #endif //MAIN_TUNING_UTILS_H

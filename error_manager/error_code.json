@@ -1167,17 +1167,6 @@
       }
     },
     {
-      "errClass": "Invalid Path Name",
-      "errTitle": "Input Path Name Error",
-      "ErrCode": "E19026",
-      "ErrMessage": "Input path name [%s] is invalid. Reason: %s",
-      "Arglist": "pathname,reason",
-      "suggestion": {
-        "Possible Cause": "The input path does not exist or is invalid.",
-        "Solution": "Try again with a valid path."
-      }
-    },
-    {
       "errClass": "Default Error",
       "errTitle": "System Terminated",
       "ErrCode": "E19999",
@@ -1230,50 +1219,6 @@
       "suggestion": {
         "Possible Cause": "The configuration file does not exist or the file is invalid.",
         "Solution": "Reinstall the FwkACLlib or ACLlib component or edit the file."
-      }
-    },
-    {
-      "errClass": "Argument Errors",
-      "errTitle": "Invalid Argument",
-      "ErrCode": "E39001",
-      "ErrMessage": "Argument pidSign is invalid.",
-      "Arglist": "",
-      "suggestion": {
-        "Possible Cause": "The signature of user process is empty.",
-        "Solution": "Check argument pidSign send by TSD"
-      }
-    },
-    {
-      "errClass": "System Errors",
-      "errTitle": "Driver Function Call Failure",
-      "ErrCode": "E39002",
-      "ErrMessage": "Get device num and device list failed.",
-      "Arglist": "",
-      "suggestion": {
-        "Possible Cause": "Get device info from driver failed.",
-        "Solution": "Check device driver service from device log"
-      }
-    },
-    {
-      "errClass": "System Errors",
-      "errTitle": "Cgroup add Failure",
-      "ErrCode": "E39003",
-      "ErrMessage": "Add aicpu_scheduler to cgroup failed.",
-      "Arglist": "",
-      "suggestion": {
-        "Possible Cause": "Cgroup config wrong.",
-        "Solution": "Check aicpu cgroup info from device log."
-      }
-    },
-    {
-      "errClass": "System Errors",
-      "errTitle": "AicpuScheduler init failed",
-      "ErrCode": "E39004",
-      "ErrMessage": "Failed to init aicpu.",
-      "Arglist": "",
-      "suggestion": {
-        "Possible Cause": "Something wrong with aicpu_scheduler",
-        "Solution": "Check init info from device log"
       }
     },
     {
@@ -1405,17 +1350,6 @@
       "Arglist": "pass_name,errmsg",
       "suggestion": {
         "Possible Cause": "The fusion pass code has a bug or the source graph does not meet the fusion pass requirements.",
-        "Solution": "Check the pass code."
-      }
-    },
-    {
-      "errClass": "Fusion Pass Errors",
-      "errTitle": "Failure to Execute Fusion Pass",
-      "ErrCode": "E20009",
-      "ErrMessage": "Failed to do topological sorting after graph fusion, graph is cyclic, graph name: %s, pass name: %s.",
-      "Arglist": "graph_name,pass_name",
-      "suggestion": {
-        "Possible Cause": "The fusion pass code has a bug.",
         "Solution": "Check the pass code."
       }
     },
@@ -1662,83 +1596,6 @@
       }
     },
     {
-      "errClass": "Environment Errors",
-      "errTitle": "Driver return failed",
-      "ErrCode": "EE3001",
-      "ErrMessage": "The process has lost connection between the host and device. This might be caused by execution timeout of particular operators or unstable connection. Check the error message detail and try again.",
-      "Arglist": "",
-      "suggestion": {
-        "Possible Cause": "The execution of a particular operator times out or the host and device connection is unstable.",
-        "Solution": "[step] Fix the timout operator or fix the connection problem between host and device, then restart the app"
-      }
-    },
-    {
-      "errClass": "Task Schedule Execution Errors",
-      "errTitle": "Model Execution Error",
-      "ErrCode": "EE4001",
-      "ErrMessage": "This stream has been bound to a model. Repeated binding is not allowed. %s",
-      "Arglist": "extend_info",
-      "suggestion": {
-        "Possible Cause": "This stream has been bound to a model. Repeated binding is not allowed.",
-        "Solution": "Remove redundant bindings from your code."
-      }
-    },
-    {
-      "errClass": "Task Schedule Execution Errors",
-      "errTitle": "Model Execution Error",
-      "ErrCode": "EE4002",
-      "ErrMessage": "Failed to bind the stream to the model. %s",
-      "Arglist": "extend_info",
-      "suggestion": {
-        "Possible Cause": "The model ID does not match the input arguments or the specific stream is busy.",
-        "Solution": "See the error message for details and modify the rtModelBindStream arguments."
-      }
-    },
-    {
-      "errClass": "Task Schedule Execution Errors",
-      "errTitle": "Profiling Execution Error",
-      "ErrCode": "EE4003",
-      "ErrMessage": "Failed to profile the HWTS log, as online profiling is in process. Please stop online profiling first. %s",
-      "Arglist": "extend_info",
-      "suggestion": {
-        "Possible Cause": "Failed to profile the HWTS log, as online profiling is in process.",
-        "Solution": "Stop online profiling and try again."
-      }
-    },
-    {
-      "errClass": "Task Schedule Execution Errors",
-      "errTitle": "Profiling Execution Error",
-      "ErrCode": "EE4004",
-      "ErrMessage": "Failed to enable profiling. %s",
-      "Arglist": "extend_info",
-      "suggestion": {
-        "Possible Cause": "Profiling is enabled. See the error message for details.",
-        "Solution": "Disable profiling and try again."
-      }
-    },
-    {
-      "errClass": "Task Schedule Execution Errors",
-      "errTitle": "Task Schedule Resource Error",
-      "ErrCode": "EE5001",
-      "ErrMessage": "Insufficient HWTS submit queue(SQ) resource. %s",
-      "Arglist": "extend_info",
-      "suggestion": {
-        "Possible Cause": "The HWTS SQ resource are not sufficient to launch any new tasks.",
-        "Solution": "Wait until sufficient HWTS SQ resource is available."
-      }
-    },
-    {
-      "errClass": "Task Schedule Execution Errors",
-      "errTitle": "Task Schedule Resource Error",
-      "ErrCode": "EE5002",
-      "ErrMessage": "Insufficient task schedule memory. %s",
-      "Arglist": "extend_info",
-      "suggestion": {
-        "Possible Cause": "The task schedule memory are not sufficient to allocate new memory.",
-        "Solution": "Reduce the number of tasks of your model and try again."
-      }
-    },
-    {
       "errClass": "ACL API Errors",
       "errTitle": "Invalid Argument",
       "ErrCode": "EH0001",
@@ -1841,8 +1698,8 @@
     "errClass": "Environment Errors",
     "errTitle": "Invalid Ranktable Configuration",
     "ErrCode": "EI0004",
-    "ErrMessage": "Invalid ranktable, with rank_id [%s] and local device_id [%s]. Check that ranktable [%s] is valid and the environment setup matches the ranktable.",
-    "Arglist": "rank_id,device_id,ranktable_path",
+    "ErrMessage": "Invalid ranktable, with rankID [%s] and local devID [%s]. Check that ranktable [%s] is valid and the environment setup matches the ranktable.",
+    "Arglist": "rankid,devId,ranktable_path",
     "suggestion": {
       "Possible Cause": "The cluster configuration in the ranktable file does not match that of the actual operating environment, or the configuration format is invalid",
       "Solution": "Try again with a valid cluster configuration in the ranktable file. Ensure that the configuration matches the operating environment."
@@ -1879,17 +1736,6 @@
     "suggestion": {
       "Possible Cause": "Failed to allocate memory or notify due to resource insufficiency.",
       "Solution": "Clean up unnecessary allocations."
-    }
-  },
-   {
-    "errClass": "Environment Errors",
-    "errTitle": "device number is invalid",
-    "ErrCode": "EI0008",
-    "ErrMessage": "Check the total number of devices[%s] failed，info[%s].",
-    "Arglist": "devNum, reason",
-    "suggestion": {
-      "Possible Cause": "devNum error.",
-      "Solution": "Please make sure that devNum is 2^n."
     }
   },
   {
@@ -2758,151 +2604,63 @@
       "Arglist" : "message,traceback"
     },
     {
-      "ErrCode": "E90001",
-      "ErrMessage": "Compile operator failed, cause: Parameters check failed, detailed information: %s.",
-      "Arglist": "detailed_cause"
+      "ErrCode" : "EC0000",
+      "ErrMessage" : "AutoTune run Failed,lhisi connected failed. Please ping the lhisi_ip or check the es_ip and es_port in config.json",
+      "Arglist" : ""
     },
-    {
-      "ErrCode": "E90002",
-      "ErrMessage": "Compile operator failed, cause: The limitation of instruction, detailed information: %s.",
-      "Arglist": "detailed_cause"
-    },
-    {
-      "ErrCode": "E90003",
-      "ErrMessage": "Compile operator failed, cause: Template constraint, detailed information: %s.",
-      "Arglist": "detailed_cause"
-    },
-    {
-      "errClass": "Environment Errors",
-      "errTitle": "Remote device connected failed",
-      "ErrCode": "EC0000",
-      "ErrMessage": "AutoTune run failed, remote device connected failed.",
-      "Arglist": "",
-      "suggestion": {
-        "Possible Cause": "The ip or port in config.json is wrong.",
-        "Solution": "Please ping the ip or check the es_ip and es_port in config.json."
-      }
-    },
-    {
-      "errClass": "Configuration Errors",
-      "errTitle": "AutoTune run failed",
-      "ErrCode": "EC0001",
-      "ErrMessage": "AutoTune run failed, remote device connected failed.",
-      "Arglist": "",
-      "suggestion": {
-        "Possible Cause": "Invalid configurations of user or password.",
-        "Solution": "Please check the user name and password in config.json."
-      }
-    },
+    {  "ErrCode" : "EC0001",
+    "ErrMessage" : "AutoTune run Failed,lhisi connected failed. Please check the es_user and es_password in config.json",
+    "Arglist" : ""
+   },
    {
-    "errClass": "Invalid Path Name",
-    "errTitle": "AutoTune run failed",
     "ErrCode" : "EC0002",
-    "ErrMessage" : "AutoTune run failed, the remote mount path doesn't exist",
-    "Arglist" : "",
-    "suggestion": {
-      "Possible Cause": "The remote mount path doesn't exist.",
-      "Solution": "Please check the existence of the nfs mount path, or check the password in config.json."
-    }
+    "ErrMessage" : "AutoTune run Failed, LHISI mounted path don't exits, Please check nfs mount path or check the es_password exits in config.json",
+    "Arglist" : ""
   },
   {
-    "errClass": "Environment Errors",
-    "errTitle": "AutoTune run failed",
     "ErrCode" : "EC0004",
-    "ErrMessage" : "AutoTune run failed, permission denied.",
-    "Arglist" : "",
-    "suggestion": {
-      "Possible Cause": "The permission of ./tss/bin is limited.",
-      "Solution": "Please check the permission of./tss/bin is rwx in current user, or check whether host is root user, or set the export file like ${host_share_path} *(rw,sync,root_squash,anonuid=id*,anongid=gid*)."
-    }
+    "ErrMessage" : "AutoTune run Failed, Permission denied. Please check ./tss/bin permission rwx in current user or if host isn't root user, please set the export file like ${host_share_path} *(rw,sync,root_squash,anonuid=id*,anongid=gid*)",
+    "Arglist" : ""
   },
   {
-    "errClass": "Environment Errors",
-    "errTitle": "AutoTune run failed",
     "ErrCode" : "EC0003",
-    "ErrMessage" : "AutoTune run failed, file not found.",
-    "Arglist" : "",
-    "suggestion": {
-      "Possible Cause": "The config.json or tss/bin/kernel_perf_comm doesn't exist.",
-      "Solution": "Please check whether the config.json or tss/bin/kernel_perf_comm exist."
-    }
+    "ErrMessage" : "AutoTune run Failed,FileNotFoundError. Please check the config.json or tss/bin/kernel_perf_comm exists",
+    "Arglist" : ""
   },
   {
-    "errClass": "Command Line Errors",
-    "errTitle": "Invalid --soc_version Argument",
     "ErrCode" : "EC0005",
-    "ErrMessage" : "GATune run failed. Run .o failed, because --soc_version doesn't match the device.",
-    "Arglist" : "",
-    "suggestion": {
-      "Possible Cause": "--soc_version doesn't match the device.",
-      "Solution": "Please check the --soc_version in the command parameters."
-    }
+    "ErrMessage" : "GATune run Failed. Run .o failed, because soc_version doesn't match the device.",
+    "Arglist" : ""
   },
   {
-    "errClass": "Operator Compilation Errors",
-    "errTitle": "RLTune run failed",
     "ErrCode" : "ED0000",
-    "ErrMessage" : "RLTune run failed. Specify evb_conf for remote devices.",
-    "Arglist" : "",
-    "suggestion": {
-      "Possible Cause": "Can't get evb_conf for remote devices.",
-      "Solution": "Please specify evb_conf for remote devices."
-    }
+    "ErrMessage" : "RLTune run Failed. Specify evb_conf for remote devices.",
+    "Arglist" : ""
   },
   {
-    "errClass": "Command Line Errors",
-    "errTitle": "Invalid --soc_version Argument",
     "ErrCode" : "ED0001",
-    "ErrMessage" : "RLTune run failed. Run .o failed, because the soc_version doesn't match the device.",
-    "Arglist" : "",
-    "suggestion": {
-      "Possible Cause": "The soc_version doesn't match the device.",
-      "Solution": "Please check the --soc_version in the command parameters."
-    }
+    "ErrMessage" : "RLTune run Failed. Run .o failed, because soc_version doesn't match the device.",
+    "Arglist" : ""
   },
   {
-    "errClass": "File Errors",
-    "errTitle": "Invalid Directory",
     "ErrCode" : "EF0000",
-    "ErrMessage" : "Failed to open the directory where the repository file [%s] is located with read, write and execute permissions, please check the existence and permissions of its directory.",
-    "Arglist" : "filepath",
-    "suggestion": {
-      "Possible Cause": "The path does not exist or the current user has no read, write or execute permissions.",
-      "Solution": "Please check the existence and permissions of its directory. Create the path with read, write and execute permissions."
-    }
+    "ErrMessage" : "Failed to read or write repository files [%s], please check its dir's existence and permission.",
+    "Arglist" : "filepath"
   },
   {
-    "errClass": "Command Line Errors",
-    "errTitle": "Invalid --soc_version Argument",
     "ErrCode" : "EF0001",
     "ErrMessage" : "Invalid soc_version: [%s], [%s] Fusion only support [%s], please check.",
-    "Arglist" : "version,lxtype,version_str",
-    "suggestion": {
-      "Possible Cause": "This fusion optimization is not supported for the chip or chosen incorrectly by the module called AOE.",
-      "Solution": "Check the --buffer_optimize and --soc_version in the command parameters. Save debug-level log and Contact Huawei technical support for help when --buffer_optimize not found."
-    }
+    "Arglist" : "version,lxtype,version_str"
   },
   {
-    "errClass": "File Errors",
-    "errTitle": "Failure to Read File",
     "ErrCode" : "WF0000",
     "ErrMessage" : "Open config file [%s] failed, please check its existence, permission and etc.",
-    "Arglist" : "filepath",
-    "suggestion": {
-      "Possible Cause": "File does not exist or failed to read the file.",
-      "Solution": "Check if the file exists according to the printed file path. Check whether the user has read permission."
-    }
+    "Arglist" : "filepath"
   },
   {
-    "errClass": "File Errors",
-    "errTitle": "File format Error",
     "ErrCode" : "WF0001",
     "ErrMessage" : "Config file [%s] format error, it should be json format.",
-    "Arglist" : "filepath",
-    "suggestion": {
-      "Possible Cause": "File is not in json format.",
-      "Solution": "Please ensure that the config file is in json format."
-    }
+    "Arglist" : "filepath"
   },
   {
     "ErrCode": "E68000",
@@ -3193,277 +2951,6 @@
     "ErrCode": "E68089",
     "ErrMessage": "tiling is not found in repository file.",
     "Arglist": ""
-  },
-    {
-      "errClass": "System Support Errors",
-      "errTitle": "Unsupported Operator",
-      "ErrCode": "EZ0501",
-      "ErrMessage": "IR for Op [%s, optype [%s]], is not registered.",
-      "Arglist": "opname,optype",
-      "suggestion": {
-        "Possible Cause": "IR for the operator type is not registered.",
-        "Solution": "Submit an issue to request for support at https://gitee.com/ascend, or remove this type of operators from your model."
-      }
-    },
-    {
-      "errClass": "System Support Errors",
-      "errTitle": "Unsupported Operator",
-      "ErrCode": "EZ3002",
-      "ErrMessage": "Optype [%s] of Ops kernel [%s] is unsupported. Reason: %s.",
-      "Arglist": "optype,opskernel,reason",
-      "suggestion": {
-        "Possible Cause": "The operator type is unsupported in the operator information library due to specification mismatch.",
-        "Solution": "Submit an issue to request for support at https://gitee.com/ascend, or remove this type of operators from your model."
-      }
-    },
-    {
-      "errClass": "System Support Errors",
-      "errTitle": "Unsupported Operator",
-      "ErrCode": "EZ3003",
-      "ErrMessage": "No supported Ops kernel and engine are found for [%s], optype [%s].",
-      "Arglist": "opname,optype",
-      "suggestion": {
-        "Possible Cause": "The operator is not supported by the system. Therefore, no hit is found in any operator information library.",
-        "Solution": "[step] Check that the OPP component is installed properly. [step] Submit an issue to request for the support of this operator type."
-      }
-    },
-    {
-      "errClass": "System Support Errors",
-      "errTitle": "Unsupported Operator",
-      "ErrCode": "EZ9010",
-      "ErrMessage": "No parser is registered for Op [%s, optype [%s]].",
-      "Arglist": "opname,optype",
-      "suggestion": {
-        "Possible Cause": "No parser is registered for the operator type.",
-        "Solution": "Submit an issue to request for support at https://gitee.com/ascend."
-      }
-    },
-    {
-      "errClass": "Command Line Errors",
-      "errTitle": "ONNX Model Data Error",
-      "ErrCode": "E76002",
-      "ErrMessage": "No ONNX parser is registered for optype [%s].",
-      "Arglist": "optype",
-      "suggestion": {
-        "Possible Cause": "No parser is registered for the optype in ONNX model conversion.",
-        "Solution": "Submit an issue to request for support at https://gitee.com/ascend, or remove this type of operators from your model."
-      }
-    },
-    {
-      "errClass": "Command Line Errors",
-      "errTitle": "Invalid Path",
-      "ErrCode": "EK0001",
-      "ErrMessage": "Path [%s] for [%s] is invalid or does not exist. The Path name can only contain A-Za-z0-9-_.",
-      "Arglist": "value,parameter",
-      "suggestion": {
-        "Possible Cause": "Path does not exist or path name invalid. The Path name can only contain A-Za-z0-9-_.",
-        "Solution": "Try again with a valid path."
-      }
-    },
-    {
-      "errClass": "Configuration Errors",
-      "errTitle": "Invalid Path",
-      "ErrCode": "EK0002",
-      "ErrMessage": "%s is nullptr or its length does not equal with given length.",
-      "Arglist": "path",
-      "suggestion": {
-        "Possible Cause": "The path does not exist or the path length is incorrect.",
-        "Solution": "Try again with a valid path and correct path length."
-      }
-    },
-    {
-      "errClass": "Configuration Errors",
-      "errTitle": "Value NULL",
-      "ErrCode": "EK0003",
-      "ErrMessage": "Param % is nullptr.",
-      "Arglist": "config",
-      "suggestion": {
-        "Possible Cause": "The input param is nulllptr.",
-        "Solution": "Set this param to non-nullptr."
-      }
-    },
-    {
-      "errClass": "Configuration Errors",
-      "errTitle": "Value Not NULL",
-      "ErrCode": "EK0004",
-      "ErrMessage": "Param % is not nullptr.",
-      "Arglist": "config",
-      "suggestion": {
-        "Possible Cause": "The input param is non-nulllptr.",
-        "Solution": "Try to set this param with nullptr."
-      }
-    },
-    {
-      "errClass": "Configuration Errors",
-      "errTitle": "Value Zero",
-      "ErrCode": "EK0005",
-      "ErrMessage": "Param % is zero",
-      "Arglist": "config",
-      "suggestion": {
-        "Possible Cause": "The input is zero.",
-        "Solution": "Try to enter a valid other than zero."
-      }
-    },
-    {
-      "errClass": "Configuration Errors",
-      "errTitle": "Value Invalid With Range",
-      "ErrCode": "EK0006",
-      "ErrMessage": "%s:%s is invalid. It should be in range (%s, %s).",
-      "Arglist": "config,value,min,max",
-      "suggestion": {
-        "Possible Cause": "The entered value is out of range.",
-        "Solution": "Try to enter a valid value within the specified range."
-      }
-    },
-    {
-      "errClass": "Configuration Errors",
-      "errTitle": "Duplicatedly Set",
-      "ErrCode": "EK0007",
-      "ErrMessage": "%s:%s is duplicatedly set.",
-      "Arglist": "config,value",
-      "suggestion": {
-        "Possible Cause": "Config is duplicatedly set.",
-        "Solution": "Set this config only once."
-      }
-    },
-    {
-      "errClass": "Configuration Errors",
-      "errTitle": "Switch Not Support",
-      "ErrCode": "EK0008",
-      "ErrMessage": "dataTypeConfig: 0x%s, support switch: 0x%s.",
-      "Arglist": "switch_use,switch_support",
-      "suggestion": {
-        "Possible Cause": "Msprof not support this dataTypeConfig.",
-        "Solution": "Try to enter a valid dataTypeConfig."
-      }
-    },
-    {
-      "errClass": "Configuration Errors",
-      "errTitle": "Switch Different",
-      "ErrCode": "EK0009",
-      "ErrMessage": "dataTypeConfig stop: %s, different from the start: %s.",
-      "Arglist": "switch_start,switch_end",
-      "suggestion": {
-        "Possible Cause": "The dataTypeConfig start value is different from the stop value.",
-        "Solution": "Try to check the start and stop values of dataTypeConfig."
-      }
-    },
-    {
-      "errClass": "Configuration Errors",
-      "errTitle": "Param Not Loaded",
-      "ErrCode": "EK0010",
-      "ErrMessage": "%s:%s is not loaded.",
-      "Arglist": "param,value",
-      "suggestion": {
-        "Possible Cause": "The param has not been loaded.",
-        "Solution": "Try to enter a valid param that has been loaded."
-      }
-    },
-    {
-      "errClass": "Configuration Errors",
-      "errTitle": "Param Not Subscribed",
-      "ErrCode": "EK0011",
-      "ErrMessage": "%s:%s has not been subscribed.",
-      "Arglist": "param,value",
-      "suggestion": {
-        "Possible Cause": "The param has not been subscribed.",
-        "Solution": "Try to enter a valid param that has been subscribed."
-      }
-    },
-    {
-      "errClass": "Resource Errors",
-      "errTitle": "Allocate Memory Errors",
-      "ErrCode": "EK0201",
-      "ErrMessage": "Failed to allocate memory for dst buf %s.",
-      "Arglist": "buf_size",
-      "suggestion": {
-        "Possible Cause": "Too little available memory.",
-        "Solution": "Try to close unused application."
-      }
-    },
-    {
-      "errClass": "Default Error",
-      "errTitle": "System Terminated",
-      "ErrCode": "EK9999",
-      "ErrMessage": "Unknown error occurred. Please check the log.",
-      "Arglist": ""
-    },
-    {
-      "errClass": "System Errors",
-      "errTitle": "System Function Call Failure",
-      "ErrCode": "EJ9001",
-      "ErrMessage": "Failed to set the max FD.",
-      "Arglist": "",
-      "suggestion": {
-        "Possible Cause": "The fd runs out.",
-        "Solution": "Set max fd to 65536."
-      }
-    },
-    {
-      "errClass": "Argument Errors",
-      "errTitle": "Invalid Argument",
-      "ErrCode": "EJ9002",
-      "ErrMessage": "Failed to parse the argument.",
-      "Arglist": "",
-      "suggestion": {
-        "Possible Cause": "An incorrect argument is passed when the HCCP process is started.",
-        "Solution": "Pass a correct argument."
-      }
-    },
-    {
-      "errClass": "Log Errors",
-      "errTitle": "Log Attribute Setting Error",
-      "ErrCode": "EJ9003",
-      "ErrMessage": "Failed to set the log level or the attribute for sending logs to the host.",
-      "Arglist": "",
-      "suggestion": {
-        "Possible Cause": "An exception occurred when invoking the log module.",
-        "Solution": "Check the log settings."
-      }
-    },
-    {
-      "errClass": "Environment Errors",
-      "errTitle": "SO File Read Failure",
-      "ErrCode": "EJ9004",
-      "ErrMessage": "The SO file is not found. Check that the existing SO file is correct.",
-      "Arglist": "",
-      "suggestion": {
-        "Possible Cause": "roce_user_so or ibverbs_so does not exist.",
-        "Solution": "Install a correct software package."
-      }
-    },
-    {
-       "errClass": "Process Errors",
-       "errTitle": "HCCP Process Initialization Failure",
-       "ErrCode": "EJ0005",
-       "ErrMessage": "Some HCCP process on the device, please restart the environment or log in to the device and kill the hccp preocess.",
-       "Arglist": "",
-       "suggestion": {
-         "Possible Cause": "The HCCP process is not destroyed by the TSD.",
-         "Solution": "Destroy the existing HCCP process and start a new HCCP process."
-        }
-      },
-      {
-        "errClass": "System Errors",
-        "errTitle": "attach group add Failure",
-        "ErrCode": "EM0001",
-        "ErrMessage": "Add queue_schedule to attach group failed.",
-        "Arglist": "",
-        "suggestion": {
-          "Possible Cause": "attach group config wrong.",
-          "Solution": "Check queue_schedule attach group info from device log."
-        }
-      },
-      {
-        "errClass": "System Errors",
-        "errTitle": "QueueSchedule init failed",
-        "ErrCode": "EM0002",
-        "ErrMessage": "Failed to init queue_schedule.",
-        "Arglist": "",
-        "suggestion": {
-          "Possible Cause": "Something wrong with queue_schedule",
-          "Solution": "Check init info from device log"
-        }
-      }
+  }
   ]
 }

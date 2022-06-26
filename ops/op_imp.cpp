@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,57 +19,63 @@
 #include <functional>
 #include <algorithm>
 #include <vector>
-#include "graph/debug/ge_log.h"
+#include "debug/ge_log.h"
+#include "debug/ge_util.h"
+
+using namespace std;
 
 namespace ge {
-namespace {
-static graphStatus BroadCastRankAndDim(
-    const std::vector<int64_t> &x1_shape, const std::vector<int64_t> &x2_shape, const int64_t len_diff,
-    const std::function<void(const std::vector<int64_t> &out_shape)> &set_out_shape) {
-  std::vector<int64_t> y_shape;
-  y_shape.reserve(x1_shape.size());
-  for (size_t i = 0UL; i < static_cast<size_t>(len_diff); i++) {
-    y_shape.push_back(x1_shape[i]);
+
+GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY graphStatus
+BroadCastInfer(const function<vector<int64_t>()>& get_in1_shape, const function<vector<int64_t>()>& get_in2_shape,
+               const function<void(const vector<int64_t>& outShape)>& set_out_shape) {
+  auto x1_shape = get_in1_shape();
+  auto x2_shape = get_in2_shape();
+  vector<int64_t> y_shape;
+
+  if (x1_shape.empty()) {
+    y_shape = x2_shape;
+    set_out_shape(y_shape);
+    return GRAPH_SUCCESS;
   }
-  for (size_t i = 0UL; i < x2_shape.size(); i++) {
-    const size_t idx_diff = i + static_cast<size_t>(len_diff);
-    if ((x1_shape[idx_diff] != x2_shape[i]) && (std::min(x1_shape[idx_diff], x2_shape[i]) != 1)) {
-      GE_LOGE("operands could not be broadcast together");
-      return GRAPH_FAILED;
+  if (x2_shape.empty()) {
+    y_shape = x1_shape;
+    set_out_shape(y_shape);
+    return GRAPH_SUCCESS;
+  }
+
+  int len_diff = static_cast<int>(x1_shape.size() - x2_shape.size());
+  if (len_diff >= 0) {
+    for (int i = 0; i < len_diff; i++) {
+      y_shape.push_back(x1_shape[i]);
     }
-    y_shape.push_back(std::max(x1_shape[idx_diff], x2_shape[i]));
+    int x2_shape_size = static_cast<int>(x2_shape.size());
+    for (int i = 0; i < x2_shape_size; i++) {
+      bool shapeFlag =
+          ((x1_shape[i + len_diff] != x2_shape[i]) && (std::min(x1_shape[i + len_diff], x2_shape[i]) != 1));
+      if (shapeFlag) {
+        GE_LOGE("operands could not be broadcast together");
+        return GRAPH_FAILED;
+      }
+      y_shape.push_back(std::max(x1_shape[i + len_diff], x2_shape[i]));
+    }
+  } else {
+    for (int i = 0; i < -len_diff; i++) {
+      y_shape.push_back(x2_shape[i]);
+    }
+    int x1_shape_size = static_cast<int>(x1_shape.size());
+    for (int i = 0; i < x1_shape_size; i++) {
+      bool shapeFlag =
+          ((x1_shape[i] != x2_shape[i - len_diff]) && (std::min(x1_shape[i], x2_shape[i - len_diff]) != 1));
+      if (shapeFlag) {
+        GE_LOGE("operands could not be broadcast together");
+        return GRAPH_FAILED;
+      }
+      y_shape.push_back(std::max(x1_shape[i], x2_shape[i - len_diff]));
+    }
   }
   set_out_shape(y_shape);
   return GRAPH_SUCCESS;
 }
-}  // namespace
 
-GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY graphStatus
-BroadCastInfer(const std::function<std::vector<int64_t>()> &get_in1_shape,
-               const std::function<std::vector<int64_t>()> &get_in2_shape,
-               const std::function<void(const std::vector<int64_t> &out_shape)> &set_out_shape) {
-  const auto x1_shape = get_in1_shape();
-  const auto x2_shape = get_in2_shape();
-
-  if ((x1_shape.size() >= static_cast<size_t>(std::numeric_limits<int64_t>::max())) ||
-      (x2_shape.size() >= static_cast<size_t>(std::numeric_limits<int64_t>::max()))) {
-    return GRAPH_FAILED;
-  }
-
-  if (x1_shape.empty()) {
-    set_out_shape(x2_shape);
-    return GRAPH_SUCCESS;
-  }
-  if (x2_shape.empty()) {
-    set_out_shape(x1_shape);
-    return GRAPH_SUCCESS;
-  }
-
-  const auto len_diff = static_cast<int64_t>(x1_shape.size()) - static_cast<int64_t>(x2_shape.size());
-  if (len_diff >= 0) {
-    return BroadCastRankAndDim(x1_shape, x2_shape, len_diff, set_out_shape);
-  } else {
-    return BroadCastRankAndDim(x2_shape, x1_shape, std::abs(len_diff), set_out_shape);
-  }
-}
 }  // namespace ge

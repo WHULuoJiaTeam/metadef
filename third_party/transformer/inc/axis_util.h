@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,16 +24,11 @@
 
 #include "external/graph/ge_error_codes.h"
 #include "external/graph/types.h"
-#include "graph/ge_tensor.h"
 
-using namespace ge;
 namespace transformer {
 
-const size_t DIM_DEFAULT_SIZE = 4;
-const size_t DIM_SIZE_FIVE = 5;
-const size_t DIM_SIZE_SIX = 6;
+const int32_t DIM_DEFAULT_SIZE = 4;
 const uint32_t NCHW_DIMENSION_NUM = 4;
-const int64_t RNN_STATE_SIZE_DEFAULT_VALUE = -1;
 
 const int32_t AXIS_NCHW_DIM_N = 0;
 const int32_t AXIS_NCHW_DIM_C = 1;
@@ -87,35 +82,6 @@ const int32_t DHWNC_DIM_W = 2;
 const int32_t DHWNC_DIM_N = 3;
 const int32_t DHWNC_DIM_C = 4;
 
-inline bool CheckInt64MulOverflow(int64_t m, int64_t n) {
-  if (m > 0) {
-    if (n > 0) {
-      if (m > ((int64_t)INT64_MAX / n)) {
-        return false;
-      }
-    } else {
-      if (n < ((int64_t)INT64_MIN / m)) {
-        return false;
-      }
-    }
-  } else {
-    if (n > 0) {
-      if (m < ((int64_t)INT64_MIN / n)) {
-        return false;
-      }
-    } else {
-      if ((m != 0) && (n < ((int64_t)INT64_MAX / m))) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
-#define INT64_MULCHECK(a, b)                                                                      \
-  if (CheckInt64MulOverflow((a), (b)) != true) {                                                  \
-    return false;                                                                                 \
-  }
 
 #define CHECK_NOTNULL(val)                                       \
   do {                                                           \
@@ -133,10 +99,6 @@ inline bool CheckInt64MulOverflow(int64_t m, int64_t n) {
     }                                      \
   } while (0)
 
-#define INT64_ZEROCHECK(a)                                                                            \
-  if (a == 0) {                                                                                       \
-    return false;                                                                                     \
-  }
 enum AxisValueType {
   AXIS_N = 0,
   AXIS_C = 1,
@@ -147,26 +109,16 @@ enum AxisValueType {
   AXIS_Co = 6,
   AXIS_D = 7,
   AXIS_G = 8,
-  AXIS_INPUT_SIZE = 9,
-  AXIS_HIDEEN_SIZE = 10,
-  AXIS_STATE_SIZE = 11,
-  AXIS_BOTTOM = 12
+  AXIS_BOTTOM = 9
 };
 
-inline int64_t DivisionCeiling(int64_t dividend, int64_t divisor) {
-  if (divisor == 0) {
-    return 0;
-  } else if (dividend <= 0) {
-    return dividend;
-  } else {
-    return (dividend + divisor - 1) / divisor;
-  }
-}
+int64_t DivisionCeiling(int64_t dividend, int64_t divisor);
 
 /* Axis value is arranged as {N,C,H,W,C1,C0,...} */
 /* The first parameter is old shape's dimension,
  * second is c0 and third is axis value. */
-using GetAxisValueInfoByFormat = std::function<bool(const ge::GeShape&, const uint32_t&, std::vector<int64_t>&)>;
+using GetAxisValueInfoByFormat =
+    std::function<bool(const std::vector<int64_t>&, const uint32_t&, std::vector<int64_t>&, std::vector<int64_t>&)>;
 
 using GetAxisValueInfoByFormatPtr = std::shared_ptr<GetAxisValueInfoByFormat>;
 
@@ -174,33 +126,45 @@ class AxisUtil {
  public:
   AxisUtil();
   ~AxisUtil(){};
-  bool GetAxisValueByOriginFormat(const ge::Format& format, const ge::GeShape &shape, const uint32_t& c0,
-                                  std::vector<int64_t>& axisValue);
+  bool GetAxisValueByOriginFormat(const ge::Format& format, const std::vector<int64_t>& dimVec, const uint32_t& c0,
+                                  std::vector<int64_t>& axisValue, std::vector<int64_t>& ndValue);
   bool HasAxisValueFunc(const ge::Format& format);
 
-  static bool CheckParams(const ge::GeShape &shape, const uint32_t& c0, std::vector<int64_t>& axisValue);
+  static bool CheckParams(const std::vector<int64_t>& originalDimVec, const uint32_t& c0,
+                          std::vector<int64_t>& axisValue, std::vector<int64_t>& ndValue);
 
-  static bool GetAxisValueByNCHW(const ge::GeShape &shape, const uint32_t& c0, std::vector<int64_t>& axisValue);
+  static bool GetAxisValueByNCHW(const std::vector<int64_t>& originalDimVec, const uint32_t& c0,
+                                 std::vector<int64_t>& axisValue, std::vector<int64_t>& ndValue);
 
-  static bool GetAxisValueByNHWC(const ge::GeShape &shape, const uint32_t& c0, std::vector<int64_t>& axisValue);
+  static bool GetAxisValueByNHWC(const std::vector<int64_t>& originalDimVec, const uint32_t& c0,
+                                 std::vector<int64_t>& axisValue, std::vector<int64_t>& ndValue);
 
-  static bool GetAxisValueByNC1HWC0(const ge::GeShape &shape, const uint32_t& c0, std::vector<int64_t>& axisValue);
+  static bool GetAxisValueByNC1HWC0(const std::vector<int64_t>& originalDimVec, const uint32_t& c0,
+                                    std::vector<int64_t>& axisValue, std::vector<int64_t>& ndValue);
 
-  static bool GetAxisValueByFz(const ge::GeShape &shape, const uint32_t& c0, std::vector<int64_t>& axisValue);
+  static bool GetAxisValueByFz(const std::vector<int64_t>& originalDimVec, const uint32_t& c0,
+                               std::vector<int64_t>& axisValue, std::vector<int64_t>& ndValue);
 
-  static bool GetAxisValueByHWCN(const ge::GeShape &shape, const uint32_t& c0, std::vector<int64_t>& axisValue);
+  static bool GetAxisValueByHWCN(const std::vector<int64_t>& originalDimVec, const uint32_t& c0,
+                                 std::vector<int64_t>& axisValue, std::vector<int64_t>& ndValue);
 
-  static bool GetAxisValueByND(const ge::GeShape &shape, const uint32_t& c0, std::vector<int64_t>& axisValue);
+  static bool GetAxisValueByND(const std::vector<int64_t>& originalDimVec, const uint32_t& c0,
+                               std::vector<int64_t>& axisValue, std::vector<int64_t>& ndValue);
 
-  static bool GetAxisValueByC1HWNCoC0(const ge::GeShape &shape, const uint32_t& c0, std::vector<int64_t>& axisValue);
+  static bool GetAxisValueByC1HWNCoC0(const std::vector<int64_t>& originalDimVec, const uint32_t& c0,
+                                      std::vector<int64_t>& axisValue, std::vector<int64_t>& ndValue);
 
-  static bool GetAxisValueByNDHWC(const ge::GeShape &shape, const uint32_t& c0, std::vector<int64_t>& axis_value);
+  static bool GetAxisValueByNDHWC(const std::vector<int64_t>& original_dim_vec, const uint32_t& c0,
+                                  std::vector<int64_t>& axis_value, std::vector<int64_t>& nd_value);
 
-  static bool GetAxisValueByNCDHW(const ge::GeShape &shape, const uint32_t& c0, std::vector<int64_t>& axis_value);
+  static bool GetAxisValueByNCDHW(const std::vector<int64_t>& original_dim_vec, const uint32_t& c0,
+                                  std::vector<int64_t>& axis_value, std::vector<int64_t>& nd_value);
 
-  static bool GetAxisValueByDHWCN(const ge::GeShape &shape, const uint32_t& c0, std::vector<int64_t>& axis_value);
+  static bool GetAxisValueByDHWCN(const std::vector<int64_t>& original_dim_vec, const uint32_t& c0,
+                                  std::vector<int64_t>& axis_value, std::vector<int64_t>& nd_value);
 
-  static bool GetAxisValueByDHWNC(const ge::GeShape &shape, const uint32_t& c0, std::vector<int64_t>& axis_value);
+  static bool GetAxisValueByDHWNC(const std::vector<int64_t>& original_dim_vec, const uint32_t& c0,
+                                  std::vector<int64_t>& axis_value, std::vector<int64_t>& nd_value);
 };
 } // namespace transformer
 

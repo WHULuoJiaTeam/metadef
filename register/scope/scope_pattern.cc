@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,15 +21,29 @@
 #include "graph/debug/ge_util.h"
 #include "graph/utils/op_desc_utils.h"
 #include "graph/utils/attr_utils.h"
-#include "graph/types.h"
 
 namespace ge {
+namespace {
+#define CHECK_NODE_ATTR_FEATURE_DATA(DTYPE, TYPE, FUNC_NAME, INIT_VALUE)                                  \
+  case DTYPE: {                                                                                           \
+    TYPE value = INIT_VALUE;                                                                              \
+    if (!ge::AttrUtils::FUNC_NAME(op_desc, attr_name_, value)) {                                          \
+      GELOGE(ge::PARAM_INVALID, "op:%s %s attr is null", op_desc->GetName().c_str(), attr_name_.c_str()); \
+      return false;                                                                                       \
+    }                                                                                                     \
+    if (attr_value_.impl_->FUNC_NAME##Value() == value) {                                                 \
+      GELOGI("NodeAttrFeature, match scope:%s", scope->Name().c_str());                                   \
+      return true;                                                                                        \
+    }                                                                                                     \
+    break;                                                                                                \
+  }
+}  // namespace
 ScopeAttrValue::ScopeAttrValue() {
-  impl_ = ge::ComGraphMakeUnique<ScopeAttrValueImpl>();
+  impl_ = std::unique_ptr<ScopeAttrValueImpl>(new (std::nothrow) ScopeAttrValueImpl);
 }
 
 ScopeAttrValue::ScopeAttrValue(ScopeAttrValue const &attr_value) {
-  impl_ = ge::ComGraphMakeUnique<ScopeAttrValueImpl>();
+  impl_ = std::unique_ptr<ScopeAttrValueImpl>(new (std::nothrow) ScopeAttrValueImpl);
   if (impl_ == nullptr) {
     GELOGE(ge::MEMALLOC_FAILED, "ScopeAttrValue is not properly initialized.");
     return;
@@ -65,7 +79,7 @@ void ScopeAttrValue::SetIntValue(int64_t value) {
   impl_->SetIntValue(value);
 }
 
-void ScopeAttrValue::SetFloatValue(float32_t value) {
+void ScopeAttrValue::SetFloatValue(float value) {
   if (impl_ == nullptr) {
     GELOGE(ge::MEMALLOC_FAILED, "Failed to invoke SetFloatValue(), ScopeAttrValue is not properly initialized.");
     return;
@@ -81,7 +95,7 @@ void ScopeAttrValue::SetStringValue(std::string value) {
   impl_->SetStringValue(value);
 }
 
-void ScopeAttrValue::SetStringValue(const char_t *value) {
+void ScopeAttrValue::SetStringValue(const char *value) {
   if (impl_ == nullptr) {
     GELOGE(ge::MEMALLOC_FAILED, "Failed to invoke SetStringValue(), ScopeAttrValue is not properly initialized.");
     return;
@@ -101,7 +115,7 @@ void ScopeAttrValue::SetBoolValue(bool value) {
   impl_->SetBoolValue(value);
 }
 
-bool NodeOpTypeFeature::NodeOpTypeFeatureImpl::Match(const Scope *const scope) {
+bool NodeOpTypeFeature::NodeOpTypeFeatureImpl::Match(const Scope *scope) {
   if (scope == nullptr) {
     GELOGE(PARAM_INVALID, "Input scope is nullptr.");
     return false;
@@ -110,13 +124,13 @@ bool NodeOpTypeFeature::NodeOpTypeFeatureImpl::Match(const Scope *const scope) {
 
   if (step_ == 0) {
     if (impl->GetOpTypeNum(node_type_) == num_) {
-      GELOGI("NodeOpTypeFeature, node type:%s, num:%ld, match scope:%s",
+      GELOGI("NodeOpTypeFeature, node type:%s, num:%d, match scope:%s",
              node_type_.c_str(), num_, scope->Name().c_str());
       return true;
     }
   } else {
-    if ((impl->GetOpTypeNum(node_type_) != -1) && ((impl->GetOpTypeNum(node_type_) % step_) == num_)) {
-      GELOGI("NodeOpTypeFeature, node type:%s, num:%ld, match scope:%s",
+    if ((impl->GetOpTypeNum(node_type_) != -1) && (impl->GetOpTypeNum(node_type_) % step_ == num_)) {
+      GELOGI("NodeOpTypeFeature, node type:%s, num:%d, match scope:%s",
              node_type_.c_str(), num_, scope->Name().c_str());
       return true;
     }
@@ -125,23 +139,22 @@ bool NodeOpTypeFeature::NodeOpTypeFeatureImpl::Match(const Scope *const scope) {
   return false;
 }
 
-NodeOpTypeFeature::NodeOpTypeFeature(std::string nodeType, int32_t num, int32_t step)
-    : ScopeBaseFeature() {
-  impl_ = ge::ComGraphMakeUnique<NodeOpTypeFeatureImpl>(nodeType, num, step);
+NodeOpTypeFeature::NodeOpTypeFeature(std::string nodeType, int num, int step) {
+  impl_ = std::unique_ptr<NodeOpTypeFeatureImpl>(new (std::nothrow) NodeOpTypeFeatureImpl(nodeType, num, step));
 }
 
-NodeOpTypeFeature::NodeOpTypeFeature(const char_t *node_type, int32_t num, int32_t step)
-    : ScopeBaseFeature() {
+NodeOpTypeFeature::NodeOpTypeFeature(const char *node_type, int num, int step) {
   std::string op_type;
   if (node_type != nullptr) {
     op_type = node_type;
   }
-  impl_ = ge::ComGraphMakeUnique<NodeOpTypeFeatureImpl>(op_type, num, step);
+  impl_ = std::unique_ptr<NodeOpTypeFeatureImpl>(new (std::nothrow) NodeOpTypeFeatureImpl(op_type, num, step));
 }
 
-NodeOpTypeFeature::NodeOpTypeFeature(NodeOpTypeFeature const &feature) : ScopeBaseFeature() {
-  impl_ = ge::ComGraphMakeUnique<NodeOpTypeFeatureImpl>(feature.impl_->node_type_, feature.impl_->num_,
-                                                        feature.impl_->step_);
+NodeOpTypeFeature::NodeOpTypeFeature(NodeOpTypeFeature const &feature) {
+  impl_ = std::unique_ptr<NodeOpTypeFeatureImpl>(new (std::nothrow) NodeOpTypeFeatureImpl(feature.impl_->node_type_,
+                                                                                          feature.impl_->num_,
+                                                                                          feature.impl_->step_));
 }
 
 NodeOpTypeFeature &NodeOpTypeFeature::operator=(NodeOpTypeFeature const &feature) {
@@ -177,106 +190,32 @@ bool NodeAttrFeature::NodeAttrFeatureImpl::Match(const Scope *scope) {
     if (node_type_ != node_op->GetOpType()) {
       continue;
     }
-    const auto op_desc = ge::OpDescUtils::GetOpDescFromOperator(*node_op);
+    auto op_desc = ge::OpDescUtils::GetOpDescFromOperator(*node_op);
     if (op_desc == nullptr) {
       GELOGE(ge::PARAM_INVALID, "Op desc is nullptr.");
       return false;
     }
 
-    Status result = SUCCESS;
     switch (datatype_) {
-      case ge::DT_FLOAT:
-        result = CheckNodeAttrFeatureData(0.0F, op_desc, scope);
-        break;
-      case ge::DT_INT32:
-        result = CheckNodeAttrFeatureData(static_cast<int64_t>(0), op_desc, scope);
-        break;
-      case ge::DT_STRING:
-        result = CheckNodeAttrFeatureData("", op_desc, scope);
-        break;
-      case ge::DT_BOOL:
-        result = CheckNodeAttrFeatureData(false, op_desc, scope);
-        break;
+      CHECK_NODE_ATTR_FEATURE_DATA(ge::DT_FLOAT, float, GetFloat, 0.0)
+      CHECK_NODE_ATTR_FEATURE_DATA(ge::DT_INT32, int64_t, GetInt, 0)
+      CHECK_NODE_ATTR_FEATURE_DATA(ge::DT_STRING, std::string, GetStr, "")
+      CHECK_NODE_ATTR_FEATURE_DATA(ge::DT_BOOL, bool, GetBool, false)
       default:
         break;
-    }
-    if (result != FAILED) {
-      return (result == PARAM_INVALID) ? false : true;
     }
   }
   return false;
 }
 
-Status NodeAttrFeature::NodeAttrFeatureImpl::CheckNodeAttrFeatureData(const bool init_value,
-                                                                      const ge::OpDescPtr &op_desc,
-                                                                      const Scope *const scope) {
-  bool value = init_value;
-  if (!ge::AttrUtils::GetBool(op_desc, attr_name_, value)) {
-    GELOGE(ge::PARAM_INVALID, "op:%s %s attr is null", op_desc->GetName().c_str(), attr_name_.c_str());
-    return PARAM_INVALID;
-  }
-  if (attr_value_.impl_->GetBoolValue() == value) {
-    GELOGI("NodeAttrFeature, match scope:%s", scope->Name().c_str());
-    return SUCCESS;
-  }
-  return FAILED;
-}
-
-Status NodeAttrFeature::NodeAttrFeatureImpl::CheckNodeAttrFeatureData(const std::string init_value,
-                                                                      const ge::OpDescPtr &op_desc,
-                                                                      const Scope *const scope) {
-  std::string value = init_value;
-  if (!ge::AttrUtils::GetStr(op_desc, attr_name_, value)) {
-    GELOGE(ge::PARAM_INVALID, "op:%s %s attr is null", op_desc->GetName().c_str(), attr_name_.c_str());
-    return PARAM_INVALID;
-  }
-  if (attr_value_.impl_->GetStrValue() == value) {
-    GELOGI("NodeAttrFeature, match scope:%s", scope->Name().c_str());
-    return SUCCESS;
-  }
-  return FAILED;
-}
-
-Status NodeAttrFeature::NodeAttrFeatureImpl::CheckNodeAttrFeatureData(const int64_t init_value,
-                                                                      const ge::OpDescPtr &op_desc,
-                                                                      const Scope *const scope) {
-  int64_t value = init_value;
-  if (!ge::AttrUtils::GetInt(op_desc, attr_name_, value)) {
-    GELOGE(ge::PARAM_INVALID, "op:%s %s attr is null", op_desc->GetName().c_str(), attr_name_.c_str());
-    return PARAM_INVALID;
-  }
-  if (attr_value_.impl_->GetIntValue() == value) {
-    GELOGI("NodeAttrFeature, match scope:%s", scope->Name().c_str());
-    return SUCCESS;
-  }
-  return FAILED;
-}
-
-Status NodeAttrFeature::NodeAttrFeatureImpl::CheckNodeAttrFeatureData(const float32_t init_value,
-                                                                      const ge::OpDescPtr &op_desc,
-                                                                      const Scope *const scope) {
-  float32_t value = init_value;
-  if (!ge::AttrUtils::GetFloat(op_desc, attr_name_, value)) {
-    GELOGE(ge::PARAM_INVALID, "op:%s %s attr is null", op_desc->GetName().c_str(), attr_name_.c_str());
-    return PARAM_INVALID;
-  }
-
-  if (FloatIsEqual(attr_value_.impl_->GetFloatValue(), value)) {
-    GELOGI("NodeAttrFeature, match scope:%s", scope->Name().c_str());
-    return SUCCESS;
-  }
-  return FAILED;
-}
-
 NodeAttrFeature::NodeAttrFeature(std::string nodeType, std::string attr_name,
-                                 ge::DataType datatype, ScopeAttrValue &attr_value)
-    : ScopeBaseFeature() {
-  impl_ = ge::ComGraphMakeUnique<NodeAttrFeatureImpl>(nodeType, attr_name, datatype, attr_value);
+                                 ge::DataType datatype, ScopeAttrValue &attr_value) {
+  impl_ = std::unique_ptr<NodeAttrFeatureImpl>(new (std::nothrow) NodeAttrFeatureImpl(nodeType, attr_name,
+                                                                                      datatype, attr_value));
 }
 
-NodeAttrFeature::NodeAttrFeature(const char_t *node_type, const char_t *attr_name,
-                                 ge::DataType data_type, ScopeAttrValue &attr_value)
-    : ScopeBaseFeature() {
+NodeAttrFeature::NodeAttrFeature(const char *node_type, const char *attr_name,
+                                 ge::DataType data_type, ScopeAttrValue &attr_value) {
   std::string str_node_type;
   if (node_type != nullptr) {
     str_node_type = node_type;
@@ -285,12 +224,15 @@ NodeAttrFeature::NodeAttrFeature(const char_t *node_type, const char_t *attr_nam
   if (attr_name != nullptr) {
     str_attr_name = attr_name;
   }
-  impl_ = ge::ComGraphMakeUnique<NodeAttrFeatureImpl>(str_node_type, str_attr_name, data_type, attr_value);
+  impl_ = std::unique_ptr<NodeAttrFeatureImpl>(new (std::nothrow) NodeAttrFeatureImpl(str_node_type, str_attr_name,
+                                                                                      data_type, attr_value));
 }
 
-NodeAttrFeature::NodeAttrFeature(NodeAttrFeature const &feature) : ScopeBaseFeature() {
-  impl_ = ge::ComGraphMakeUnique<NodeAttrFeatureImpl>(feature.impl_->node_type_, feature.impl_->attr_name_,
-                                                      feature.impl_->datatype_, feature.impl_->attr_value_);
+NodeAttrFeature::NodeAttrFeature(NodeAttrFeature const &feature) {
+  impl_ = std::unique_ptr<NodeAttrFeatureImpl>(new (std::nothrow) NodeAttrFeatureImpl(feature.impl_->node_type_,
+                                                                                      feature.impl_->attr_name_,
+                                                                                      feature.impl_->datatype_,
+                                                                                      feature.impl_->attr_value_));
 }
 
 NodeAttrFeature &NodeAttrFeature::operator=(NodeAttrFeature const &feature) {
@@ -319,35 +261,35 @@ bool ScopeFeature::ScopeFeatureImpl::SubScopesMatch(const std::vector<Scope *> &
   int32_t count = 0;
   bool sub_scope_name_matched = false;
   for (auto &scp : scopes) {
-    if ((sub_type_.length() > 0UL) && (sub_type_ == scp->SubType())) {
+    if (sub_type_.length() > 0 && sub_type_ == scp->SubType()) {
       ++count;
     }
     if (sub_scope_name_matched) {
       continue;
     }
     auto &sub_impl = scp->impl_;
-    sub_scope_name_matched = (sub_scope_mask_.length() > 0UL) &&
+    sub_scope_name_matched = (sub_scope_mask_.length() > 0) &&
                              (sub_scope_mask_.length() < scp->Name().length()) &&
                              (sub_impl->LastName().find(sub_scope_mask_) != std::string::npos);
   }
 
-  if ((sub_type_.length() > 0UL) && (step_ == 0) && (count != num_)) {
+  if ((sub_type_.length() > 0) && (step_ == 0) && (count != num_)) {
     return false;
   }
-  if ((sub_scope_mask_.length() > 0UL) && (!sub_scope_name_matched)) {
+  if ((sub_scope_mask_.length() > 0) && !sub_scope_name_matched) {
     return false;
   }
 
   return true;
 }
 
-bool ScopeFeature::ScopeFeatureImpl::Match(const Scope *const scope) {
+bool ScopeFeature::ScopeFeatureImpl::Match(const Scope *scope) {
   auto &impl = scope->impl_;
-  const std::string scope_name = scope->Name();
+  std::string scope_name = scope->Name();
   if (suffix_.length() > scope_name.length()) {
     return false;
   }
-  if (suffix_.length() > 0UL) {
+  if (suffix_.length() > 0) {
     const std::string &last_name = impl->LastName();
     if (suffix_ != last_name) {
       return false;
@@ -364,14 +306,13 @@ bool ScopeFeature::ScopeFeatureImpl::Match(const Scope *const scope) {
 }
 
 ScopeFeature::ScopeFeature(std::string sub_type, int32_t num, std::string suffix,
-                           std::string sub_scope_mask, int32_t step)
-    : ScopeBaseFeature() {
-  impl_ = ge::ComGraphMakeUnique<ScopeFeatureImpl>(sub_type, num, suffix, sub_scope_mask, step);
+                           std::string sub_scope_mask, int step) {
+  impl_ = std::unique_ptr<ScopeFeatureImpl>(new (std::nothrow) ScopeFeatureImpl(sub_type, num, suffix,
+                                                                                sub_scope_mask, step));
 }
 
-ScopeFeature::ScopeFeature(const char_t *sub_type, int32_t num, const char_t *suffix,
-                           const char_t *sub_scope_mask, int32_t step)
-    : ScopeBaseFeature() {
+ScopeFeature::ScopeFeature(const char *sub_type, int32_t num, const char *suffix,
+                           const char *sub_scope_mask, int step) {
   std::string str_sub_type;
   if (sub_type != nullptr) {
     str_sub_type = sub_type;
@@ -384,13 +325,16 @@ ScopeFeature::ScopeFeature(const char_t *sub_type, int32_t num, const char_t *su
   if (sub_scope_mask != nullptr) {
     str_sub_scope_mask = sub_scope_mask;
   }
-  impl_ = ge::ComGraphMakeUnique<ScopeFeatureImpl>(str_sub_type, num, str_suffix, str_sub_scope_mask, step);
+  impl_ = std::unique_ptr<ScopeFeatureImpl>(new (std::nothrow) ScopeFeatureImpl(str_sub_type, num, str_suffix,
+                                                                                str_sub_scope_mask, step));
 }
 
-ScopeFeature::ScopeFeature(ScopeFeature const &feature) : ScopeBaseFeature() {
-  impl_ = ge::ComGraphMakeUnique<ScopeFeatureImpl>(feature.impl_->sub_type_, feature.impl_->num_,
-                                                  feature.impl_->suffix_, feature.impl_->sub_scope_mask_,
-                                                  feature.impl_->step_);
+ScopeFeature::ScopeFeature(ScopeFeature const &feature) {
+  impl_ = std::unique_ptr<ScopeFeatureImpl>(new (std::nothrow) ScopeFeatureImpl(feature.impl_->sub_type_,
+                                                                                feature.impl_->num_,
+                                                                                feature.impl_->suffix_,
+                                                                                feature.impl_->sub_scope_mask_,
+                                                                                feature.impl_->step_));
 }
 
 ScopeFeature &ScopeFeature::operator=(ScopeFeature const &feature) {
@@ -465,7 +409,7 @@ void ScopePattern::ScopePatternImpl::AddScopeFeature(ScopeFeature &feature) {
 }
 
 ScopePattern::ScopePattern() {
-  impl_ = ge::ComGraphMakeUnique<ScopePatternImpl>();
+  impl_ = std::unique_ptr<ScopePatternImpl>(new (std::nothrow) ScopePatternImpl);
 }
 
 ScopePattern::~ScopePattern() {}
@@ -479,7 +423,7 @@ ScopePattern &ScopePattern::SetSubType(const std::string &sub_type) {
   return *this;
 }
 
-ScopePattern &ScopePattern::SetSubType(const char_t *sub_type) {
+ScopePattern &ScopePattern::SetSubType(const char *sub_type) {
   if (impl_ == nullptr) {
     GELOGE(ge::MEMALLOC_FAILED, "Failed to invoke SetSubType(), ScopePattern is not properly initialized.");
     return *this;

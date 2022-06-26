@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@
 #ifndef COMMON_GRAPH_DEBUG_GE_OP_TYPES_H_
 #define COMMON_GRAPH_DEBUG_GE_OP_TYPES_H_
 
-#include "graph/types.h"
 #include "graph/compiler_options.h"
 
-#define GE_REGISTER_OPTYPE(var_name, str_name) static const ge::char_t *(var_name) METADEF_ATTRIBUTE_UNUSED = (str_name)
 namespace ge {
+#define GE_REGISTER_OPTYPE(var_name, str_name) static const char *var_name METADEF_ATTRIBUTE_UNUSED = str_name
+
 GE_REGISTER_OPTYPE(DATA, "Data");
 GE_REGISTER_OPTYPE(AIPPDATA, "AippData");
 GE_REGISTER_OPTYPE(MATMUL, "MatMul");
@@ -40,11 +40,6 @@ GE_REGISTER_OPTYPE(SWITCHN, "SwitchN");
 GE_REGISTER_OPTYPE(MERGE, "Merge");
 GE_REGISTER_OPTYPE(REFMERGE, "RefMerge");
 GE_REGISTER_OPTYPE(STREAMMERGE, "StreamMerge");
-GE_REGISTER_OPTYPE(STREAMSWITCH, "StreamSwitch");
-GE_REGISTER_OPTYPE(STREAMACTIVE, "StreamActive");
-GE_REGISTER_OPTYPE(LABELSET, "LabelSet");
-GE_REGISTER_OPTYPE(LABELGOTOEX, "LabelGotoEx");
-GE_REGISTER_OPTYPE(LABELSWITCHBYINDEX, "LabelSwitchByIndex");
 GE_REGISTER_OPTYPE(ENTER, "Enter");
 GE_REGISTER_OPTYPE(REFENTER, "RefEnter");
 GE_REGISTER_OPTYPE(NEXTITERATION, "NextIteration");
@@ -65,7 +60,6 @@ GE_REGISTER_OPTYPE(VARIABLEV2, "VariableV2");
 GE_REGISTER_OPTYPE(PARTITIONEDCALL, "PartitionedCall");
 
 GE_REGISTER_OPTYPE(INPUT_TYPE, "Input");
-GE_REGISTER_OPTYPE(FILECONSTANT, "FileConstant");
 
 // Horovod operator
 GE_REGISTER_OPTYPE(HVDCALLBACKALLREDUCE, "hvdCallbackAllreduce");
@@ -78,5 +72,5 @@ GE_REGISTER_OPTYPE(NODE_NAME_NET_OUTPUT, "Node_Output");
 GE_REGISTER_OPTYPE(RECV, "Recv");
 GE_REGISTER_OPTYPE(SEND, "Send");
 GE_REGISTER_OPTYPE(NOOP, "NoOp");
-}  // namespace ge
+};  // namespace ge
 #endif  // COMMON_GRAPH_DEBUG_GE_OP_TYPES_H_

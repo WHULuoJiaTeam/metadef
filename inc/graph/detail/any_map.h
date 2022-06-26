@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,9 @@
 #include "graph/compiler_options.h"
 
 namespace ge {
+using std::shared_ptr;
+using std::string;
+
 class TypeID {
  public:
   template <class T>
@@ -38,47 +41,43 @@ class TypeID {
   bool operator==(const TypeID &__arg) const { return type_ == __arg.type_; }
 
  private:
-  explicit TypeID(const std::string &type) : type_(type) {}
+  explicit TypeID(string type) : type_(std::move(type)) {}  // lint !e30 !e32
 
-  std::string type_;
+  string type_;
 };
 
 class AnyMap {
  public:
   template <class DT>
-  bool Set(const std::string &name, const DT &val);
+  bool Set(const string &name, const DT &val);
 
   template <class T>
-  bool Get(const std::string &name, T &retValue) const;
+  bool Get(const string &name, T &retValue) const;
 
-  bool Has(const std::string &name) const { return anyValues_.find(name) != anyValues_.end(); }
+  bool Has(const string &name) const { return anyValues_.find(name) != anyValues_.end(); }
 
   void Swap(AnyMap &other) {
     anyValues_.swap(other.anyValues_);
   }
 
-  void Names(std::set<std::string> &names) const {
+  void Names(std::set<string> &names) const {
     for (const auto &item : anyValues_) {
-      (void)names.emplace(item.first);
+      names.emplace(item.first);
     }
   }
 
  private:
   class Placeholder {
    public:
-    Placeholder() = default;
     virtual ~Placeholder() = default;
-    Placeholder(const Placeholder &) = delete;
-    Placeholder &operator=(const Placeholder &) = delete;
-    Placeholder(Placeholder &&) = delete;
-    Placeholder &operator=(Placeholder &&) = delete;
+
     virtual const TypeID &GetTypeInfo() const = 0;
   };
 
   template <typename VT>
   class Holder : public Placeholder {
    public:
-    explicit Holder(const VT &value) : Placeholder(), value_(value) {}
+    explicit Holder(const VT &value) : value_(value) {}
 
     ~Holder() override = default;
 
@@ -87,22 +86,21 @@ class AnyMap {
       return typeId;
     }
 
-    friend class AnyMap;
-
-   private:
     const VT value_;
   };
 
-  std::map<std::string, std::shared_ptr<Placeholder>> anyValues_;
+  std::map<string, shared_ptr<Placeholder>> anyValues_;
 };
 
 template <class DT>
-bool AnyMap::Set(const std::string &name, const DT &val) {
-  const auto it = anyValues_.find(name);
+bool AnyMap::Set(const string &name, const DT &val) {
+  auto it = anyValues_.find(name);
 
   std::shared_ptr<Holder<DT>> tmp;
   try {
     tmp = std::make_shared<Holder<DT>>(val);
+  } catch (std::bad_alloc &e) {
+    tmp = nullptr;
   } catch (...) {
     tmp = nullptr;
   }
@@ -110,7 +108,7 @@ bool AnyMap::Set(const std::string &name, const DT &val) {
   if (it == anyValues_.end()) {
     (void)anyValues_.emplace(name, tmp);
   } else {
-    if (it->second && (it->second->GetTypeInfo() == TypeID::Of<DT>())) {
+    if (it->second && it->second->GetTypeInfo() == TypeID::Of<DT>()) {
       it->second = tmp;
     } else {
       return false;
@@ -120,10 +118,10 @@ bool AnyMap::Set(const std::string &name, const DT &val) {
 }
 
 template <class T>
-bool AnyMap::Get(const std::string &name, T &retValue) const {
-  const auto it = anyValues_.find(name);
-  if ((it != anyValues_.end()) && it->second && (it->second->GetTypeInfo() == TypeID::Of<T>())) {
-    const auto retPtr = std::static_pointer_cast<Holder<T>>(it->second);
+bool AnyMap::Get(const string &name, T &retValue) const {
+  auto it = anyValues_.find(name);
+  if (it != anyValues_.end() && it->second && it->second->GetTypeInfo() == TypeID::Of<T>()) {
+    auto retPtr = std::static_pointer_cast<Holder<T>>(it->second);
     retValue = retPtr->value_;
     return true;
   }

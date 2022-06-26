@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,27 +21,17 @@
 #include "graph/debug/ge_log.h"
 #include "register/graph_optimizer/graph_optimize_register_error_codes.h"
 
-namespace fe {
 using std::map;
 using std::string;
 using std::vector;
 
-const int64_t TBE_FUSION_OP_NUM_MAX = 5L;
-const int64_t TBE_PATTERN_NUM_MAX = 5L;
-const int64_t TBE_PATTERN_NUM_NONE = 0L;
-const int64_t TBE_PATTERN_NUM_DEFAULT = 1L;
-const int64_t TBE_OUTPUT_BRANCH_DEFAULT = 0L;
-const int64_t TBE_OUTPUT_BRANCH_SINGLE = 1L;
-const int64_t TBE_OUTPUT_BRANCH_MULTI = 2L;
-const int64_t TBE_PATTERN_GROUPID_INVALID = -1L;
-
-inline bool IsAddOverflow(const int64_t &a, const int64_t &b) {
-  return ((b > 0) && (a > (static_cast<int64_t>(INT64_MAX) - b))) || \
-      ((b < 0) && (a < (static_cast<int64_t>(INT64_MIN) - b)));
+namespace fe {
+inline bool IsAddOverflow(int64_t a, int64_t b) {
+  return ((b > 0) && (a > ((int64_t)INT64_MAX - b))) || ((b < 0) && (a < ((int64_t)INT64_MIN - b)));
 }
 
-BufferFusionPattern::BufferFusionPattern(string name, int64_t op_max_count)
-    : name_(name), op_max_count_(op_max_count), error_count_(0) {}
+BufferFusionPattern::BufferFusionPattern(string name, int64_t max_count)
+    : name_(name), op_max_count_(max_count), error_count_(0) {}
 
 BufferFusionPattern::~BufferFusionPattern() {
   for (auto op : ops_) {
@@ -64,19 +54,18 @@ BufferFusionPattern::~BufferFusionPattern() {
  * with the value
  * @return BufferFusionPattern: pattern object
  */
-BufferFusionPattern &BufferFusionPattern::AddOpDesc(const std::string &desc_name,
-                                                    const std::vector<std::string> &types,
-                                                    int64_t repeat_min, int64_t repeat_max, int64_t group_id,
-                                                    ShapeTypeRule shape_type_rule, bool not_pattern) {
+BufferFusionPattern &BufferFusionPattern::AddOpDesc(const std::string &desc_name, const std::vector<std::string> &types,
+                                                    int64_t repeate_min, int64_t repeate_max, int64_t group_id,
+                                                    ShapeTypeRule shape_type_rule) {
   if (desc_name.empty()) {
     GELOGW("[AddOpDesc][Check] Desc_name cannot be empty.");
     error_count_++;
     return *this;
   }
 
-  if (repeat_min > repeat_max) {
+  if (repeate_min > repeate_max) {
     GELOGW("[AddOpDesc][Check] Check desc %s failed as repeat_min > repeat_max, repeat_min=%ld, repeat_max=%ld",
-           desc_name.c_str(), repeat_min, repeat_max);
+           desc_name.c_str(), repeate_min, repeate_max);
     error_count_++;
     return *this;
   }
@@ -96,8 +85,8 @@ BufferFusionPattern &BufferFusionPattern::AddOpDesc(const std::string &desc_name
 
   op->desc_name = desc_name;
   op->types = types;
-  op->repeate_min = repeat_min;
-  op->repeate_max = repeat_max;
+  op->repeate_min = repeate_min;
+  op->repeate_max = repeate_max;
   op->repeate_curr = 0;
   op->group_id = group_id;
   op->shape_type_rule = shape_type_rule;
@@ -105,10 +94,9 @@ BufferFusionPattern &BufferFusionPattern::AddOpDesc(const std::string &desc_name
   op->out_branch_type = TBE_OUTPUT_BRANCH_DEFAULT;
   op->ignore_input_num = false;
   op->ignore_output_num = false;
-  op->not_pattern = not_pattern;
-  if (repeat_max > repeat_min) {
-    for (int64_t i = repeat_min; i < repeat_max; i++) {
-      (void)op->multi_output_skip_status.insert(std::pair<int64_t, SkipStatus>(i, SkipStatus::DISABLED));
+  if (repeate_max > repeate_min) {
+    for (int64_t i = repeate_min; i < repeate_max; i++) {
+      op->multi_output_skip_status.insert(std::pair<int64_t, SkipStatus>(i, SkipStatus::DISABLED));
     }
   }
   ops_.push_back(op);
@@ -188,9 +176,10 @@ bool BufferFusionPattern::GetOutputs(BufferFusionOpDesc *op_desc, std::vector<Bu
     GELOGW("[GetOutputs][Check] op_desc is null.");
     return false;
   }
+  string desc_n = op_desc->desc_name;
 
   // add curr desc can be reused while repeat_curr < repeate_max
-  if ((!ignore_repeat) && (op_desc->repeate_curr < op_desc->repeate_max)) {
+  if (!ignore_repeat && op_desc->repeate_curr < op_desc->repeate_max) {
     outputs.push_back(op_desc);
   }
 
@@ -272,7 +261,7 @@ BufferFusionPattern &BufferFusionPattern::SetHead(const std::vector<string> &hea
   return *this;
 }
 
-void BufferFusionPattern::UpdateSkipStatus(const BufferFusionOpDesc *op_desc) const {
+void BufferFusionPattern::UpdateSkipStatus(BufferFusionOpDesc *op_desc) {
   if (op_desc->out_branch_type == TBE_OUTPUT_BRANCH_MULTI) {
     for (auto &input_desc : op_desc->inputs) {
       if (input_desc->types.size() != op_desc->types.size()) {
@@ -285,7 +274,7 @@ void BufferFusionPattern::UpdateSkipStatus(const BufferFusionOpDesc *op_desc) co
           break;
         }
       }
-      if (is_same_type && (input_desc->ignore_output_num)) {
+      if (is_same_type && input_desc->ignore_output_num == true) {
         for (int64_t i = input_desc->repeate_min; i < input_desc->repeate_max; i++) {
           input_desc->multi_output_skip_status[i] = SkipStatus::AVAILABLE;
         }
@@ -299,21 +288,18 @@ void BufferFusionPattern::UpdateSkipStatus(const BufferFusionOpDesc *op_desc) co
  * @param [in] desc_name: fusion pattern desc name
  * @return BufferFusionOpDesc*: description ptr
  */
-BufferFusionOpDesc *BufferFusionPattern::GetOpDesc(const string &desc_name) const {
-  const auto it = op_map_.find(desc_name);
-  if (it != op_map_.end()) {
-    return it->second;
-  }
+BufferFusionOpDesc *BufferFusionPattern::GetOpDesc(const string &desc_name) {
+  auto it = op_map_.find(desc_name);
+  if (it != op_map_.end()) return it->second;
+
   return nullptr;
 }
 
-std::vector<BufferFusionOpDesc *> BufferFusionPattern::GetHead() const { return head_; }
+std::vector<BufferFusionOpDesc *> BufferFusionPattern::GetHead() { return head_; }
 
-std::string BufferFusionPattern::GetName() const { return name_; }
+std::string BufferFusionPattern::GetName() { return name_; }
+int64_t BufferFusionPattern::GetOpMaxCount() { return op_max_count_; }
+int64_t BufferFusionPattern::GetErrorCnt() { return error_count_; }
 
-int64_t BufferFusionPattern::GetOpMaxCount() const { return op_max_count_; }
-
-int64_t BufferFusionPattern::GetErrorCnt() const { return error_count_; }
-
-std::vector<BufferFusionOpDesc *> BufferFusionPattern::GetOpDescs() const { return ops_; }
+std::vector<BufferFusionOpDesc *> BufferFusionPattern::GetOpDescs() { return ops_; }
 }  // namespace fe

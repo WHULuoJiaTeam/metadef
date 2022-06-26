@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,14 +97,14 @@ struct OmgContext {
   // default out nodes (this is used for determing the orders)
   std::vector<std::pair<std::string, int32_t>> default_out_nodes;
   // save the output node of the network, value = topName,
-  // tensorName indicates the output name of the operator.
-  std::vector<std::string> user_out_tensors;
+  // topName indicates the output name of the operator.
+  std::vector<std::string> user_out_nodes_top_vec;
   // net out nodes (where user_out_nodes or leaf nodes)
   std::vector<std::string> net_out_nodes;
-  // net out nodes tensor names(caffe or onnx)
-  std::vector<std::string> out_tensor_names;
-  // net data nodes tensor names(caffe or onnx)
-  std::vector<std::string> data_tensor_names;
+  // net out nodes top names(only caffe has top)
+  std::vector<std::string> out_top_names;
+  // net data nodes top names(only caffe has top)
+  std::vector<std::string> data_top_names;
   // preferential format used by the entire network
   domiTensorFormat_t net_format = DOMI_TENSOR_RESERVED;
   domi::FrameworkType type = domi::FRAMEWORK_RESERVED;
@@ -124,10 +124,6 @@ struct OmgContext {
   bool need_multi_batch = false;
   std::vector<NodePtr> data_nodes;
   std::vector<NodePtr> getnext_nosink_nodes;
-  bool fuzz_compile_flag = false;
-  std::string atc_cmdline;
-  bool user_attr_index_valid = false;
-  bool is_online_model = false;
 };
 }  // namespace ge
 

@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 
 #include "mmpa/mmpa_api.h"
 
-typedef int mmErrorMSg;
 
 INT32 mmOpen(const CHAR *path_name, INT32 flags) {
   INT32 fd = HANDLE_INVALID_VALUE;
@@ -209,7 +208,7 @@ INT32 mmGetFileSize(const CHAR *file_name, ULONGLONG *length) {
 
 INT32 mmScandir(const CHAR *path, mmDirent ***entryList, mmFilter filterFunc,  mmSort sort)
 {
-  return scandir(path, entryList, filterFunc, sort);
+  return 0;
 }
 
 VOID mmScandirFree(mmDirent **entryList, INT32 count)
@@ -218,14 +217,7 @@ VOID mmScandirFree(mmDirent **entryList, INT32 count)
 
 INT32 mmAccess2(const CHAR *pathName, INT32 mode)
 {
-  if (pathName == NULL) {
-    return EN_INVALID_PARAM;
-  }
-  INT32 ret = access(pathName, mode);
-  if (ret != EN_OK) {
-    return EN_ERROR;
-  }
-  return EN_OK;
+  return 0;
 }
 
 INT32 mmGetTimeOfDay(mmTimeval *timeVal, mmTimezone *timeZone)
@@ -235,21 +227,13 @@ INT32 mmGetTimeOfDay(mmTimeval *timeVal, mmTimezone *timeZone)
 
 INT32 mmRealPath(const CHAR *path, CHAR *realPath, INT32 realPathLen)
 {
-  INT32 ret = EN_OK;
-  if ((path == NULL) || (realPath == NULL) || (realPathLen < MMPA_MAX_PATH)) {
-    return EN_INVALID_PARAM;
-  }
-  const CHAR *ptr = realpath(path, realPath);
-  if (ptr == NULL) {
-    ret = EN_ERROR;
-  }
-  return ret;
+  return 0;
 }
 
-//INT32 mmGetErrorCode()
-//{
-  //return 0;
-//}
+INT32 mmGetErrorCode()
+{
+  return 0;
+}
 
 INT32 mmIsDir(const CHAR *fileName)
 {
@@ -273,7 +257,6 @@ CHAR *mmDlerror()
 
 INT32 mmDladdr(VOID *addr, mmDlInfo *info)
 {
-  info->dli_fname = "/tmp/mmDlInfo.txt";
   return 0;
 }
 
@@ -291,18 +274,3 @@ INT32 mmGetPid()
 {
   return (INT32)getpid();
 }
-
-INT32 mmGetErrorCode(VOID)
-{
-  INT32 ret = (INT32)errno;
-  return ret;
-}
-
-CHAR *mmGetErrorFormatMessage(mmErrorMSg errnum, CHAR *buf, mmSize size)
-{
-  if ((buf == NULL) || (size <= 0)) {
-    return NULL;
-  }
-  return strerror_r(errnum, buf, size);
-}
-

@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,31 +20,30 @@
 
 #include "external/graph/ge_error_codes.h"
 #include "external/graph/operator.h"
-#include "external/graph/types.h"
 
 namespace ge {
 using InferDataSliceFunc = std::function<graphStatus(Operator &)>;
 
 class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY InferDataSliceFuncRegister {
  public:
-  InferDataSliceFuncRegister(const char_t *const operator_type, const InferDataSliceFunc &infer_data_slice_func);
+  InferDataSliceFuncRegister(const char *operator_type, const InferDataSliceFunc &infer_data_slice_func);
   ~InferDataSliceFuncRegister() = default;
 };
-}  // namespace ge
 
 // infer data slice func register
 #define IMPLEMT_COMMON_INFER_DATA_SLICE(func_name) \
-  GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY static graphStatus (func_name)(Operator &op)
+  GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY static graphStatus func_name(Operator &op)
 
 #define IMPLEMT_INFER_DATA_SLICE(op_name, func_name) \
-  GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY static graphStatus (func_name)(op::op_name &op)
+  GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY static graphStatus func_name(op::op_name &op)
 
-#define INFER_DATA_SLICE_FUNC(op_name, x) [&](Operator &v) { return (x)((op::op_name &)v); }
+#define INFER_DATA_SLICE_FUNC(op_name, x) [&](Operator &v) { return x((op::op_name &)v); }
 
 #define __INFER_DATA_SLICE_FUNC_REG_IMPL__(op_name, x, n) \
-  static const InferDataSliceFuncRegister PASTE(ids_register, n)(#op_name, (x))
+  static const InferDataSliceFuncRegister PASTE(ids_register, n)(#op_name, x)
 
 #define INFER_DATA_SLICE_FUNC_REG(op_name, x) \
   __INFER_DATA_SLICE_FUNC_REG_IMPL__(op_name, INFER_DATA_SLICE_FUNC(op_name, x), __COUNTER__)
+}  // namespace ge
 
 #endif  // INC_REGISTER_INFER_DATA_SLICE_REGISTRY_H_

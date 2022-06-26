@@ -1,4 +1,5 @@
-# Copyright 2019-2020 Huawei Technologies Co., Ltd
+# Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+# Copyright 2021, 2022 Huawei Technologies Co., Ltd
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,11 +18,47 @@ project(ut_graph)
 
 set(CMAKE_CXX_STANDARD 11)
 
+set(PROTO_LIST
+    "${METADEF_DIR}/proto/om.proto"
+    "${METADEF_DIR}/proto/ge_ir.proto"
+    "${METADEF_DIR}/proto/insert_op.proto"
+    "${METADEF_DIR}/proto/task.proto"
+    "${METADEF_DIR}/proto/dump_task.proto"
+    "${METADEF_DIR}/proto/fwk_adapter.proto"
+    "${METADEF_DIR}/proto/op_mapping.proto"
+    "${METADEF_DIR}/proto/onnx/ge_onnx.proto"
+)
+
+protobuf_generate(ge PROTO_SRCS PROTO_HDRS ${PROTO_LIST})
+
+############ libut_metadef_proto.a ############
+add_library(ut_metadef_proto STATIC
+    ${PROTO_HDRS}
+    ${PROTO_SRCS}
+)
+
+target_compile_definitions(ut_metadef_proto PRIVATE
+    PROTOBUF_INLINE_NOT_IN_HEADERS=0
+    google=ascend_private
+)
+
+target_compile_options(ut_metadef_proto PRIVATE
+    -O2
+    -fno-common
+)
+
+target_link_libraries(ut_metadef_proto PRIVATE
+    $<BUILD_INTERFACE:intf_pub>
+    ascend_protobuf
+)
+
 # include directories
 include_directories(${CMAKE_CURRENT_LIST_DIR})
+include_directories(${METADEF_DIR}/inc)
+include_directories(${METADEF_DIR}/inc/graph)
+include_directories(${METADEF_DIR}/inc/external)
+include_directories(${METADEF_DIR}/inc/external/graph)
 include_directories(${METADEF_DIR}/graph)
-include_directories(${CMAKE_BINARY_DIR}/proto/metadef_protos)
-include_directories(${CMAKE_BINARY_DIR}/proto/metadef_protos/proto)
 include_directories(${METADEF_DIR}/third_party)
 include_directories(${METADEF_DIR}/third_party/graphengine/inc)
 include_directories(${METADEF_DIR}/third_party/graphengine/inc/external)
@@ -35,12 +72,10 @@ include_directories(${CMAKE_BINARY_DIR}/proto/ge/proto)
 
 set(UT_FILES
     "testcase/graph_unittest.cc"
-    "testcase/ge_tensor_unittest.cc"
     "testcase/types_unittest.cc"
     "testcase/tensor_unittest.cc"
     "testcase/type_utils_unittest.cc"
     "testcase/aligned_ptr_unittest.cc"
-    "testcase/object_pool_unittest.cc"
     "testcase/tensor_ut.cc"
     "testcase/node_utils_unittest.cc"
     "testcase/node_unittest.cc"
@@ -51,52 +86,80 @@ set(UT_FILES
     "testcase/ge_attr_value_unittest.cc"
     "testcase/shape_refiner_unittest.cc"
     "testcase/graph_utils_unittest.cc"
-    "testcase/file_utils_unittest.cc"
-    "testcase/ffts_graph_utils_unittest.cc"
     "testcase/runtime_inference_context_unittest.cc"
     "testcase/op_desc_unittest.cc"
-    "testcase/ref_relation_unittest.cc"
-    "testcase/gnode_unittest.cc"
-    "testcase/resource_context_mgr_unittest.cc"
-    "testcase/inference_context_unittest.cc"
-    "testcase/constant_utils_unittest.cc"
-    "testcase/any_value_ut.cc"
-    "testcase/ascend_string_unittest.cc"
-    "testcase/attr_store_ut.cc"
-    "testcase/attr_serializer_unittest.cc"
-    "testcase/attr_serializer_registry_unittest.cc"
-    "testcase/small_vector_ut.cc"
-    "testcase/attr_utils_unittest.cc"
-    "testcase/ge_ir_utils_unittest.cc"
-    "testcase/func_counter.cc"
-    "testcase/test_std_structs.cc"
-    "testcase/transformer_expand_dims_ut.cc"
-    "testcase/transformer_transfer_shape_ut.cc"
-    "testcase/op_imp_unittest.cc"
-    "testcase/operator_constuct_graph_unittest.cc"
-    "testcase/opsproto_manager_unittest.cc"
-    "testcase/format_refiner_unittes.cc"
-    "testcase/model_serialize_unittest.cc"
-    "testcase/ref_relation_unittes.cc"
-    "testcase/tensor_utils_unittest.cc"
-    "testcase/compile_cache_policy_hasher_unittest.cc"
-    "testcase/compile_cache_policy_unittest.cc"
-    "testcase/compute_graph_unittest.cc"
-    "testcase/profiler_unittest.cc"
-    "testcase/ge_graph_dumper_unittest.cc"
-    "testcase/file_utils_unittest.cc"
-    "testcase/ge_local_context_unittest.cc"
-    "testcase/anchor_unittest.cc"
-    "testcase/model_unittest.cc"
-    "testcase/ge_context_unittest.cc"
-    "testcase/anchor_utils_unittest.cc"
-    "testcase/attributes_holder_unittest.cc"
-    "testcase/graph_debug_unittest.cc"
-    "testcase/tuning_utils_unittest.cc"
-    "testcase/cycle_detector_unittest.cc"
 )
 
-add_executable(ut_graph ${UT_FILES})
+set(GRAPH_SRC_FILES
+    "${METADEF_DIR}/graph/aligned_ptr.cc"
+    "${METADEF_DIR}/graph/anchor.cc"
+    "${METADEF_DIR}/graph/ascend_string.cc"
+    "${METADEF_DIR}/graph/attr_value.cc"
+    "${METADEF_DIR}/graph/buffer.cc"
+    "${METADEF_DIR}/graph/compute_graph.cc"
+    "${METADEF_DIR}/graph/debug/graph_debug.cc"
+    "${METADEF_DIR}/graph/detail/attributes_holder.cc"
+    "${METADEF_DIR}/graph/format_refiner.cc"
+    "${METADEF_DIR}/graph/ge_attr_define.cc"
+    "${METADEF_DIR}/graph/ge_attr_value.cc"
+    "${METADEF_DIR}/graph/ge_tensor.cc"
+    "${METADEF_DIR}/graph/gnode.cc"
+    "${METADEF_DIR}/graph/graph.cc"
+    "${METADEF_DIR}/graph/inference_context.cc"
+    "${METADEF_DIR}/graph/model.cc"
+    "${METADEF_DIR}/graph/model_serialize.cc"
+    "${METADEF_DIR}/graph/node.cc"
+    "${METADEF_DIR}/graph/op_desc.cc"
+    "${METADEF_DIR}/graph/operator.cc"
+    "${METADEF_DIR}/graph/operator_factory.cc"
+    "${METADEF_DIR}/graph/operator_factory_impl.cc"
+    "${METADEF_DIR}/graph/opsproto/opsproto_manager.cc"
+    "${METADEF_DIR}/graph/option/ge_context.cc"
+    "${METADEF_DIR}/graph/option/ge_local_context.cc"
+    "${METADEF_DIR}/graph/ref_relation.cc"
+    "${METADEF_DIR}/graph/runtime_inference_context.cc"
+    "${METADEF_DIR}/graph/shape_refiner.cc"
+    "${METADEF_DIR}/graph/tensor.cc"
+    "${METADEF_DIR}/graph/types.cc"
+    "${METADEF_DIR}/graph/utils/anchor_utils.cc"
+    "${METADEF_DIR}/graph/utils/ge_ir_utils.cc"
+    "${METADEF_DIR}/graph/utils/graph_utils.cc"
+    "${METADEF_DIR}/graph/utils/dumper/ge_graph_dumper.cc"
+    "${METADEF_DIR}/graph/utils/node_utils.cc"
+    "${METADEF_DIR}/graph/utils/op_desc_utils.cc"
+    "${METADEF_DIR}/graph/utils/tensor_utils.cc"
+    "${METADEF_DIR}/graph/utils/transformer_utils.cc"
+    "${METADEF_DIR}/graph/utils/tuning_utils.cc"
+    "${METADEF_DIR}/graph/utils/type_utils.cc"
+    "${METADEF_DIR}/ops/op_imp.cpp"
+    "${METADEF_DIR}/third_party/transformer/src/axis_util.cc"
+    "${METADEF_DIR}/third_party/transformer/src/expand_dimension.cc"
+    "${METADEF_DIR}/third_party/transformer/src/transfer_shape_according_to_format.cc"
+)
+
+############ libut_metadef_graph.a ############
+add_library(ut_metadef_graph STATIC
+    ${GRAPH_SRC_FILES} ${PROTO_HDRS}
+)
+
+target_compile_definitions(ut_metadef_graph PRIVATE
+    google=ascend_private
+)
+
+target_compile_options(ut_metadef_graph PRIVATE
+    -g --coverage -fprofile-arcs -ftest-coverage
+    -Werror=format
+)
+
+target_link_libraries(ut_metadef_graph PRIVATE
+    $<BUILD_INTERFACE:intf_pub>
+    c_sec
+    ascend_protobuf
+    #json
+)
+
+
+add_executable(ut_graph ${UT_FILES} ${PROTO_HDRS})
 
 target_compile_options(ut_graph PRIVATE
     -g --coverage -fprofile-arcs -ftest-coverage
@@ -108,6 +171,6 @@ target_compile_definitions(ut_graph PRIVATE
 
 target_link_libraries(ut_graph
     $<BUILD_INTERFACE:intf_pub>
-    graph_static error_manager_static
-    gtest gtest_main slog_stub ascend_protobuf c_sec mmpa_stub -lrt -ldl -lgcov
+    ut_metadef_graph ut_metadef_proto
+    gtest gtest_main slog_stub ascend_protobuf c_sec error_manager_stub mmpa_stub -lrt -ldl -lgcov
 )

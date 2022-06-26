@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,7 @@ class PlatFormInfos {
   void SetAICoreIntrinsicDtype(std::map<std::string, std::vector<std::string>> &intrinsic_dtypes);
   void SetVectorCoreIntrinsicDtype(std::map<std::string, std::vector<std::string>> &intrinsic_dtypes);
   void SetPlatformRes(const std::string &label, std::map<std::string, std::string> &res);
-  std::map<std::string, std::vector<std::string>> GetFixPipeDtypeMap();
-  void SetFixPipeDtypeMap(const std::map<std::string, std::vector<std::string>> &fixpipe_dtype_map);
+
  private:
   PlatFormInfosImplPtr platform_infos_impl_{nullptr};
 };
@@ -52,8 +51,7 @@ class OptionalInfos {
   std::string GetCoreType();
   uint32_t GetAICoreNum();
   std::string GetL1FusionFlag();
-  std::map<std::string, std::vector<std::string>> GetFixPipeDtypeMap();
-  void SetFixPipeDtypeMap(const std::map<std::string, std::vector<std::string>> &fixpipe_dtype_map);
+
   void SetSocVersion(std::string soc_version);
   void SetCoreType(std::string core_type);
   void SetAICoreNum(uint32_t ai_core_num);

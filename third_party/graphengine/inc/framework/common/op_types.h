@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,8 +53,8 @@ class GE_FUNC_VISIBILITY OpTypeRegistrar {
 #define REGISTER_OPTYPE_DECLARE(var_name, str_name) \
   FMK_FUNC_HOST_VISIBILITY FMK_FUNC_DEV_VISIBILITY extern const char *var_name;
 
-#define REGISTER_OPTYPE_DEFINE(var_name, str_name)           \
-  const char *var_name = str_name;                           \
+#define REGISTER_OPTYPE_DEFINE(var_name, str_name) \
+  const char *var_name = str_name;                 \
   const OpTypeRegistrar g_##var_name##_reg(str_name);
 
 #define IS_OPTYPE_EXISTING(str_name) (OpTypeContainer::Instance()->IsExisting(str_name))

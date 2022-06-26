@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,12 @@
 #include "graph/node_impl.h"
 #include "graph/operator_factory_impl.h"
 #include "graph/shape_refiner.h"
-#include "graph/utils/ge_ir_utils.h"
-#include "graph/utils/node_utils.h"
-#include "graph/utils/op_desc_utils.h"
+#include "utils/ge_ir_utils.h"
+#include "utils/node_utils.h"
+#include "utils/op_desc_utils.h"
 
+using std::string;
+using std::vector;
 
 namespace ge {
 Node::NodeImpl::NodeImpl(const OpDescPtr &op, const ComputeGraphPtr &owner_graph)
@@ -63,23 +65,23 @@ graphStatus Node::NodeImpl::Init(const NodePtr &node) {
   if (has_init_) {
     return GRAPH_SUCCESS;
   }
-  GE_CHK_BOOL_EXEC(op_ != nullptr, REPORT_INNER_ERROR("E18888", "original OpDesc is nullptr");
+  GE_CHK_BOOL_EXEC(op_ != nullptr, REPORT_INNER_ERROR("E19999", "original OpDesc is nullptr");
                    return GRAPH_FAILED, "[Check][Param] original OpDesc is nullptr");
   size_t size = op_->GetAllInputsSize();
-  for (size_t i = 0UL; i < size; i++) {
-    const std::shared_ptr<InDataAnchor> anchor = ComGraphMakeShared<InDataAnchor>(node, i);
+  for (size_t i = 0; i < size; i++) {
+    std::shared_ptr<InDataAnchor> anchor = ComGraphMakeShared<InDataAnchor>(node, i);
     if (anchor == nullptr) {
-      REPORT_CALL_ERROR("E18888", "Current in_data_anchor is null, malloc shared_ptr failed.");
+      REPORT_CALL_ERROR("E19999", "Current in_data_anchor is null, malloc shared_ptr failed.");
       GELOGE(GRAPH_FAILED, "[Create][InDataAnchor] Current in_data_anchor is null, malloc shared_ptr failed.");
       return GRAPH_FAILED;
     }
     in_data_anchors_.push_back(anchor);
   }
   size = op_->GetOutputsSize();
-  for (size_t i = 0UL; i < size; i++) {
-    const std::shared_ptr<OutDataAnchor> anchor = ComGraphMakeShared<OutDataAnchor>(node, i);
+  for (size_t i = 0; i < size; i++) {
+    std::shared_ptr<OutDataAnchor> anchor = ComGraphMakeShared<OutDataAnchor>(node, i);
     if (anchor == nullptr) {
-      REPORT_CALL_ERROR("E18888", "Current out_data_anchor is null, malloc shared_ptr failed.");
+      REPORT_CALL_ERROR("E19999", "Current out_data_anchor is null, malloc shared_ptr failed.");
       GELOGE(GRAPH_FAILED, "[Create][OutDataAnchor] Current out_data_anchor is null, malloc shared_ptr failed.");
       return GRAPH_FAILED;
     }
@@ -87,8 +89,8 @@ graphStatus Node::NodeImpl::Init(const NodePtr &node) {
   }
   in_control_anchor_ = ComGraphMakeShared<InControlAnchor>(node, -1);
   out_control_anchor_ = ComGraphMakeShared<OutControlAnchor>(node, -1);
-  if ((in_control_anchor_ == nullptr) || (out_control_anchor_ == nullptr)) {
-    REPORT_CALL_ERROR("E18888", "Current in_control_anchor or out_control_anchor is null, malloc shared_ptr failed.");
+  if (in_control_anchor_ == nullptr || out_control_anchor_ == nullptr) {
+    REPORT_CALL_ERROR("E19999", "Current in_control_anchor or out_control_anchor is null, malloc shared_ptr failed.");
     GELOGE(GRAPH_FAILED, "[Create][ControlAnchor] Current in_control_anchor or out_control_anchor is null, "
            "malloc shared_ptr failed.");
     return GRAPH_FAILED;
@@ -98,32 +100,32 @@ graphStatus Node::NodeImpl::Init(const NodePtr &node) {
 }
 
 std::string Node::NodeImpl::GetName() const {
-  GE_CHK_BOOL_EXEC(op_ != nullptr, REPORT_INNER_ERROR("E18888", "original OpDesc is nullptr");
-                   return std::string(), "[Check][Param] original OpDesc is nullptr");
+  GE_CHK_BOOL_EXEC(op_ != nullptr, REPORT_INNER_ERROR("E19999", "original OpDesc is nullptr");
+                   return string(), "[Check][Param] original OpDesc is nullptr");
   return op_->GetName();
 }
 
 std::string Node::NodeImpl::GetType() const {
-  GE_CHK_BOOL_EXEC(op_ != nullptr, REPORT_INNER_ERROR("E18888", "original OpDesc is nullptr");
-                   return std::string(), "[Check][Param] original OpDesc is nullptr");
+  GE_CHK_BOOL_EXEC(op_ != nullptr, REPORT_INNER_ERROR("E19999", "original OpDesc is nullptr");
+                   return string(), "[Check][Param] original OpDesc is nullptr");
   return op_->GetType();
 }
 
 bool Node::NodeImpl::NodeAttrsAreEqual(const NodeImpl &r_node) const {
   const auto &attr_map = this->attrs_;
   const auto &r_attr_map = r_node.attrs_;
-  // 1.Verify node's std::map<std::string, AttrValue> size
+  // 1.Verify node's map<string, AttrValue> size
   if (attr_map.size() != r_attr_map.size()) {
-    REPORT_INNER_ERROR("E18888", "param node attr map size:%zu not equal to this attr map size:%zu, "
+    REPORT_INNER_ERROR("E19999", "param node attr map size:%zu not equal to this attr map size:%zu, "
                        "verify failed, node name: %s.", r_attr_map.size(), attr_map.size(), this->GetName().c_str());
     GELOGE(GRAPH_FAILED, "[Check][Param] Size of node's attr map verify failed, node name: %s.",
            this->GetName().c_str());
     return false;
   }
-  // 2.Verify node's std::map<std::string, AttrValue> key, verify values is temporarily not implemented
+  // 2.Verify node's map<string, AttrValue> key, verify values is temporarily not implemented
   for (const auto &it : attr_map) {
-    if (r_attr_map.count(it.first) == 0U) {
-      REPORT_INNER_ERROR("E18888", "Key of node's attr map verify failed, node name: %s key name: %s.",
+    if (r_attr_map.count(it.first) == 0) {
+      REPORT_INNER_ERROR("E19999", "Key of node's attr map verify failed, node name: %s key name: %s.",
                          this->GetName().c_str(), it.first.c_str());
       GELOGE(GRAPH_FAILED, "[Check][Param] Key of node's attr map verify failed, node name: %s key name: %s.",
              this->GetName().c_str(), it.first.c_str());
@@ -144,16 +146,16 @@ bool Node::NodeImpl::NodeMembersAreEqual(const NodeImpl &r_node) const {
 
 bool Node::NodeImpl::NodeAnchorIsEqual(const AnchorPtr &left_anchor,
                                        const AnchorPtr &right_anchor,
-                                       const size_t i) const {
-  GE_IF_BOOL_EXEC(left_anchor == nullptr, REPORT_INNER_ERROR("E18888", "left_anchor is nullptr, check invalid.");
+                                       size_t i) const {
+  GE_IF_BOOL_EXEC(left_anchor == nullptr, REPORT_INNER_ERROR("E19999", "left_anchor is nullptr, check invalid.");
                   GELOGE(GRAPH_FAILED, "[Check][Param] left_anchor is null."); return false);
-  GE_IF_BOOL_EXEC(right_anchor == nullptr, REPORT_INNER_ERROR("E18888", "right_anchor is nullptr, check invalid.");
+  GE_IF_BOOL_EXEC(right_anchor == nullptr, REPORT_INNER_ERROR("E19999", "right_anchor is nullptr, check invalid.");
                   GELOGE(GRAPH_FAILED, "[Check][Param] right_anchor is null."); return false);
   const auto anchor_peer_size = left_anchor->GetPeerAnchors().size();
   const auto right_anchor_peer_size = right_anchor->GetPeerAnchors().size();
   // Firstly, verify anchor's peer anchors size equal or not
   if (anchor_peer_size != right_anchor_peer_size) {
-    REPORT_INNER_ERROR("E18888", "Size of anchor's peer anchors verify failed, node name: %s "
+    REPORT_INNER_ERROR("E19999", "Size of anchor's peer anchors verify failed, node name: %s "
                        "anchor_peer_size [%zu]  is different form [%zu] at index [%zu].",
                        this->GetName().c_str(), anchor_peer_size, right_anchor_peer_size, i);
     GELOGE(GRAPH_FAILED, "[Check][Param] Size of anchor's peer anchors verify failed, node name: %s "
@@ -162,11 +164,11 @@ bool Node::NodeImpl::NodeAnchorIsEqual(const AnchorPtr &left_anchor,
     return false;
   }
   // Secondly, verify anchor's peer anchor owner node equal or not
-  for (size_t j = 0UL; j < anchor_peer_size; j++) {
+  for (size_t j = 0; j < anchor_peer_size; j++) {
     const auto &peer_node = left_anchor->GetPeerAnchors().at(j)->GetOwnerNode();
     const auto &r_peer_node = right_anchor->GetPeerAnchors().at(j)->GetOwnerNode();
-    if ((peer_node == nullptr) || (r_peer_node == nullptr)) {
-      REPORT_CALL_ERROR("E18888", "anchor's peer node is null, node name: %s index[%zu] peer node index[%zu].",
+    if (peer_node == nullptr || r_peer_node == nullptr) {
+      REPORT_CALL_ERROR("E19999", "anchor's peer node is null, node name: %s index[%zu] peer node index[%zu].",
                         this->GetName().c_str(), i, j);
       GELOGE(GRAPH_FAILED, "[Get][OwnerNode] anchor's peer node is null, node name: %s index[%zu] "
              "peer node index[%zu].", this->GetName().c_str(), i, j);
@@ -174,7 +176,7 @@ bool Node::NodeImpl::NodeAnchorIsEqual(const AnchorPtr &left_anchor,
     }
     // Determine the connection relationship by linking the node's name
     if (peer_node->GetName() != r_peer_node->GetName()) {
-      REPORT_INNER_ERROR("E18888", "anchor's peer node name verify failed, node name: %s index[%zu]"
+      REPORT_INNER_ERROR("E19999", "anchor's peer node name verify failed, node name: %s index[%zu]"
                          "peer node name %s is different from %s at index [%zu].",
                          this->GetName().c_str(), i, peer_node->GetName().c_str(), r_peer_node->GetName().c_str(), j);
       GELOGE(GRAPH_FAILED, "[Check][Param] anchor's peer node name verify failed, node name: %s index[%zu]"
@@ -191,31 +193,31 @@ graphStatus Node::NodeImpl::AddLinkFrom(const NodePtr &input_node, const NodePtr
   GE_CHECK_NOTNULL(input_node);
   // Input_node ---> this
   auto out_anchors = input_node->GetAllOutDataAnchors();
-  if (out_anchors.size() != 1UL) {
-    REPORT_INNER_ERROR("E18888", "node:%s out_anchor size is:%zu, only support 1",
+  if (out_anchors.size() != 1) {
+    REPORT_INNER_ERROR("E19999", "node:%s out_anchor size is:%zu, only support 1",
                        input_node->GetName().c_str(), out_anchors.size());
     GELOGE(GRAPH_FAILED, "[Check][Param] out_anchor size is:%zu, only support 1", out_anchors.size());
     return GRAPH_PARAM_INVALID;
   }
-  GE_CHK_BOOL_EXEC(op_ != nullptr, REPORT_INNER_ERROR("E18888", "original OpDesc is nullptr");
+  GE_CHK_BOOL_EXEC(op_ != nullptr, REPORT_INNER_ERROR("E19999", "original OpDesc is nullptr");
                    return GRAPH_FAILED, "[Check][Param] original OpDesc is nullptr");
-  const auto op_desc = input_node->GetOpDesc();
+  auto op_desc = input_node->GetOpDesc();
   GE_CHECK_NOTNULL(op_desc);
 
-  if (op_->AddInputDesc(op_desc->GetOutputDesc(0U)) != GRAPH_SUCCESS) {
-    REPORT_CALL_ERROR("E18888", "add input desc failed, op:%s.", op_->GetName().c_str());
+  if (op_->AddInputDesc(op_desc->GetOutputDesc(0)) != GRAPH_SUCCESS) {
+    REPORT_CALL_ERROR("E19999", "add input desc failed, op:%s.", op_->GetName().c_str());
     GELOGE(GRAPH_FAILED, "[Add][InputDesc] failed.");
     return GRAPH_FAILED;
   }
-  const std::shared_ptr<InDataAnchor> anchor = ComGraphMakeShared<InDataAnchor>(owner_node, in_data_anchors_.size());
+  std::shared_ptr<InDataAnchor> anchor = ComGraphMakeShared<InDataAnchor>(owner_node, in_data_anchors_.size());
   if (anchor == nullptr) {
-    REPORT_CALL_ERROR("E18888", "out_anchor size is:%zu, malloc shared_ptr failed.", out_anchors.size());
+    REPORT_CALL_ERROR("E19999", "out_anchor size is:%zu, malloc shared_ptr failed.", out_anchors.size());
     GELOGE(GRAPH_FAILED, "[Create][InDataAnchor] out_anchor size is:%zu, malloc shared_ptr failed.",
            out_anchors.size());
     return GRAPH_FAILED;
   }
   in_data_anchors_.push_back(anchor);
-  (void) out_anchors.at(0U)->LinkTo(in_data_anchors_.back());
+  (void) out_anchors.at(0)->LinkTo(in_data_anchors_.back());
 
   return GRAPH_SUCCESS;
 }
@@ -226,36 +228,36 @@ graphStatus Node::NodeImpl::AddLinkFrom(const uint32_t &index,
   GE_CHECK_NOTNULL(input_node);
   // Input_node ---> this
   auto out_anchors = input_node->GetAllOutDataAnchors();
-  if (out_anchors.size() != 1UL) {
-    REPORT_INNER_ERROR("E18888", "node:%s out_anchor size is:%zu, only support 1",
+  if (out_anchors.size() != 1) {
+    REPORT_INNER_ERROR("E19999", "node:%s out_anchor size is:%zu, only support 1",
                        input_node->GetName().c_str(), out_anchors.size());
     GELOGE(GRAPH_FAILED, "[Check][Param] out_anchor size is:%zu, only support 1", out_anchors.size());
     return GRAPH_PARAM_INVALID;
   }
 
   GE_CHECK_NOTNULL(op_);
-  const auto op_desc = input_node->GetOpDesc();
+  auto op_desc = input_node->GetOpDesc();
   GE_CHECK_NOTNULL(op_desc);
 
-  if (op_->AddInputDesc(index, op_desc->GetOutputDesc(0U)) != GRAPH_SUCCESS) {
-    REPORT_CALL_ERROR("E18888", "add input desc failed, index:%u.", index);
+  if (op_->AddInputDesc(index, op_desc->GetOutputDesc(0)) != GRAPH_SUCCESS) {
+    REPORT_CALL_ERROR("E19999", "add input desc failed, index:%u.", index);
     GELOGE(GRAPH_FAILED, "[Add][InputDesc] failed.");
     return GRAPH_FAILED;
   }
 
   if (index < GetAllInDataAnchors(owner_node).size()) {
-    (void) out_anchors.at(0U)->LinkTo(in_data_anchors_[static_cast<size_t>(index)]);
+    (void) out_anchors.at(0)->LinkTo(in_data_anchors_[index]);
   } else {
-    const std::shared_ptr<InDataAnchor>
+    std::shared_ptr<InDataAnchor>
         anchor = ComGraphMakeShared<InDataAnchor>(owner_node, in_data_anchors_.size());
     if (anchor == nullptr) {
-      REPORT_CALL_ERROR("E18888", "out_anchor size is:%zu, malloc shared_ptr failed.", out_anchors.size());
+      REPORT_CALL_ERROR("E19999", "out_anchor size is:%zu, malloc shared_ptr failed.", out_anchors.size());
       GELOGE(GRAPH_FAILED, "[Create][InDataAnchor] out_anchor size is:%zu, malloc shared_ptr failed.",
              out_anchors.size());
       return GRAPH_FAILED;
     }
     in_data_anchors_.push_back(anchor);
-    (void) out_anchors.at(0U)->LinkTo(in_data_anchors_.back());
+    (void) out_anchors.at(0)->LinkTo(in_data_anchors_.back());
   }
 
   return GRAPH_SUCCESS;
@@ -266,58 +268,63 @@ graphStatus Node::NodeImpl::AddLinkFromForParse(const NodePtr &input_node, const
   GE_CHECK_NOTNULL(input_node);
   // Input_node ---> this
   auto out_anchors = input_node->GetAllOutDataAnchors();
-  if (out_anchors.size() != 1UL) {
-    REPORT_INNER_ERROR("E18888", "node:%s out_anchor size is:%zu, only support 1",
+  if (out_anchors.size() != 1) {
+    REPORT_INNER_ERROR("E19999", "node:%s out_anchor size is:%zu, only support 1",
                        input_node->GetName().c_str(), out_anchors.size());
     GELOGE(GRAPH_PARAM_INVALID, "[Check][Param] out_anchor size is:%zu, only support 1", out_anchors.size());
     return GRAPH_PARAM_INVALID;
   }
 
-  const std::shared_ptr<InDataAnchor> anchor = ComGraphMakeShared<InDataAnchor>(owner_node, in_data_anchors_.size());
+  std::shared_ptr<InDataAnchor> anchor = ComGraphMakeShared<InDataAnchor>(owner_node, in_data_anchors_.size());
   if (anchor == nullptr) {
-    REPORT_CALL_ERROR("E18888", "out_anchor size is:%zu, make anchor failed", out_anchors.size());
+    REPORT_CALL_ERROR("E19999", "out_anchor size is:%zu, make anchor failed", out_anchors.size());
     GELOGE(GRAPH_FAILED, "[Create][InDataAnchor] out_anchor size is:%zu, make anchor failed", out_anchors.size());
     return GRAPH_FAILED;
   }
   in_data_anchors_.push_back(anchor);
-  (void)out_anchors.at(0U)->LinkTo(in_data_anchors_.back());
+  (void)out_anchors.at(0)->LinkTo(in_data_anchors_.back());
 
   return GRAPH_SUCCESS;
 }
 
-graphStatus Node::NodeImpl::AddLinkFrom(const std::string &name, const NodePtr &input_node, const NodePtr &owner_node) {
+graphStatus Node::NodeImpl::AddLinkFrom(const string &name, const NodePtr &input_node, const NodePtr &owner_node) {
   GE_CHECK_NOTNULL(input_node);
   // Input_node ---> this
   auto out_anchors = input_node->GetAllOutDataAnchors();
-  if (out_anchors.size() != 1UL) {
-    REPORT_INNER_ERROR("E18888", "node:%s out_anchor size is:%zu, only support 1",
+  if (out_anchors.size() != 1) {
+    REPORT_INNER_ERROR("E19999", "node:%s out_anchor size is:%zu, only support 1",
                        input_node->GetName().c_str(), out_anchors.size());
     GELOGE(GRAPH_PARAM_INVALID, "[Check][Param] out_anchor size is:%zu, only support 1", out_anchors.size());
     return GRAPH_PARAM_INVALID;
   }
 
   GE_CHECK_NOTNULL(op_);
-  const auto input_op_desc = input_node->GetOpDesc();
+  auto input_op_desc = input_node->GetOpDesc();
   GE_CHECK_NOTNULL(input_op_desc);
-  const auto index = op_->GetInputIndexByName(name);
+  auto index = op_->GetInputIndexByName(name);
   if (index != -1) {
-    if (index >= static_cast<int32_t>(in_data_anchors_.size())) {
-      REPORT_INNER_ERROR("E18888", "op %s get input name %s 's index %d is illegal as which >= indataanchors size:%zu.",
+    if (index >= static_cast<int>(in_data_anchors_.size())) {
+      REPORT_INNER_ERROR("E19999", "op %s get input name %s 's index %d is illegal as which >= indataanchors size:%zu.",
                          op_->GetName().c_str(), name.c_str(), index, in_data_anchors_.size());
       GELOGE(GRAPH_FAILED, "[Check][Param] op %s get input name %s 's index %d is illegal.",
              op_->GetName().c_str(), name.c_str(), index);
       return GRAPH_FAILED;
     }
-    (void) out_anchors.at(0U)->LinkTo(in_data_anchors_[static_cast<size_t>(index)]);
+    (void) out_anchors.at(0)->LinkTo(in_data_anchors_[index]);
   } else {
-    const std::shared_ptr<InDataAnchor>
+    std::shared_ptr<InDataAnchor>
         anchor = ComGraphMakeShared<InDataAnchor>(owner_node, in_data_anchors_.size());
-    GE_CHECK_NOTNULL(anchor);
+    if (anchor == nullptr) {
+      REPORT_CALL_ERROR("E19999", "in_data_anchors_size is:%zu, malloc shared_ptr failed.", in_data_anchors_.size());
+      GELOGE(GRAPH_FAILED, "[Create][InDataAnchor] in_data_anchors_size is:%zu, malloc shared_ptr failed.",
+             in_data_anchors_.size());
+      return GRAPH_FAILED;
+    }
     in_data_anchors_.push_back(anchor);
-    (void) out_anchors.at(0U)->LinkTo(in_data_anchors_.back());
+    (void) out_anchors.at(0)->LinkTo(in_data_anchors_.back());
   }
-  if (op_->AddInputDesc(name, input_op_desc->GetOutputDesc(0U)) != GRAPH_SUCCESS) {
-    REPORT_CALL_ERROR("E18888", "add input desc failed, name:%s, op:%s", name.c_str(), op_->GetName().c_str());
+  if (op_->AddInputDesc(name, input_op_desc->GetOutputDesc(0)) != GRAPH_SUCCESS) {
+    REPORT_CALL_ERROR("E19999", "add input desc failed, name:%s, op:%s", name.c_str(), op_->GetName().c_str());
     GELOGE(GRAPH_FAILED, "[Add][InputDesc] failed.");
     return GRAPH_FAILED;
   }
@@ -351,26 +358,26 @@ Node::Vistor<OutDataAnchorPtr> Node::NodeImpl::GetAllOutDataAnchors(const ConstN
 }
 
 uint32_t Node::NodeImpl::GetAllInDataAnchorsSize() const {
-  return static_cast<uint32_t>(in_data_anchors_.size());
+  return in_data_anchors_.size();
 }
 
 uint32_t Node::NodeImpl::GetAllOutDataAnchorsSize() const {
-  return static_cast<uint32_t>(out_data_anchors_.size());
+  return out_data_anchors_.size();
 }
 
 Node::Vistor<AnchorPtr> Node::NodeImpl::GetAllInAnchors(const ConstNodePtr &owner_node) const {
   std::vector<AnchorPtr> vec;
   // Push back in_data_anchors_
   for (const auto &in_anchor_iter : Node::Vistor<InDataAnchorPtr>(owner_node, in_data_anchors_)) {
-    const auto in_anchor = Anchor::DynamicAnchorCast<Anchor>(in_anchor_iter);
+    auto in_anchor = Anchor::DynamicAnchorCast<Anchor>(in_anchor_iter);
     if (in_anchor != nullptr) {
       vec.push_back(in_anchor);
     }
   }
   // Push back in_control_anchor_
-  if ((in_control_anchor_->GetPeerOutControlAnchors().size() > 0UL) ||
-      (in_control_anchor_->GetPeerOutDataAnchors().size() > 0UL)) {
-    const auto in_anchor = Anchor::DynamicAnchorCast<Anchor>(in_control_anchor_);
+  if ((in_control_anchor_->GetPeerOutControlAnchors().size() > 0) ||
+      (in_control_anchor_->GetPeerOutDataAnchors().size() > 0)) {
+    auto in_anchor = Anchor::DynamicAnchorCast<Anchor>(in_control_anchor_);
     if (in_anchor != nullptr) {
       vec.push_back(in_anchor);
     }
@@ -382,15 +389,15 @@ Node::Vistor<AnchorPtr> Node::NodeImpl::GetAllOutAnchors(const ConstNodePtr &own
   std::vector<AnchorPtr> vec;
   // Push back out_data_anchors_
   for (const auto &out_anchor_iter : Node::Vistor<OutDataAnchorPtr>(owner_node, out_data_anchors_)) {
-    const auto out_anchor = Anchor::DynamicAnchorCast<Anchor>(out_anchor_iter);
+    auto out_anchor = Anchor::DynamicAnchorCast<Anchor>(out_anchor_iter);
     if (out_anchor != nullptr) {
       vec.push_back(out_anchor);
     }
   }
   // Push back out_control_anchor_
-  if ((out_control_anchor_->GetPeerInControlAnchors().size() > 0UL) ||
-      (out_control_anchor_->GetPeerInDataAnchors().size() > 0UL)) {
-    const auto out_anchor = Anchor::DynamicAnchorCast<Anchor>(out_control_anchor_);
+  if (out_control_anchor_->GetPeerInControlAnchors().size() > 0 ||
+      out_control_anchor_->GetPeerInDataAnchors().size() > 0) {
+    auto out_anchor = Anchor::DynamicAnchorCast<Anchor>(out_control_anchor_);
     if (out_anchor != nullptr) {
       vec.push_back(out_anchor);
     }
@@ -398,34 +405,35 @@ Node::Vistor<AnchorPtr> Node::NodeImpl::GetAllOutAnchors(const ConstNodePtr &own
   return Node::Vistor<AnchorPtr>(owner_node, vec);
 }
 
-InDataAnchorPtr Node::NodeImpl::GetInDataAnchor(const int32_t idx) const {
-  if ((idx < 0) || (idx >= static_cast<int32_t>(in_data_anchors_.size()))) {
+InDataAnchorPtr Node::NodeImpl::GetInDataAnchor(int idx) const {
+  if (idx < 0 || idx >= static_cast<int>(in_data_anchors_.size())) {
     GELOGW("[Check][Param] Op %s doesn't have data input %d, type = %s", GetName().c_str(), idx, GetType().c_str());
     return nullptr;
   } else {
-    return in_data_anchors_[static_cast<size_t>(idx)];
+    return in_data_anchors_[idx];
   }
 }
 
-AnchorPtr Node::NodeImpl::GetInAnchor(const int32_t idx) const {
+AnchorPtr Node::NodeImpl::GetInAnchor(int idx) const {
   // Idx can't be less than -1 or >= in_data_anchors_.size(), -1 means index of control anchor_
-  if ((idx < -1) || (idx >= static_cast<int32_t>(in_data_anchors_.size()))) {
+  if (idx < -1 || idx >= static_cast<int>(in_data_anchors_.size())) {
     GELOGW("[Check][Param] Op %s doesn't have input %d, type = %s", GetName().c_str(), idx, GetType().c_str());
     return nullptr;
   } else {
     // Return control anchor
     if (idx == -1) {
-      return Anchor::DynamicAnchorCast<Anchor>(in_control_anchor_);
+      auto in_anchor = Anchor::DynamicAnchorCast<Anchor>(in_control_anchor_);
+      return in_anchor;
     }
     // Return data anchor
-    return in_data_anchors_[static_cast<size_t>(idx)];
+    return in_data_anchors_[idx];
   }
 }
 
-AnchorPtr Node::NodeImpl::GetOutAnchor(const int32_t idx) const {
+AnchorPtr Node::NodeImpl::GetOutAnchor(int idx) const {
   // Idx can't be less than -1 or >= out_data_anchors_.size(), -1 means index of control anchor_
-  if ((idx < -1) || (idx >= static_cast<int32_t>(out_data_anchors_.size()))) {
-    REPORT_INNER_ERROR("E18888", "Op:%s(%s) doesn't have index:%d's anchorname",
+  if (idx < -1 || idx >= static_cast<int>(out_data_anchors_.size())) {
+    REPORT_INNER_ERROR("E19999", "Op:%s(%s) doesn't have index:%d's anchorname",
                        GetName().c_str(), GetType().c_str(), idx);
     GELOGE(GRAPH_FAILED, "[Check][Param] Op[%s] doesn't have index[%d]'s out_anchor which optype is %s.",
            GetName().c_str(), idx, GetType().c_str());
@@ -433,22 +441,23 @@ AnchorPtr Node::NodeImpl::GetOutAnchor(const int32_t idx) const {
   } else {
     // Return control anchor
     if (idx == -1) {
-      return Anchor::DynamicAnchorCast<Anchor>(out_control_anchor_);
+      auto out_anchor = Anchor::DynamicAnchorCast<Anchor>(out_control_anchor_);
+      return out_anchor;
     }
     // Return data anchor
-    return out_data_anchors_[static_cast<size_t>(idx)];
+    return out_data_anchors_[idx];
   }
 }
 
-OutDataAnchorPtr Node::NodeImpl::GetOutDataAnchor(const int32_t idx) const {
-  if ((idx < 0) || (idx >= static_cast<int32_t>(out_data_anchors_.size()))) {
-    REPORT_INNER_ERROR("E18888", "Op:%s(%s) doesn't have index:%d's anchorname",
+OutDataAnchorPtr Node::NodeImpl::GetOutDataAnchor(int idx) const {
+  if (idx < 0 || idx >= static_cast<int>(out_data_anchors_.size())) {
+    REPORT_INNER_ERROR("E19999", "Op:%s(%s) doesn't have index:%d's anchorname",
                        GetName().c_str(), GetType().c_str(), idx);
     GELOGE(GRAPH_FAILED, "[Check][Param] Op[%s] doesn't have index[%d]'s out_data_anchor which optype is %s.",
            GetName().c_str(), idx, GetType().c_str());
     return nullptr;
   } else {
-    return out_data_anchors_[static_cast<size_t>(idx)];
+    return out_data_anchors_[idx];
   }
 }
 
@@ -465,11 +474,13 @@ Node::Vistor<NodePtr> Node::NodeImpl::GetInNodes(const ge::ConstNodePtr &owner_n
   for (const auto &in_anchor : in_data_anchors_) {
     GE_CHK_BOOL_EXEC((in_anchor != nullptr),
                      continue, "[Check][Param] node:%s in_data_anchor is nullptr", GetName().c_str());
-    const auto out_anchor = in_anchor->GetPeerOutAnchor();
+    auto out_anchor = in_anchor->GetPeerOutAnchor();
     if (out_anchor == nullptr) {
       continue;
     }
-    const auto node = out_anchor->GetOwnerNode();
+    auto node = out_anchor->GetOwnerNode();
+    GE_CHK_BOOL_EXEC(node != nullptr,
+                     continue, "[Get][OwnerNode] node:%s out anchor OwnerNode is nullptr.", GetName().c_str());
     vec.push_back(node);
   }
   if (in_control_anchor_ != nullptr) {
@@ -477,45 +488,48 @@ Node::Vistor<NodePtr> Node::NodeImpl::GetInNodes(const ge::ConstNodePtr &owner_n
       return Node::Vistor<NodePtr>(owner_node, vec);
     }
 
-    const auto peer_out_anchors = in_control_anchor_->GetPeerOutDataAnchors();
+    auto peer_out_anchors = in_control_anchor_->GetPeerOutDataAnchors();
     for (const auto &out_anchor : peer_out_anchors) {
       GE_CHK_BOOL_EXEC(out_anchor != nullptr, continue,
                        "[Check][Param] node:%s in_control_anchor_ peer out data anchors is nullptr",
                        GetName().c_str());
-      const auto node = out_anchor->GetOwnerNode();
+      auto node = out_anchor->GetOwnerNode();
+      GE_CHK_BOOL_EXEC(node != nullptr, continue,
+                       "[Get][OwnerNode] node:%s control anchor peer data anchors ownernode is nullptr",
+                       GetName().c_str());
       vec.push_back(node);
     }
 
-    const auto peer_out_control_anchors = in_control_anchor_->GetPeerOutControlAnchors();
+    auto peer_out_control_anchors = in_control_anchor_->GetPeerOutControlAnchors();
     for (const auto &out_control_anchor : peer_out_control_anchors) {
-      const auto node = out_control_anchor->GetOwnerNode();
+      GE_CHK_BOOL_EXEC(out_control_anchor != nullptr, continue,
+                       "[Check][Param] node:%s in_control_anchor_ peer out control anchor is nullptr",
+                       GetName().c_str());
+      auto node = out_control_anchor->GetOwnerNode();
+      GE_CHK_BOOL_EXEC(node != nullptr, continue,
+                       "[Get][OwnerNode] node:%s in control anchor peer control anchor ownernode is nullptr",
+                       GetName().c_str());
       vec.push_back(node);
     }
   }
   return Node::Vistor<NodePtr>(owner_node, vec);
 }
 
-bool Node::NodeImpl::IsAllInNodesSeen(const std::unordered_set<Node *> &nodes_seen) const {
+bool Node::NodeImpl::IsAllInNodesSeen(std::unordered_set<Node *> &nodes_seen) const {
   for (const auto &in_anchor : in_data_anchors_) {
     GE_CHK_BOOL_EXEC((in_anchor != nullptr),
                      continue, "[Check][Param] in_data_anchor is nullptr, node:%s", GetName().c_str());
-    const auto out_anchor = in_anchor->GetPeerOutAnchor();
+    auto out_anchor = in_anchor->GetPeerOutAnchor();
     if (out_anchor == nullptr) {
       continue;
     }
-    const auto node = out_anchor->GetOwnerNode();
-    if (node == nullptr) {
-      REPORT_CALL_ERROR("E18888", "peer node is null, node name: %s input index[%d] peer node output index[%d].",
-                        GetName().c_str(), in_anchor->GetIdx(), out_anchor->GetIdx());
-      GELOGE(GRAPH_FAILED,
-             "[Get][OwnerNode] peer node is null, node name: %s input index[%d] peer node output index[%d].",
-             GetName().c_str(), in_anchor->GetIdx(), out_anchor->GetIdx());
-      return false;
-    }
+    auto node = out_anchor->GetOwnerNode();
+    GE_CHK_BOOL_EXEC(node != nullptr, continue,
+                     "[Get][OwnerNode] of peer out anchor is nullptr, node:%s", GetName().c_str());
     if ((node->GetType() == NEXTITERATION) || (node->GetType() == REFNEXTITERATION)) {
       continue;
     }
-    if (nodes_seen.count(node.get()) == 0U) {
+    if (nodes_seen.count(node.get()) == 0) {
       return false;
     }
   }
@@ -524,13 +538,17 @@ bool Node::NodeImpl::IsAllInNodesSeen(const std::unordered_set<Node *> &nodes_se
     if (in_control_anchor_->IsPeerOutAnchorsEmpty()) {
       return true;
     }
-    const auto peer_out_control_anchors = in_control_anchor_->GetPeerOutControlAnchors();
+    auto peer_out_control_anchors = in_control_anchor_->GetPeerOutControlAnchors();
     for (const auto &out_control_anchor : peer_out_control_anchors) {
-      const auto node = out_control_anchor->GetOwnerNode();
+      GE_CHK_BOOL_EXEC(out_control_anchor != nullptr, continue,
+                       "[Check][Param] out_control_anchor is nullptr, node:%s", GetName().c_str());
+      auto node = out_control_anchor->GetOwnerNode();
+      GE_CHK_BOOL_EXEC(node != nullptr, continue,
+                       "[Get][OwnerNode] of peer out control anchor is nullptr, node:%s", GetName().c_str());
       if ((node->GetType() == NEXTITERATION) || (node->GetType() == REFNEXTITERATION)) {
         continue;
       }
-      if (nodes_seen.count(node.get()) == 0U) {
+      if (nodes_seen.count(node.get()) == 0) {
         return false;
       }
     }
@@ -544,11 +562,13 @@ Node::Vistor<NodePtr> Node::NodeImpl::GetInDataNodes(const ge::ConstNodePtr &own
   for (const auto &in_anchor : in_data_anchors_) {
     GE_CHK_BOOL_EXEC((in_anchor != nullptr), continue,
                      "[Check][Param] in_data_anchor is nullptr, node:%s", GetName().c_str());
-    const auto anchor_ptr = in_anchor->GetPeerOutAnchor();
+    auto anchor_ptr = in_anchor->GetPeerOutAnchor();
     if (anchor_ptr == nullptr) {
       continue;
     }
-    const auto node = anchor_ptr->GetOwnerNode();
+    auto node = anchor_ptr->GetOwnerNode();
+    GE_CHK_BOOL_EXEC(node != nullptr, continue,
+                     "[Get][OwnerNode] of peer out anchor is nullptr, node:%s", GetName().c_str());
     vec.push_back(node);
   }
   return Node::Vistor<NodePtr>(owner_node, vec);
@@ -558,7 +578,11 @@ Node::Vistor<NodePtr> Node::NodeImpl::GetInControlNodes(const ge::ConstNodePtr &
   std::vector<NodePtr> vec;
   if (in_control_anchor_ != nullptr) {
     for (const auto &in_anchor : in_control_anchor_->GetPeerOutControlAnchors()) {
-      const auto node = in_anchor->GetOwnerNode();
+      GE_CHK_BOOL_EXEC(in_anchor != nullptr, continue,
+                       "[Check][Param] out control anchor is nullptr, node:%s", GetName().c_str());
+      auto node = in_anchor->GetOwnerNode();
+      GE_CHK_BOOL_EXEC(node != nullptr, continue,
+                       "[Get][OwnerNode] of out control anchor is nullptr, node:%s", GetName().c_str());
       vec.push_back(node);
     }
   }
@@ -571,14 +595,22 @@ Node::Vistor<NodePtr> Node::NodeImpl::GetOutNodes(const ge::ConstNodePtr &owner_
     GE_CHK_BOOL_EXEC((out_anchor != nullptr), continue,
                      "[Check][Param] out data anchor is nullptr, node:%s", GetName().c_str());
     for (const auto &peer_in_anchor : out_anchor->GetPeerInDataAnchors()) {
-      const auto node = peer_in_anchor->GetOwnerNode();
+      GE_CHK_BOOL_EXEC((peer_in_anchor != nullptr), continue,
+                       "[Check][Param] Peer InDataAnchor is nullptr, node:%s", GetName().c_str());
+      auto node = peer_in_anchor->GetOwnerNode();
+      GE_CHK_BOOL_EXEC(node != nullptr, continue,
+                       "[Get][OwnerNode] of peer in data anchor is nullptr, node:%s", GetName().c_str());
       vec.push_back(node);
     }
   }
   if (out_control_anchor_ != nullptr) {
-    const auto peer_in_control_anchors = out_control_anchor_->GetPeerInControlAnchors();
+    auto peer_in_control_anchors = out_control_anchor_->GetPeerInControlAnchors();
     for (const auto &in_control_anchor : peer_in_control_anchors) {
-      const auto node = in_control_anchor->GetOwnerNode();
+      GE_CHK_BOOL_EXEC(in_control_anchor != nullptr, continue,
+                       "[Check][Param] peer in control anchor is nullptr, node:%s", GetName().c_str());
+      auto node = in_control_anchor->GetOwnerNode();
+      GE_CHK_BOOL_EXEC(node != nullptr, continue,
+                       "[Get][OwnerNode] of peer in control anchor is nullptr, node:%s", GetName().c_str());
       vec.push_back(node);
     }
   }
@@ -596,7 +628,7 @@ Node::Vistor<NodePtr> Node::NodeImpl::GetInAllNodes(const ge::ConstNodePtr &owne
   return Node::Vistor<NodePtr>(owner_node, vec);
 }
 
-Node::Vistor<NodePtr> Node::NodeImpl::GetOutDataNodes(const ConstNodePtr &owner_node) const {
+Node::Vistor<NodePtr> Node::NodeImpl::GetOutDataNodes(const std::shared_ptr<const Node> &owner_node) const {
   std::vector<NodePtr> vec;
   for (const auto &out_anchor : out_data_anchors_) {
     GE_CHK_BOOL_EXEC((out_anchor != nullptr), continue,
@@ -604,7 +636,9 @@ Node::Vistor<NodePtr> Node::NodeImpl::GetOutDataNodes(const ConstNodePtr &owner_
     for (const auto &in_anchor : out_anchor->GetPeerInDataAnchors()) {
       GE_CHK_BOOL_EXEC((in_anchor != nullptr), continue,
                        "[Check][Param] out anchor GetPeerInDataAnchors is nullptr, node:%s", GetName().c_str());
-      const auto node = in_anchor->GetOwnerNode();
+      auto node = in_anchor->GetOwnerNode();
+      GE_CHK_BOOL_EXEC(node != nullptr, continue,
+                       "[Get][OwnerNode] of peer in data anchor is nullptr, node:%s", GetName().c_str());
       vec.push_back(node);
     }
   }
@@ -612,7 +646,7 @@ Node::Vistor<NodePtr> Node::NodeImpl::GetOutDataNodes(const ConstNodePtr &owner_
 }
 
 uint32_t Node::NodeImpl::GetOutDataNodesSize() const {
-  uint32_t out_nums = 0U;
+  uint32_t out_nums = 0;
   for (const auto &out_anchor : out_data_anchors_) {
     GE_CHK_BOOL_EXEC((out_anchor != nullptr), continue,
                      "[Check][Param] out data anchor is nullptr, node:%s", GetName().c_str());
@@ -630,15 +664,21 @@ Node::Vistor<NodePtr> Node::NodeImpl::GetOutControlNodes(const ge::ConstNodePtr 
     for (const auto &in_anchor : out_anchor->GetPeerInControlAnchors()) {
       GE_CHK_BOOL_EXEC((in_anchor != nullptr), continue,
                        "[Check][Param] Peer In Control Anchor is nullptr, node:%s", GetName().c_str());
-      const auto in_node = in_anchor->GetOwnerNode();
-      vec.push_back(in_node);
+      auto node = in_anchor->GetOwnerNode();
+      GE_CHK_BOOL_EXEC(node != nullptr, continue,
+                       "[Get][OwnerNode] of peer in control anchor is nullptr, node:%s", GetName().c_str());
+      vec.push_back(node);
     }
   }
 
   if (out_control_anchor_ != nullptr) {
     for (const auto &in_anchor : out_control_anchor_->GetPeerAnchors()) {
-      const auto in_node = in_anchor->GetOwnerNode();
-      vec.push_back(in_node);
+      GE_CHK_BOOL_EXEC(in_anchor != nullptr, continue,
+                       "[Check][Param] Peer In Anchor is nullptr, node:%s", GetName().c_str());
+      auto node = in_anchor->GetOwnerNode();
+      GE_CHK_BOOL_EXEC(node != nullptr, continue,
+                       "[Get][OwnerNode] of peer in anchor is nullptr, node:%s", GetName().c_str());
+      vec.push_back(node);
     }
   }
 
@@ -651,20 +691,30 @@ Node::Vistor<NodePtr> Node::NodeImpl::GetOutAllNodes(const ge::ConstNodePtr &own
     GE_CHK_BOOL_EXEC((out_anchor != nullptr), { continue; },
                      "[Check][Param] out data anchor is nullptr, node:%s", GetName().c_str());
     for (const auto &in_anchor : out_anchor->GetPeerInDataAnchors()) {
-      const auto node = in_anchor->GetOwnerNode();
+      GE_CHK_BOOL_EXEC((in_anchor != nullptr), { continue; },
+                       "[Check][Param] Peer In Data Anchor is nullptr, node:%s", GetName().c_str());
+      auto node = in_anchor->GetOwnerNode();
+      GE_CHK_BOOL_EXEC(node != nullptr, continue,
+                       "[Check][Param] node:%s peer in data anchor owner node is nullptr", GetName().c_str());
       vec.push_back(node);
     }
     for (const auto &in_anchor : out_anchor->GetPeerInControlAnchors()) {
       GE_CHK_BOOL_EXEC(in_anchor != nullptr, continue,
                        "[Check][Param] node:%s Peer In Control Anchor is nullptr", GetName().c_str());
-      const auto node = in_anchor->GetOwnerNode();
+      auto node = in_anchor->GetOwnerNode();
+      GE_CHK_BOOL_EXEC(node != nullptr, continue,
+                       "[Check][Param] node:%s peer in control anchor owner node is nullptr", GetName().c_str());
       vec.push_back(node);
     }
   }
 
   if (out_control_anchor_ != nullptr) {
     for (const auto &in_anchor : out_control_anchor_->GetPeerAnchors()) {
-      const auto node = in_anchor->GetOwnerNode();
+      GE_CHK_BOOL_EXEC(in_anchor != nullptr, continue,
+                       "[Check][Param] node:%s Peer In Control Anchor is nullptr", GetName().c_str());
+      auto node = in_anchor->GetOwnerNode();
+      GE_CHK_BOOL_EXEC(node != nullptr, continue,
+                       "[Check][Param] node:%s peer in control anchor Owner Node is nullptr", GetName().c_str());
       vec.push_back(node);
     }
   }
@@ -673,25 +723,26 @@ Node::Vistor<NodePtr> Node::NodeImpl::GetOutAllNodes(const ge::ConstNodePtr &own
 
 graphStatus Node::NodeImpl::InferShapeAndType(const ge::ConstNodePtr &owner_node) const {
   Operator op = ge::OpDescUtils::CreateOperatorFromNode(owner_node);
-  return ShapeRefiner::InferShapeAndType(owner_node, op);
+  graphStatus ret = ShapeRefiner::InferShapeAndType(owner_node, op);
+  return ret;
 }
 
 graphStatus Node::NodeImpl::InferOriginFormat(const ge::ConstNodePtr &owner_node) const {
   Operator op = ge::OpDescUtils::CreateOperatorFromNode(owner_node);
   // Get infer func and execute
-  GE_CHK_BOOL_EXEC(op_ != nullptr, REPORT_INNER_ERROR("E18888", "original OpDesc is nullptr, check invalid.");
+  GE_CHK_BOOL_EXEC(op_ != nullptr, REPORT_INNER_ERROR("E19999", "original OpDesc is nullptr, check invalid.");
                    return GRAPH_FAILED, "[Check][Param] original OpDesc is nullptr");
   return op_->CallInferFormatFunc(op);
 }
 
 graphStatus Node::NodeImpl::Verify(const ge::ConstNodePtr &owner_node) const {
-  const std::string data_type = "Data";
-  const std::string aipp_data_type = "AippData";
-  const std::string const_type = "Const";
-  const std::string const_type_train = "Constant";
-  const std::string variable_type = "Variable";
-  const bool is_unknown_graph = GetOwnerComputeGraph()->GetGraphUnknownFlag();
-  GE_CHK_BOOL_EXEC(op_ != nullptr, REPORT_INNER_ERROR("E18888", "original OpDesc is nullptr, check invalid.");
+  const string data_type = "Data";
+  const string aipp_data_type = "AippData";
+  const string const_type = "Const";
+  const string const_type_train = "Constant";
+  const string variable_type = "Variable";
+  bool is_unknown_graph = GetOwnerComputeGraph()->GetGraphUnknownFlag();
+  GE_CHK_BOOL_EXEC(op_ != nullptr, REPORT_INNER_ERROR("E19999", "original OpDesc is nullptr, check invalid.");
                    return GRAPH_FAILED, "[Check][Param] original OpDesc is nullptr");
 
   if (!is_unknown_graph) {
@@ -700,11 +751,11 @@ graphStatus Node::NodeImpl::Verify(const ge::ConstNodePtr &owner_node) const {
         GELOGW("[Verify][CheckParam] In data anchor is null");
         continue;
       }
-      const bool valid_anchor = (op_->GetType() == data_type) || (op_->GetType() == aipp_data_type) ||
-                                (op_->GetType() == const_type) || (op_->GetType() == variable_type) ||
-                                (op_->GetType() == const_type_train) ||
-                                (op_->MutableInputDesc(static_cast<uint32_t>(in_anchor_ptr->GetIdx())) == nullptr) ||
-                                (in_anchor_ptr->GetPeerAnchors().size() > 0UL);
+      bool valid_anchor = op_->GetType() == data_type || op_->GetType() == aipp_data_type ||
+                          op_->GetType() == const_type || op_->GetType() == variable_type ||
+                          op_->GetType() == const_type_train ||
+                          op_->MutableInputDesc(in_anchor_ptr->GetIdx()) == nullptr ||
+                          in_anchor_ptr->GetPeerAnchors().size() > 0;
       if (!valid_anchor) {
         ErrorManager::GetInstance().ATCReportErrMessage("E11019", {"opname", "index"},
                                                         {GetName(), std::to_string(in_anchor_ptr->GetIdx())});
@@ -715,17 +766,17 @@ graphStatus Node::NodeImpl::Verify(const ge::ConstNodePtr &owner_node) const {
     }
   }
 
-  const std::string frameworkop_type = "FrameworkOp";
-  const bool need_update_name = (op_->GetType() != frameworkop_type) && (!is_unknown_graph);
+  string frameworkop_type = "FrameworkOp";
+  bool need_update_name = op_->GetType() != frameworkop_type && !is_unknown_graph;
   if (need_update_name) {
-    const auto node_op = ge::OperatorFactoryImpl::CreateOperator("node_op", op_->GetType());
+    auto node_op = ge::OperatorFactoryImpl::CreateOperator("node_op", op_->GetType());
     if (node_op.IsEmpty()) {
       GELOGW("[Verify][CheckParam] Get op from OperatorFactory failed, type: %s", op_->GetType().c_str());
     } else {
       GELOGD("get op from OperatorFactory success. opType: %s", op_->GetType().c_str());
-      const auto temp_op_desc = ge::OpDescUtils::GetOpDescFromOperator(node_op);
+      auto temp_op_desc = ge::OpDescUtils::GetOpDescFromOperator(node_op);
       if (temp_op_desc == nullptr) {
-        REPORT_INNER_ERROR("E18888", "GetOpDescFromOperator failed, as return nullptr, type:%s",
+        REPORT_INNER_ERROR("E19999", "GetOpDescFromOperator failed, as return nullptr, type:%s",
                            op_->GetType().c_str());
         GELOGE(GRAPH_FAILED, "[Get][OpDesc] temp op desc is null, type:%s", op_->GetType().c_str());
         return GRAPH_FAILED;
@@ -747,11 +798,11 @@ graphStatus Node::NodeImpl::Verify(const ge::ConstNodePtr &owner_node) const {
       verify_func = OperatorFactoryImpl::GetVerifyFunc(GetType());
     }
     if (verify_func != nullptr) {
-      return static_cast<graphStatus>(verify_func(op_proxy));
+      return (graphStatus)verify_func(op_proxy);
     }
     return GRAPH_SUCCESS;
   } else {
-    REPORT_CALL_ERROR("E18888", "%s(%s) Verify failed.", op_->GetName().c_str(), op_->GetType().c_str());
+    REPORT_CALL_ERROR("E19999", "%s(%s) Verify failed.", op_->GetName().c_str(), op_->GetType().c_str());
     GELOGE(GRAPH_FAILED, "[Call][CommonVerify] %s(%s) Verify failed.", op_->GetName().c_str(), op_->GetType().c_str());
     return GRAPH_FAILED;
   }
@@ -760,12 +811,12 @@ graphStatus Node::NodeImpl::Verify(const ge::ConstNodePtr &owner_node) const {
 OpDescPtr Node::NodeImpl::GetOpDesc() const { return op_; }
 
 graphStatus Node::NodeImpl::UpdateOpDesc(const OpDescPtr &op_desc) {
-  GE_CHK_BOOL_EXEC(op_ != nullptr, REPORT_INNER_ERROR("E18888", "original OpDesc is nullptr");
+  GE_CHK_BOOL_EXEC(op_ != nullptr, REPORT_INNER_ERROR("E19999", "original OpDesc is nullptr");
           return GRAPH_FAILED, "[Check][Param] original OpDesc is nullptr");
-  GE_CHK_BOOL_EXEC(op_desc != nullptr, REPORT_INNER_ERROR("E18888", "param op_desc is nullptr, check invalid.");
+  GE_CHK_BOOL_EXEC(op_desc != nullptr, REPORT_INNER_ERROR("E19999", "param op_desc is nullptr, check invalid.");
           return GRAPH_PARAM_INVALID, "[Check][Param] Param OpDesc is nullptr");
   GE_CHK_BOOL_EXEC(op_->GetInputsSize() == op_desc->GetInputsSize(),
-                   REPORT_INNER_ERROR("E18888", "inputs count(%zu) of param op_desc not equal to "
+                   REPORT_INNER_ERROR("E19999", "inputs count(%zu) of param op_desc not equal to "
                                                 "inputs count(%zu) of original opdesc:%s, check invalid",
                                       op_desc->GetInputsSize(), op_->GetInputsSize(), op_->GetName().c_str());
                            return GRAPH_PARAM_INVALID,
@@ -773,7 +824,7 @@ graphStatus Node::NodeImpl::UpdateOpDesc(const OpDescPtr &op_desc) {
                    op_->GetInputsSize(), op_desc->GetInputsSize());
 
   GE_CHK_BOOL_EXEC(op_->GetOutputsSize() == op_desc->GetOutputsSize(),
-                   REPORT_INNER_ERROR("E18888", "outputs count(%zu) of param op_desc not equal to "
+                   REPORT_INNER_ERROR("E19999", "outputs count(%zu) of param op_desc not equal to "
                                                 "outputs count(%zu) of original opdesc:%s, check invalid",
                                       op_desc->GetOutputsSize(), op_->GetOutputsSize(), op_->GetName().c_str());
                            return GRAPH_PARAM_INVALID,
@@ -830,10 +881,10 @@ Node::Vistor<std::pair<NodePtr, InDataAnchorPtr>> Node::NodeImpl::GetOutDataNode
 }
 
 Node::Node()
-    : enable_shared_from_this(), impl_(std::make_shared<NodeImpl>()) {}
+    : impl_(std::shared_ptr<NodeImpl>(new NodeImpl())) {}
 
 Node::Node(const OpDescPtr &op, const ComputeGraphPtr &owner_graph)
-    : enable_shared_from_this(), impl_(std::make_shared<NodeImpl>(op, owner_graph)) {}
+    : impl_(std::shared_ptr<NodeImpl>(new NodeImpl(op, owner_graph))) {}
 
 Node::~Node() {}
 
@@ -859,7 +910,7 @@ GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY bool Node::NodeMembersAreEqual(co
 
 GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY bool Node::NodeAnchorIsEqual(const AnchorPtr &left_anchor,
                                                                             const AnchorPtr &right_anchor,
-                                                                            const size_t i) const {
+                                                                            size_t i) const {
   return impl_->NodeAnchorIsEqual(left_anchor, right_anchor, i);
 }
 
@@ -868,7 +919,7 @@ GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY bool Node::NodeInConnectsAreEqual
   const auto in_data_anchor_size = this->GetAllInDataAnchors().size();
   const auto r_in_data_anchor_size = r_node.GetAllInDataAnchors().size();
   if (in_data_anchor_size != r_in_data_anchor_size) {
-    REPORT_INNER_ERROR("E18888", "param node in data anchors count:%zu not equal to "
+    REPORT_INNER_ERROR("E19999", "param node in data anchors count:%zu not equal to "
                        "this in data anchors count:%zu, verify failed, node name: %s.",
                        r_in_data_anchor_size, in_data_anchor_size, this->GetName().c_str());
     GELOGE(GRAPH_FAILED, "[Check][Param] Size of node's in data anchors verify failed, node name: %s.",
@@ -881,7 +932,7 @@ GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY bool Node::NodeInConnectsAreEqual
   const auto in_control_anchor_size = l_in_anchors.size() - in_data_anchor_size;
   const auto r_in_control_anchor_size = r_in_anchors.size() - r_in_data_anchor_size;
   if (in_control_anchor_size != r_in_control_anchor_size) {
-    REPORT_INNER_ERROR("E18888", "param node in control anchors count:%zu not equal to "
+    REPORT_INNER_ERROR("E19999", "param node in control anchors count:%zu not equal to "
                        "this in control anchors count:%zu, verify failed, node name: %s.",
                        r_in_control_anchor_size, in_control_anchor_size, this->GetName().c_str());
     GELOGE(GRAPH_FAILED, "[Check][Param] Size of node's in control anchors verify failed, node name: %s.",
@@ -889,7 +940,7 @@ GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY bool Node::NodeInConnectsAreEqual
     return false;
   }
   // 2.Verify all in data and control anchors connect info
-  for (size_t i = 0UL; i < this->GetAllInAnchors().size(); i++) {
+  for (size_t i = 0; i < this->GetAllInAnchors().size(); i++) {
     // Verify data anchors
     if (i < in_data_anchor_size) {
       const auto &in_anchor = l_in_anchors.at(i);
@@ -920,7 +971,7 @@ GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY bool Node::NodeOutConnectsAreEqua
   const auto out_data_anchor_size = l_out_data_anchors.size();
   const auto r_out_data_anchor_size = r_out_data_anchors.size();
   if (out_data_anchor_size != r_out_data_anchor_size) {
-    REPORT_INNER_ERROR("E18888", "param node out data anchors count:%zu not equal to "
+    REPORT_INNER_ERROR("E19999", "param node out data anchors count:%zu not equal to "
                        "this out data anchors count:%zu, verify failed, node name: %s.",
                        r_out_data_anchor_size, out_data_anchor_size, this->GetName().c_str());
     GELOGE(GRAPH_FAILED, "[Check][Param] Size of node's out data anchors verify failed, node name: %s.",
@@ -933,7 +984,7 @@ GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY bool Node::NodeOutConnectsAreEqua
   const auto out_control_anchor_size = l_out_anchors.size() - out_data_anchor_size;
   const auto r_out_control_anchor_size = r_out_anchors.size() - r_out_data_anchor_size;
   if (out_control_anchor_size != r_out_control_anchor_size) {
-    REPORT_INNER_ERROR("E18888", "param node out control anchors count:%zu not equal to "
+    REPORT_INNER_ERROR("E19999", "param node out control anchors count:%zu not equal to "
                        "this out control anchors count:%zu, verify failed, node name: %s.",
                        r_out_control_anchor_size, out_control_anchor_size, this->GetName().c_str());
     GELOGE(GRAPH_FAILED, "[Check][Param] Size of node's out control anchors verify failed, node name: %s.",
@@ -942,7 +993,7 @@ GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY bool Node::NodeOutConnectsAreEqua
   }
 
   // 2.Verify all out data and control anchors connect info
-  for (size_t i = 0UL; i < this->GetAllOutAnchors().size(); i++) {
+  for (size_t i = 0; i < this->GetAllOutAnchors().size(); i++) {
     // Verify data anchors
     if (i < out_data_anchor_size) {
       const auto &out_anchor = l_out_data_anchors.at(i);
@@ -976,7 +1027,7 @@ GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY graphStatus Node::AddLinkFrom(con
 }
 
 GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY graphStatus Node::AddLinkFrom(const uint32_t &index,
-                                                                             const NodePtr input_node) {
+                                                                             NodePtr input_node) {
   return impl_->AddLinkFrom(index, input_node, shared_from_this());
 }
 
@@ -984,8 +1035,7 @@ GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY graphStatus Node::AddLinkFromForP
   return impl_->AddLinkFromForParse(input_node, shared_from_this());
 }
 
-GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY
-graphStatus Node::AddLinkFrom(const std::string &name, const NodePtr input_node) {
+GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY graphStatus Node::AddLinkFrom(const string &name, NodePtr input_node) {
   return impl_->AddLinkFrom(name, input_node, shared_from_this());
 }
 
@@ -1025,19 +1075,19 @@ GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY Node::Vistor<AnchorPtr> Node::Get
   return impl_->GetAllOutAnchors(shared_from_this());
 }
 
-GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY InDataAnchorPtr Node::GetInDataAnchor(const int32_t idx) const {
+GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY InDataAnchorPtr Node::GetInDataAnchor(int idx) const {
   return impl_->GetInDataAnchor(idx);
 }
 
-GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY AnchorPtr Node::GetInAnchor(const int32_t idx) const {
+GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY AnchorPtr Node::GetInAnchor(int idx) const {
   return impl_->GetInAnchor(idx);
 }
 
-GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY AnchorPtr Node::GetOutAnchor(const int32_t idx) const {
+GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY AnchorPtr Node::GetOutAnchor(int idx) const {
   return impl_->GetOutAnchor(idx);
 }
 
-GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY OutDataAnchorPtr Node::GetOutDataAnchor(const int32_t idx) const {
+GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY OutDataAnchorPtr Node::GetOutDataAnchor(int idx) const {
   return impl_->GetOutDataAnchor(idx);
 }
 
@@ -1054,7 +1104,7 @@ GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY Node::Vistor<NodePtr> Node::GetIn
 }
 
 GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY bool Node::IsAllInNodesSeen(
-    const std::unordered_set<Node *> &nodes_seen) const {
+    std::unordered_set<Node *> &nodes_seen) const {
   return impl_->IsAllInNodesSeen(nodes_seen);
 }
 
@@ -1092,7 +1142,8 @@ GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY Node::Vistor<NodePtr> Node::GetOu
 
 graphStatus Node::InferShapeAndType() const {
   Operator op = ge::OpDescUtils::CreateOperatorFromNode(shared_from_this());
-  return ShapeRefiner::InferShapeAndType(shared_from_this(), op);
+  graphStatus ret = ShapeRefiner::InferShapeAndType(shared_from_this(), op);
+  return ret;
 }
 
 graphStatus Node::InferOriginFormat() const {
@@ -1112,7 +1163,7 @@ GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY graphStatus Node::UpdateOpDesc(co
 }
 
 GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY Node::Vistor<std::pair<NodePtr, OutDataAnchorPtr>>
-    Node::GetInDataNodesAndAnchors() const {
+Node::GetInDataNodesAndAnchors() const {
   return impl_->GetInDataNodesAndAnchors(shared_from_this());
 }
 
@@ -1121,11 +1172,11 @@ Node::GetOutDataNodesAndAnchors() const {
   return impl_->GetOutDataNodesAndAnchors(shared_from_this());
 }
 
-GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY void Node::AddSendEventId(const uint32_t event_id) {
+GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY void Node::AddSendEventId(uint32_t event_id) {
   impl_->AddSendEventId(event_id);
 }
 
-GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY void Node::AddRecvEventId(const uint32_t event_id) {
+GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY void Node::AddRecvEventId(uint32_t event_id) {
   impl_->AddRecvEventId(event_id);
 }
 
@@ -1147,19 +1198,19 @@ GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY void Node::GetFusionOutputFlowLis
 }
 
 GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY void Node::SetFusionInputFlowList(
-    const kFusionDataFlowVec_t &fusion_input_list) {
+    kFusionDataFlowVec_t &fusion_input_list) {
   impl_->SetFusionInputFlowList(fusion_input_list);
 }
 
 GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY void Node::SetFusionOutputFlowList(
-    const kFusionDataFlowVec_t &fusion_output_list) {
+    kFusionDataFlowVec_t &fusion_output_list) {
   impl_->SetFusionOutputFlowList(fusion_output_list);
 }
 
 GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY bool Node::GetHostNode() const {
   return impl_->GetHostNode();
 }
-GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY void Node::SetHostNode(const bool is_host) {
+GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY void Node::SetHostNode(bool is_host) {
   impl_->SetHostNode(is_host);
 }
 

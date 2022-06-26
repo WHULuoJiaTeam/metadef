@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,6 @@ typedef enum tagModelTaskType {
     RT_MODEL_TASK_ALL_KERNEL,
     RT_MODEL_TASK_PROFILER_TRACE_EX,
     RT_MODEL_TASK_FFTS_TASK,
-    RT_MODEL_TASK_FFTS_PLUS_TASK,
 } rtModelTaskType_t;
 
 typedef enum tagModelStreamType {

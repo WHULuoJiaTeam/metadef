@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,9 +37,9 @@ class FMK_FUNC_HOST_VISIBILITY FMK_FUNC_DEV_VISIBILITY PassRegistrationData {
 
   PassRegistrationData(std::string pass_name);
 
-  PassRegistrationData &Priority(const int32_t &priority);
+  PassRegistrationData &Priority(const int32_t &);
 
-  PassRegistrationData &CustomPassFn(const CustomPassFunc &custom_pass_fn);
+  PassRegistrationData &CustomPassFn(const CustomPassFunc &);
 
   std::string GetPassName() const;
   int32_t GetPriority() const;
@@ -54,13 +54,13 @@ class FMK_FUNC_HOST_VISIBILITY FMK_FUNC_DEV_VISIBILITY PassReceiver {
   PassReceiver(PassRegistrationData &reg_data);
   ~PassReceiver() = default;
 };
-}  // namespace ge
 
-#define REGISTER_CUSTOM_PASS(name) REGISTER_CUSTOM_PASS_UNIQ_HELPER(__COUNTER__, (name))
-#define REGISTER_CUSTOM_PASS_UNIQ_HELPER(ctr, name) REGISTER_CUSTOM_PASS_UNIQ(ctr, (name))
+#define REGISTER_CUSTOM_PASS(name) REGISTER_CUSTOM_PASS_UNIQ_HELPER(__COUNTER__, name)
+#define REGISTER_CUSTOM_PASS_UNIQ_HELPER(ctr, name) REGISTER_CUSTOM_PASS_UNIQ(ctr, name)
 #define REGISTER_CUSTOM_PASS_UNIQ(ctr, name)        \
   static ::ge::PassReceiver register_pass##ctr      \
       __attribute__((unused)) =                     \
-          ::ge::PassRegistrationData((name))
+          ::ge::PassRegistrationData(name)
+}  // namespace ge
 
 #endif  // INC_EXTERNAL_REGISTER_REGISTER_PASS_H_

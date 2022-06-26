@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,19 @@
 
 #include "external/graph/ascend_string.h"
 #include "debug/ge_log.h"
-#include "graph/utils/mem_utils.h"
 
 namespace ge {
-AscendString::AscendString(const char_t* const name) {
+AscendString::AscendString(const char* name) {
   if (name != nullptr) {
-    name_ = MakeShared<std::string>(name);
+    name_ = std::shared_ptr<std::string>(new (std::nothrow) std::string(name)); //lint !e1524
     if (name_ == nullptr) {
-      REPORT_CALL_ERROR("E18888", "new string failed.");
+      REPORT_CALL_ERROR("E19999", "new string failed.");
       GELOGE(FAILED, "[New][String]AscendString[%s] make shared failed.", name);
     }
   }
 }
 
-const char_t* AscendString::GetString() const {
+const char* AscendString::GetString() const {
   if (name_ == nullptr) {
     return nullptr;
   }
@@ -38,49 +37,37 @@ const char_t* AscendString::GetString() const {
   return (*name_).c_str();
 }
 
-size_t AscendString::Hash() const {
-  if (name_ == nullptr) {
-    const static size_t kEmptyStringHash = std::hash<std::string>()("");
-    return kEmptyStringHash;
-  }
-
-  return std::hash<std::string>()(*name_);
-}
-
 bool AscendString::operator<(const AscendString& d) const {
-  if ((name_ == nullptr) && (d.name_ == nullptr)) {
+  if (name_ == nullptr && d.name_ == nullptr) {
     return false;
   } else if (name_ == nullptr) {
     return true;
   } else if (d.name_ == nullptr) {
     return false;
-  } else {
-    return (*name_) < (*(d.name_));
   }
+  return (*name_ < *(d.name_));
 }
 
 bool AscendString::operator>(const AscendString& d) const {
-  if ((name_ == nullptr) && (d.name_ == nullptr)) {
+  if (name_ == nullptr && d.name_ == nullptr) {
     return false;
   } else if (name_ == nullptr) {
     return false;
   } else if (d.name_ == nullptr) {
     return true;
-  } else {
-    return (*name_) > (*(d.name_));
   }
+  return(*name_ > *(d.name_));
 }
 
 bool AscendString::operator==(const AscendString& d) const {
-  if ((name_ == nullptr) && (d.name_ == nullptr)) {
+  if (name_ == nullptr && d.name_ == nullptr) {
     return true;
   } else if (name_ == nullptr) {
     return false;
   } else if (d.name_ == nullptr) {
     return false;
-  } else {
-    return (*name_) == (*(d.name_));
   }
+  return (*name_ == *(d.name_));
 }
 
 bool AscendString::operator<=(const AscendString& d) const {
@@ -88,9 +75,8 @@ bool AscendString::operator<=(const AscendString& d) const {
     return true;
   } else if (d.name_ == nullptr) {
     return false;
-  } else {
-    return (*name_) <= (*(d.name_));
   }
+  return (*name_ <= *(d.name_));
 }
 
 bool AscendString::operator>=(const AscendString& d) const {
@@ -98,20 +84,18 @@ bool AscendString::operator>=(const AscendString& d) const {
     return true;
   } else if (name_ == nullptr) {
     return false;
-  } else {
-    return (*name_) >= (*(d.name_));
   }
+  return (*name_ >= *(d.name_));
 }
 
 bool AscendString::operator!=(const AscendString& d) const {
-  if ((name_ == nullptr) && (d.name_ == nullptr)) {
+  if (name_ == nullptr && d.name_ == nullptr) {
     return false;
   } else if (name_ == nullptr) {
     return true;
   } else if (d.name_ == nullptr) {
     return true;
-  } else {
-    return (*name_) != (*(d.name_));
   }
+  return (*name_ != *(d.name_));
 }
 }  // namespace ge

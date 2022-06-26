@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,10 @@
 #include <securec.h>
 #include <gtest/gtest.h>
 #define private public
-#include "graph/ge_tensor.h"
+#include "ge_tensor.h"
 #include "ge_ir.pb.h"
-#include "graph/utils/tensor_utils.h"
+#include "utils/tensor_utils.h"
 #include "graph/ge_tensor_impl.h"
-#include "external/graph/tensor.h"
 #include <iostream>
 
 namespace ge {
@@ -46,8 +45,12 @@ TEST_F(TensorUtilsUT, CopyConstruct1_NullTensorDef) {
 // The copy construct share tensor_data_, do not share tensor_desc
   ASSERT_EQ(t1.impl_->tensor_def_.GetProtoOwner(), nullptr);
   ASSERT_EQ(t1.impl_->tensor_def_.GetProtoMsg(), nullptr);
-  ASSERT_EQ(t1.impl_->tensor_data_.impl_->tensor_descriptor_, t1.impl_->desc_.impl_);
-  ASSERT_EQ(t2.impl_->tensor_data_.impl_->tensor_descriptor_, t2.impl_->desc_.impl_);
+  ASSERT_NE(t1.impl_->__desc_.impl_->tensor_descriptor_.GetProtoMsg(), t2.impl_->__desc_.impl_->tensor_descriptor_.GetProtoMsg());
+  ASSERT_NE(t1.impl_->__desc_.impl_->tensor_descriptor_.GetProtoOwner(), t2.impl_->__desc_.impl_->tensor_descriptor_.GetProtoOwner());
+  ASSERT_EQ(t1.impl_->tensor_data_.impl_->tensor_descriptor_.GetProtoMsg(), t1.impl_->__desc_.impl_->tensor_descriptor_.GetProtoMsg());
+  ASSERT_EQ(t1.impl_->tensor_data_.impl_->tensor_descriptor_.GetProtoOwner(), t1.impl_->__desc_.impl_->tensor_descriptor_.GetProtoOwner());
+  ASSERT_EQ(t2.impl_->tensor_data_.impl_->tensor_descriptor_.GetProtoMsg(), t2.impl_->__desc_.impl_->tensor_descriptor_.GetProtoMsg());
+  ASSERT_EQ(t2.impl_->tensor_data_.impl_->tensor_descriptor_.GetProtoOwner(), t2.impl_->__desc_.impl_->tensor_descriptor_.GetProtoOwner());
   ASSERT_EQ(t1.impl_->tensor_data_.GetData(), t2.impl_->tensor_data_.GetData());
 
   t1.MutableTensorDesc().SetFormat(FORMAT_NCHW);
@@ -75,8 +78,12 @@ TEST_F(TensorUtilsUT, CopyConstruct2_WithTensorDef) {
   // The copy construct share tensor_data_ and tensor_desc
   ASSERT_NE(t1.impl_->tensor_def_.GetProtoOwner(), nullptr);
   ASSERT_NE(t1.impl_->tensor_def_.GetProtoMsg(), nullptr);
-  ASSERT_EQ(t1.impl_->tensor_data_.impl_->tensor_descriptor_, t1.impl_->desc_.impl_);
-  ASSERT_EQ(t2.impl_->tensor_data_.impl_->tensor_descriptor_, t2.impl_->desc_.impl_);
+  ASSERT_EQ(t1.impl_->__desc_.impl_->tensor_descriptor_.GetProtoMsg(), t2.impl_->__desc_.impl_->tensor_descriptor_.GetProtoMsg());
+  ASSERT_EQ(t1.impl_->__desc_.impl_->tensor_descriptor_.GetProtoOwner(), t2.impl_->__desc_.impl_->tensor_descriptor_.GetProtoOwner());
+  ASSERT_EQ(t1.impl_->tensor_data_.impl_->tensor_descriptor_.GetProtoMsg(), t1.impl_->__desc_.impl_->tensor_descriptor_.GetProtoMsg());
+  ASSERT_EQ(t1.impl_->tensor_data_.impl_->tensor_descriptor_.GetProtoOwner(), t1.impl_->__desc_.impl_->tensor_descriptor_.GetProtoOwner());
+  ASSERT_EQ(t2.impl_->tensor_data_.impl_->tensor_descriptor_.GetProtoMsg(), t2.impl_->__desc_.impl_->tensor_descriptor_.GetProtoMsg());
+  ASSERT_EQ(t2.impl_->tensor_data_.impl_->tensor_descriptor_.GetProtoOwner(), t2.impl_->__desc_.impl_->tensor_descriptor_.GetProtoOwner());
   ASSERT_EQ(t1.impl_->tensor_data_.GetData(), t2.impl_->tensor_data_.GetData());
 
   t1.MutableTensorDesc().SetFormat(FORMAT_NCHW);
@@ -160,10 +167,14 @@ TEST_F(TensorUtilsUT, CreateShareTensorFromSharedPtr) {
   GeTensor t1 = TensorUtils::CreateShareTensor(td, ap, 100);
   ASSERT_EQ(t1.GetData().GetData(), ap->MutableGet());
   ASSERT_EQ(t1.GetData().size(), 100);
+  ASSERT_NE(t1.MutableTensorDesc().impl_->tensor_descriptor_.GetProtoMsg(),
+            td.impl_->tensor_descriptor_.GetProtoMsg());
 
   GeTensor t2(td, ap, 100);
   ASSERT_EQ(t2.GetData().GetData(), ap->MutableGet());
   ASSERT_EQ(t2.GetData().size(), 100);
+  ASSERT_NE(t2.MutableTensorDesc().impl_->tensor_descriptor_.GetProtoMsg(),
+            td.impl_->tensor_descriptor_.GetProtoMsg());
 }
 
 TEST_F(TensorUtilsUT, ShareTensorData) {
@@ -198,8 +209,12 @@ TEST_F(TensorUtilsUT, CopyAssign_NullTensorDef) {
   // The copy construct share tensor_data_, do not share tensor_desc
   ASSERT_EQ(t1.impl_->tensor_def_.GetProtoOwner(), nullptr);
   ASSERT_EQ(t1.impl_->tensor_def_.GetProtoMsg(), nullptr);
-  ASSERT_EQ(t1.impl_->tensor_data_.impl_->tensor_descriptor_, t1.impl_->desc_.impl_);
-  ASSERT_EQ(t2.impl_->tensor_data_.impl_->tensor_descriptor_, t2.impl_->desc_.impl_);
+  ASSERT_NE(t1.impl_->__desc_.impl_->tensor_descriptor_.GetProtoMsg(), t2.impl_->__desc_.impl_->tensor_descriptor_.GetProtoMsg());
+  ASSERT_NE(t1.impl_->__desc_.impl_->tensor_descriptor_.GetProtoOwner(), t2.impl_->__desc_.impl_->tensor_descriptor_.GetProtoOwner());
+  ASSERT_EQ(t1.impl_->tensor_data_.impl_->tensor_descriptor_.GetProtoMsg(), t1.impl_->__desc_.impl_->tensor_descriptor_.GetProtoMsg());
+  ASSERT_EQ(t1.impl_->tensor_data_.impl_->tensor_descriptor_.GetProtoOwner(), t1.impl_->__desc_.impl_->tensor_descriptor_.GetProtoOwner());
+  ASSERT_EQ(t2.impl_->tensor_data_.impl_->tensor_descriptor_.GetProtoMsg(), t2.impl_->__desc_.impl_->tensor_descriptor_.GetProtoMsg());
+  ASSERT_EQ(t2.impl_->tensor_data_.impl_->tensor_descriptor_.GetProtoOwner(), t2.impl_->__desc_.impl_->tensor_descriptor_.GetProtoOwner());
   ASSERT_EQ(t1.impl_->tensor_data_.GetData(), t2.impl_->tensor_data_.GetData());
 
   t1.MutableTensorDesc().SetFormat(FORMAT_NCHW);
@@ -284,49 +299,5 @@ TEST_F(TensorUtilsUT, ShareTheSame) {
   GeTensor t1(tensor_desc, vec);
   TensorUtils::ShareTensor(t1, t1);
   ASSERT_EQ(memcmp(t1.GetData().GetData(), vec.data(), vec.size()), 0);
-}
-
-TEST_F(TensorUtilsUT, ConstData) {
-  int *c = new int(10);
-  void *d = static_cast<void*>(c);
-  std::unique_ptr<uint8_t[]> const_data = std::unique_ptr<uint8_t[]>(reinterpret_cast<uint8_t *>(d));
-  TensorDesc tensor_desc;
-  tensor_desc.SetFormat(FORMAT_NCHW);
-  tensor_desc.SetConstData(std::move(const_data), sizeof(int));
-  uint8_t *ret = nullptr;
-  size_t len = 0;
-  tensor_desc.GetConstData(&ret, len);
-  printf("GetConstData1====0x%x \n", ret);
-  ASSERT_NE(ret, nullptr);
-  ASSERT_EQ(sizeof(int), len);
-
-  // operator=
-  tensor_desc = tensor_desc;
-  TensorDesc tensor_desc1;
-  tensor_desc1 = tensor_desc;
-  uint8_t *ret1 = nullptr;
-  size_t len1 = 0;
-  tensor_desc1.GetConstData(&ret1, len1);
-  printf("GetConstData2 ====0x%x \n", ret1);
-  ASSERT_NE(ret1, nullptr);
-  ASSERT_NE(ret1, ret);
-  ASSERT_EQ(sizeof(int), len1);
-  ASSERT_EQ(tensor_desc1.GetFormat(), FORMAT_NCHW);
-
-  // copy
-  std::size_t big_size = SECUREC_MEM_MAX_LEN+1;
-  std::unique_ptr<uint8_t[]> big_data = std::unique_ptr<uint8_t[]>(new (std::nothrow) uint8_t[big_size]);
-  TensorDesc tensor_desc2;
-  tensor_desc2.SetFormat(FORMAT_NCHW);
-  tensor_desc2.SetConstData(std::move(big_data), big_size);
-  TensorDesc tensor_desc3(tensor_desc2);
-  uint8_t *ret2 = nullptr;
-  size_t len2 = 0;
-  tensor_desc3.GetConstData(&ret2, len2);
-  printf("GetConstData3 ====0x%x \n", ret2);
-  ASSERT_NE(ret2, nullptr);
-  ASSERT_NE(ret2, ret);
-  ASSERT_EQ(big_size, len2);
-  ASSERT_EQ(tensor_desc3.GetFormat(), FORMAT_NCHW);
 }
 }  // namespace ge

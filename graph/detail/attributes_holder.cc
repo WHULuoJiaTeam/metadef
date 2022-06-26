@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,50 +15,46 @@
  * limitations under the License.
  */
 
-#include "graph/detail/attributes_holder.h"
+#include "detail/attributes_holder.h"
 #include <map>
-#include "graph/debug/ge_log.h"
-#include "graph/debug/ge_util.h"
+#include "debug/ge_log.h"
+#include "debug/ge_util.h"
 #include "framework/common/debug/ge_log.h"
 #include "graph/ge_attr_value.h"
 #include "proto/ge_ir.pb.h"
 
 
 namespace ge {
-void AttrHolder::CopyAttrsFrom(const AttrHolder &holder) {
-  MutableAttrMap() = holder.GetAttrMap();
-}
+using std::map;
+using std::set;
+void AttrHolder::CopyAttrsFrom(const AttrHolder &holder) { MutableAttrMap().CopyValueFrom(holder.GetAttrMap()); }
 void AttrHolder::CopyFrom(const AttrHolder &holder) {
     requiredAttrs_ = holder.requiredAttrs_;
     extAttrs_ = holder.extAttrs_;
 }
 
-graphStatus AttrHolder::SetAttr(const std::string &name, const AnyValue &value) {
+graphStatus AttrHolder::SetAttr(const std::string &name, const GeAttrValue &value) {
   if (value.IsEmpty()) {
-    REPORT_INNER_ERROR("E18888", "param value is empty, check invalid, key of the attr:%s", name.c_str());
+    REPORT_INNER_ERROR("E19999", "param value is empty, check invalid, key of the attr:%s", name.c_str());
     GELOGE(GRAPH_FAILED, "[Check][Param] value is empty, key of the attr is %s", name.c_str());
     return GRAPH_FAILED;
   }
-  if (!MutableAttrMap().SetAnyValueByName(name, value)) {
+  auto proto_map = MutableAttrMap().GetProtoMsg();
+  auto proto_val = value.value_.GetProtoMsg();
+  if (proto_map == nullptr || proto_val == nullptr) {
     return GRAPH_FAILED;
   }
-  return GRAPH_SUCCESS;
-}
-graphStatus AttrHolder::TrySetAttr(const std::string &name, const AnyValue &value) {
-  if (value.IsEmpty()) {
-    REPORT_INNER_ERROR("E18888", "param value is empty, check invalid, key of the attr:%s", name.c_str());
-    GELOGE(GRAPH_FAILED, "[Check][Param] value is empty, key of the attr is %s", name.c_str());
-    return GRAPH_FAILED;
-  }
-  if (MutableAttrMap().Exists(name)) {
-    GELOGW("attr %s already existed, skip update", name.c_str());
-  } else {
-    if (!MutableAttrMap().SetAnyValueByName(name, value)) {
+  auto it = proto_map->find(name);
+  if (it != proto_map->end()) {
+    if (it->second.value_case() != proto::AttrDef::VALUE_NOT_SET &&
+        it->second.value_case() != proto_val->value_case()) {
       return GRAPH_FAILED;
     }
   }
+  (*proto_map)[name] = *proto_val;
   return GRAPH_SUCCESS;
 }
+
 graphStatus AttrHolder::AddRequiredAttr(const std::string &name) {
   if (HasAttr(name)) {
     return GRAPH_FAILED;
@@ -67,32 +63,70 @@ graphStatus AttrHolder::AddRequiredAttr(const std::string &name) {
   return GRAPH_SUCCESS;
 }
 
-graphStatus AttrHolder::GetAttr(const std::string &name, AnyValue &value) const {
-  const auto av = GetAttrMap().GetAnyValue(name);
-  if (av == nullptr) {
+graphStatus AttrHolder::GetAttr(const std::string &name, GeAttrValue &value) const {
+  auto proto_map = GetAttrMap().GetProtoMsg();
+  auto proto_val = value.value_.GetProtoMsg();
+  if (proto_map == nullptr || proto_val == nullptr) {
     return GRAPH_FAILED;
   }
-  value = *av;
-  return GRAPH_SUCCESS;
+  auto it = proto_map->find(name);
+  if (it != proto_map->end()) {
+    *proto_val = it->second;
+    return GRAPH_SUCCESS;
+  }
+  return GRAPH_FAILED;
 }
 
 bool AttrHolder::HasAttr(const std::string &name) const {
-  if (GetAttrMap().Exists(name)) {
-    return true;
+  auto proto_map = GetAttrMap().GetProtoMsg();
+  if (proto_map != nullptr) {
+    if (proto_map->find(name) != proto_map->end()) {
+      return true;
+    }
   }
   return std::find(requiredAttrs_.begin(), requiredAttrs_.end(), name) != requiredAttrs_.end();
 }
 
 graphStatus AttrHolder::DelAttr(const std::string &name) {
-  return MutableAttrMap().Delete(name) ? GRAPH_SUCCESS : GRAPH_FAILED;
+  auto proto_map = MutableAttrMap().GetProtoMsg();
+  if (proto_map == nullptr) {
+    return GRAPH_FAILED;
+  }
+  auto it = proto_map->find(name);
+  if (it != proto_map->end()) {
+    (void)proto_map->erase(it);
+    return GRAPH_SUCCESS;
+  }
+  return GRAPH_FAILED;
 }
 
-const std::map<std::string, AnyValue> AttrHolder::GetAllAttrs() const {
-  return GetAttrMap().GetAllAttrs();
+const std::map<string, GeAttrValue> AttrHolder::GetAllAttrs() const {
+  std::map<string, GeAttrValue> attr_value_map;
+  auto proto_map = GetAttrMap().GetProtoMsg();
+  if (proto_map != nullptr) {
+    auto proto_owner = GetAttrMap().GetProtoOwner();
+    GE_CHK_BOOL_EXEC(proto_owner != nullptr,
+                     REPORT_INNER_ERROR("E19999", "proto owner is nullptr.");
+                     return attr_value_map, "[Check][Param] proto_owner is nullptr");
+    for (const auto &it : *proto_map) {
+      attr_value_map[it.first] = GeAttrValue(proto_owner, const_cast<proto::AttrDef *>(&it.second));
+    }
+  }
+  return attr_value_map;
 }
 
-const std::set<std::string> AttrHolder::GetAllAttrNames() const {
-  return GetAttrMap().GetAllAttrNames();
+const std::set<string> AttrHolder::GetAllAttrNames() const {
+  std::set<string> names;
+  auto proto_map = GetAttrMap().GetProtoMsg();
+  if (proto_map != nullptr) {
+    for (const auto &it : *proto_map) {
+      (void)names.insert(it.first);
+    }
+  }
+  for (const string &it : requiredAttrs_) {
+    (void)names.insert(it);
+  }
+  return names;
 }
 
 template <>
@@ -100,7 +134,7 @@ void GeIrProtoHelper<proto::AttrDef>::InitDefault() {
   std::shared_ptr<proto::AttrDef> proto_owner;
   proto_owner = ComGraphMakeShared<proto::AttrDef>();
   if (proto_owner == nullptr) {
-    REPORT_CALL_ERROR("E18888", "create AttrDef failed.");
+    REPORT_CALL_ERROR("E19999", "create AttrDef failed.");
     GELOGE(GRAPH_FAILED, "[Create][AttrDef] proto::AttrDef make shared failed");
     return;
   }
@@ -113,7 +147,7 @@ void GeIrProtoHelper<proto::TensorDef>::InitDefault() {
   std::shared_ptr<proto::TensorDef> proto_owner;
   proto_owner = ComGraphMakeShared<proto::TensorDef>();
   if (proto_owner == nullptr) {
-    REPORT_CALL_ERROR("E18888", "create TensorDef failed.");
+    REPORT_CALL_ERROR("E19999", "create TensorDef failed.");
     GELOGE(GRAPH_FAILED, "[Create][TensorDef] proto::TensorDef make shared failed");
     return;
   }
@@ -126,7 +160,7 @@ void GeIrProtoHelper<proto::TensorDescriptor>::InitDefault() {
   std::shared_ptr<proto::TensorDescriptor> proto_owner;
   proto_owner = ComGraphMakeShared<proto::TensorDescriptor>();
   if (proto_owner == nullptr) {
-    REPORT_CALL_ERROR("E18888", "create TensorDescriptor failed.");
+    REPORT_CALL_ERROR("E19999", "create TensorDescriptor failed.");
     GELOGE(GRAPH_FAILED, "[Create][TensorDescriptor] proto::TensorDescriptor make shared failed");
     return;
   }
@@ -139,7 +173,7 @@ void GeIrProtoHelper<proto::ShapeDef>::InitDefault() {
   std::shared_ptr<proto::ShapeDef> proto_owner;
   proto_owner = ComGraphMakeShared<proto::ShapeDef>();
   if (proto_owner == nullptr) {
-    REPORT_CALL_ERROR("E18888", "create ShapeDef failed.");
+    REPORT_CALL_ERROR("E19999", "create ShapeDef failed.");
     GELOGE(GRAPH_FAILED, "[Create][ShapeDef] proto::ShapeDef make shared failed");
     return;
   }
@@ -152,7 +186,7 @@ void GeIrProtoHelper<proto::NamedAttrs>::InitDefault() {
   std::shared_ptr<proto::NamedAttrs> proto_owner;
   proto_owner = ComGraphMakeShared<proto::NamedAttrs>();
   if (proto_owner == nullptr) {
-    REPORT_CALL_ERROR("E18888", "create NamedAttrs failed.");
+    REPORT_CALL_ERROR("E19999", "create NamedAttrs failed.");
     GELOGE(GRAPH_FAILED, "[Create][NamedAttrs] proto::NamedAttrs make shared failed");
     return;
   }
@@ -165,7 +199,7 @@ void GeIrProtoHelper<proto::ModelDef>::InitDefault() {
   std::shared_ptr<proto::ModelDef> proto_owner;
   proto_owner = ComGraphMakeShared<proto::ModelDef>();
   if (proto_owner == nullptr) {
-    REPORT_CALL_ERROR("E18888", "create ModelDef failed.");
+    REPORT_CALL_ERROR("E19999", "create ModelDef failed.");
     GELOGE(GRAPH_FAILED, "[Create][ModelDef] proto::ModelDef make shared failed");
     return;
   }
@@ -178,7 +212,7 @@ void GeIrProtoHelper<proto::OpDef>::InitDefault() {
   std::shared_ptr<proto::OpDef> proto_owner;
   proto_owner = ComGraphMakeShared<proto::OpDef>();
   if (proto_owner == nullptr) {
-    REPORT_CALL_ERROR("E18888", "create OpDef failed.");
+    REPORT_CALL_ERROR("E19999", "create OpDef failed.");
     GELOGE(GRAPH_FAILED, "[Create][OpDef] proto::OpDef make shared failed");
     return;
   }
@@ -191,11 +225,37 @@ void GeIrProtoHelper<proto::GraphDef>::InitDefault() {
   std::shared_ptr<proto::GraphDef> proto_owner;
   proto_owner = ComGraphMakeShared<proto::GraphDef>();
   if (proto_owner == nullptr) {
-    REPORT_CALL_ERROR("E18888", "create GraphDef failed.");
+    REPORT_CALL_ERROR("E19999", "create GraphDef failed.");
     GELOGE(GRAPH_FAILED, "[Create][GraphDef] proto::GraphDef make shared failed");
     return;
   }
   protoMsg_ = proto_owner.get();
+  protoOwner_ = proto_owner;
+}
+
+template <>
+void GeIrProtoHelper<ProtoAttrMap>::InitDefault() {
+  std::shared_ptr<proto::TensorDescriptor> proto_owner;
+  proto_owner = ComGraphMakeShared<proto::TensorDescriptor>();
+  if (proto_owner == nullptr) {
+    REPORT_CALL_ERROR("E19999", "create TensorDescriptor failed.");
+    GELOGE(GRAPH_FAILED, "[Create][TensorDescriptor] proto::TensorDescriptor make shared failed");
+    return;
+  }
+  protoMsg_ = proto_owner->mutable_attr();
+  protoOwner_ = proto_owner;
+}
+
+template <>
+void GeIrProtoHelper<const ProtoAttrMap>::InitDefault() {
+  std::shared_ptr<proto::TensorDescriptor> proto_owner;
+  proto_owner = ComGraphMakeShared<proto::TensorDescriptor>();
+  if (proto_owner == nullptr) {
+    REPORT_CALL_ERROR("E19999", "create TensorDescriptor failed.");
+    GELOGE(GRAPH_FAILED, "[Create][TensorDescriptor] proto::TensorDescriptor make shared failed");
+    return;
+  }
+  protoMsg_ = &proto_owner->attr();
   protoOwner_ = proto_owner;
 }
 }  // namespace ge

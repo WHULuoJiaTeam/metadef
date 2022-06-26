@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "graph/model.h"
 #include "graph/anchor.h"
 #include "graph/detail/attributes_holder.h"
 #include "graph/ge_tensor.h"
@@ -33,91 +32,61 @@ namespace ge {
 using ComputeGraphPtr = std::shared_ptr<ComputeGraph>;
 
 struct NodeNameGraphReq {
-   public:
-    NodeNameGraphReq(const std::string &name, const int32_t index, const ComputeGraphPtr &graph)
-      : node_name(name), index(index), graph(graph) {}
-    friend class ModelSerializeImp;
-
-   private:
-    std::string node_name;
+    string node_name;
     int32_t index;
     ComputeGraphPtr graph;
 };
 
 struct NodeNameNodeReq {
-   public:
-    NodeNameNodeReq(const std::string &src_name, const int32_t src_index, const NodePtr dst_node,
-                    const int32_t dst_index, const std::string &dst_name)
-        : src_node_name(src_name),
-          src_out_index(src_index),
-          dst_node(dst_node),
-          dst_in_index(dst_index),
-          dst_node_name(dst_name) {}
-
-    friend class ModelSerializeImp;
-   private:
-    std::string src_node_name;
+    string src_node_name;
     int32_t src_out_index;
     NodePtr dst_node;
     int32_t dst_in_index;
-    std::string dst_node_name;
+    string dst_node_name;
 };
 
 class ModelSerializeImp {
  public:
-  bool SerializeModel(const Model &model, proto::ModelDef *const model_proto, const bool is_dump = false) const;
+  bool SerializeModel(const Model &model, proto::ModelDef *modeProto, bool is_dump = false);
 
-  bool SerializeGraph(const ConstComputeGraphPtr &graph,
-                      proto::GraphDef *const graph_proto,
-                      const bool is_dump = false) const;
+  bool SerializeGraph(const ConstComputeGraphPtr &graph, proto::GraphDef *graphProto, bool is_dump = false);
 
-  bool SerializeEdge(const NodePtr &node, proto::OpDef *const op_def_proto) const;
+  bool SerializeEdge(const NodePtr &node, proto::OpDef *opDefProto);
 
-  bool SerializeOpDesc(const ConstOpDescPtr &op_desc, proto::OpDef *const op_def_proto,
-                       const bool is_dump = false) const;
+  bool SerializeOpDesc(const ConstOpDescPtr &node, proto::OpDef *opDefProto, bool is_dump = false);
 
-  bool SerializeNode(const NodePtr &node, proto::OpDef *const op_def_proto, const bool is_dump = false) const;
+  bool SerializeNode(const NodePtr &node, proto::OpDef *opDefProto, bool is_dump = false);
 
-  bool UnserializeModel(Model &model, proto::ModelDef &model_proto);
+  bool SerializeTensor(const ConstGeTensorPtr &tensor, proto::TensorDef *tensorProto);
 
-  bool UnserializeGraphWithoutEdge(ComputeGraphPtr &graph, proto::GraphDef &graph_proto);
+  bool UnserializeModel(Model &model, proto::ModelDef &modeProto);
 
-  bool UnserializeGraph(ComputeGraphPtr &graph, proto::GraphDef &graph_proto);
+  bool UnserializeGraphWithoutEdge(ComputeGraphPtr &graph, proto::GraphDef &graphProto);
+
+  bool UnserializeGraph(ComputeGraphPtr &graph, proto::GraphDef &graphProto);
 
   bool HandleNodeNameRef();
 
-  bool UnserializeOpDesc(OpDescPtr &op_desc, proto::OpDef &op_def_proto) const;
-  void AttrDefToOpDescIn(OpDescPtr &op_desc, std::vector<std::string> &key_in, std::vector<uint32_t> &value_in) const;
-  void AttrDefToOpDesc(OpDescPtr &op_desc, std::vector<std::string> &key_out, std::vector<uint32_t> &value_out,
-                       const std::vector<std::string> &opt_input) const;
-  void OpDescToAttrDef(const ConstOpDescPtr &op_desc, proto::OpDef *const op_def_proto,
-                       const bool is_dump = false) const;
+  bool UnserializeOpDesc(OpDescPtr &opDesc, proto::OpDef &opDefProto);
+  void AttrDefToOpDesc(OpDescPtr &op_desc, std::vector<string> &key_in, std::vector<string> &key_out,
+                       std::vector<uint32_t> &value_in, std::vector<uint32_t> &value_out, std::vector<string> &opt);
+  void OpDescToAttrDef(const ConstOpDescPtr &op_desc, proto::OpDef *op_def_proto);
 
-  bool UnserializeNode(ComputeGraphPtr &graph, proto::OpDef &op_def_proto);
+  bool UnserializeNode(ComputeGraphPtr &graph, proto::OpDef &opDefProto);
 
-  bool ParseNodeIndex(const std::string &node_index, std::string &node_name, int32_t &index) const;
+  bool UnserializeTensor(GeTensorPtr &tensor, proto::TensorDef &tensorProto);
 
-  void SetProtobufOwner(const ProtoMsgOwner &buffer_proto_buf_onwer) { protobuf_owner_ = buffer_proto_buf_onwer; }
+  bool ParseNodeIndex(const string &node_index, string &nodeName, int32_t &index);
 
-  static bool SerializeAllAttrsFromAnyMap(const std::map<std::string, AnyValue> &attr_map,
-      google::protobuf::Map<std::string, ::ge::proto::AttrDef> *const mutable_attr);
-  static bool DeserializeAllAttrsToAttrHolder(
-      const google::protobuf::Map<std::string, ::ge::proto::AttrDef> &proto_attr_map, AttrHolder *const attr_holder);
+  void SetProtobufOwner(const ProtoMsgOwner &bufferProtobufOnwer) { protobuf_owner_ = bufferProtobufOnwer; }
 
  private:
-  bool RebuildOwnership(ComputeGraphPtr &compute_graph, std::map<std::string, ComputeGraphPtr> &subgraphs) const;
-
-  void FixOpDefSubgraphInstanceName(const ConstOpDescPtr &op_desc) const;
-
-  void ExtractMetaDataAttrIn(proto::OpDef &op_def_proto, std::vector<std::string> &opt_input,
-                             std::vector<std::string> &key_in, std::vector<uint32_t> &value_in) const;
-  void ExtractMetaDataAttr(proto::OpDef &op_def_proto, std::vector<std::string> &key_out,
-                           std::vector<uint32_t> &value_out) const;
+  bool RebuildOwnership(ComputeGraphPtr &compute_graph, std::map<std::string, ComputeGraphPtr> &subgraphs);
 
   std::vector<NodeNameGraphReq> graph_input_node_names_;
   std::vector<NodeNameGraphReq> graph_output_node_names_;
   std::vector<NodeNameNodeReq> node_input_node_names_;
-  std::map<std::string, NodePtr> node_map_;
+  std::map<string, NodePtr> node_map_;
   ProtoMsgOwner protobuf_owner_;
 };
 }  // namespace ge

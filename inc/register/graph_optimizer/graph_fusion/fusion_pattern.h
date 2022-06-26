@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,13 @@
 #include <string>
 #include <vector>
 
+using std::initializer_list;
+using std::map;
+using std::string;
+using std::vector;
+
+using namespace std;
+
 namespace fe {
 
 /** Fusion pattern
@@ -38,7 +45,7 @@ class FusionPattern {
    * @brief description of Ops
    */
   struct OpDesc {
-    std::string id;                       // Identifier
+    string id;                       // Identifier
     std::vector<std::string> types;  // the Op types of Ops
     std::vector<OpDescPtr> inputs;   // all input Ops
     bool repeatable;                 // flag to show if match multiple Ops or not
@@ -46,7 +53,7 @@ class FusionPattern {
   };
 
  public:
-  explicit FusionPattern(const std::string name = "");
+  explicit FusionPattern(string name = "");
   ~FusionPattern();
 
   /** set pattern name
@@ -54,7 +61,7 @@ class FusionPattern {
    * @param name pattern name
    * @return FusionPattern
    */
-  FusionPattern &SetName(const std::string &name);
+  FusionPattern &SetName(const string &name);
 
   /** add Op description with unknown number of args
    *
@@ -62,7 +69,7 @@ class FusionPattern {
    * @param types op type list
    * @return FusionPattern
    */
-  FusionPattern &AddOpDesc(const std::string &id, const std::initializer_list<std::string> &types = {});
+  FusionPattern &AddOpDesc(const string &id, const initializer_list<string> &types = {});
 
   /** add Op description with vector
    *
@@ -71,7 +78,7 @@ class FusionPattern {
    *
    * @return FusionPattern
    */
-  FusionPattern &AddOpDesc(const std::string &id, const std::vector<std::string> &types);
+  FusionPattern &AddOpDesc(const string &id, const vector<string> &types);
 
   /** set input Ops with unknown number of args
    *
@@ -81,7 +88,7 @@ class FusionPattern {
    *
    * @return FusionPattern
    */
-  FusionPattern &SetInputs(const std::string &id, const std::initializer_list<std::string> &input_ids);
+  FusionPattern &SetInputs(const string &id, const initializer_list<string> &input_ids);
 
   /** set input Ops with unknown number of args
    *
@@ -91,7 +98,7 @@ class FusionPattern {
    *
    * @return FusionPattern
    */
-  FusionPattern &SetInputs(const std::string &id, const std::vector<std::string> &input_ids);
+  FusionPattern &SetInputs(const string &id, const vector<string> &input_ids);
 
   /** set output Op
    *
@@ -99,7 +106,7 @@ class FusionPattern {
    *
    * @return FusionPattern
    */
-  FusionPattern &SetOutput(const std::string &id);
+  FusionPattern &SetOutput(const string &id);
 
   /** build pattern and check if error exists
    *
@@ -113,7 +120,7 @@ class FusionPattern {
    *
    * @return fusion pattern name
    */
-  const std::string &GetName() const;
+  const string &GetName() const;
 
   /** get the OpDesc of input Ops (const)
    *
@@ -121,7 +128,7 @@ class FusionPattern {
    *
    * @return op_desc's iniput opdesc list
    */
-  static const std::vector<std::shared_ptr<OpDesc>> *GetInputs(const std::shared_ptr<FusionPattern::OpDesc> op_desc);
+  static const vector<std::shared_ptr<OpDesc>> *GetInputs(std::shared_ptr<OpDesc> op_desc);
 
   /** get the OpDesc of output Op
    *
@@ -134,13 +141,15 @@ class FusionPattern {
    */
   void Dump() const;
 
+  void GetOpDescList(vector<std::shared_ptr<OpDesc>> &op_desc_list);
+
   /** get OpDesc based on ID, return nullptr if failed
    *
    * @param id pattern id
    *
    * @return pattern's output opdesc list
    */
-  std::shared_ptr<FusionPattern::OpDesc> GetOpDesc(const std::string &id) const;
+  std::shared_ptr<FusionPattern::OpDesc> GetOpDesc(const string &id) const;
 
  private:
   FusionPattern(const FusionPattern &) = default;
@@ -149,11 +158,11 @@ class FusionPattern {
   void SetError();
 
  private:
-  std::string name_;
+  string name_;
 
-  std::vector<std::shared_ptr<OpDesc>> ops_;
+  vector<std::shared_ptr<OpDesc>> ops_;
 
-  std::map<std::string, std::shared_ptr<OpDesc>> op_map_;
+  map<string, std::shared_ptr<OpDesc>> op_map_;
 
   std::shared_ptr<OpDesc> output_;
 

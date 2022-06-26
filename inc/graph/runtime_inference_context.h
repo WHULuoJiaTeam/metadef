@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,13 +29,21 @@
 namespace ge {
 class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY RuntimeInferenceContext {
  public:
-  graphStatus SetTensor(int64_t node_id, int32_t output_id, GeTensorPtr tensor);
-  graphStatus GetTensor(const int64_t node_id, int32_t output_id, GeTensorPtr &tensor) const;
-  void Release();
+  static graphStatus GetContext(const std::string &context_id, RuntimeInferenceContext **ctx);
+  static graphStatus CreateContext(const std::string &context_id);
+  static void DestroyContext(const std::string &context_id);
+
+  graphStatus SetTensor(int64_t node_id, int output_id, Tensor &&tensor);
+  graphStatus GetTensor(int64_t node_id, int output_id, GeTensorPtr &tensor);
+  graphStatus GetTensor(int64_t node_id, int output_id, Tensor &tensor);
 
  private:
+  std::map<int64_t, std::vector<std::unique_ptr<Tensor>>> tensors_;
   std::map<int64_t, std::vector<GeTensorPtr>> ge_tensors_;
-  mutable std::mutex mu_;
+  std::mutex mu_;
+
+  static std::map<std::string, std::unique_ptr<RuntimeInferenceContext>> contexts_;
+  static std::mutex ctx_mu_;
 };
 } // namespace ge
 

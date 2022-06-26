@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,20 +19,16 @@
 
 namespace ge {
 namespace {
-struct DefaultDumper : GeGraphDumper {
-  void Dump(const ge::ComputeGraphPtr &graph, const std::string &suffix) override {}
-};
-DefaultDumper default_dumper;
+GeGraphDumper default_dumper;
 GeGraphDumper *register_checker = &default_dumper;
 }
 
 GeGraphDumper &GraphDumperRegistry::GetDumper() {
   return *register_checker;
 }
+
 void GraphDumperRegistry::Register(GeGraphDumper &dumper) {
   register_checker = &dumper;
 }
-void GraphDumperRegistry::Unregister() {
-  register_checker = &default_dumper;
-}
+
 }  // namespace ge

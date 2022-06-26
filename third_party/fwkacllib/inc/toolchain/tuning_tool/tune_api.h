@@ -1,8 +1,8 @@
 /**
  * @file tune_api.h
  *
- * Copyright (c) Huawei Technologies Co., Ltd. 2020-2021. All rights reserved.\n
- *
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+* Copyright 2021, 2022 Huawei Technologies Co., Ltd*
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n

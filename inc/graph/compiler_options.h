@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 #ifndef INC_GRAPH_COMPILER_OPTIONS_H_
 #define INC_GRAPH_COMPILER_OPTIONS_H_
 
+namespace ge {
 #ifdef __GNUC__
 #define METADEF_ATTRIBUTE_UNUSED __attribute__((unused))
 #define METADEF_FUNCTION_IDENTIFIER __PRETTY_FUNCTION__
@@ -42,5 +43,6 @@
 #define GE_FUNC_HOST_VISIBILITY
 #define GE_FUNC_DEV_VISIBILITY
 #endif
+}  // namespace ge
 
 #endif  // INC_GRAPH_COMPILER_OPTIONS_H_

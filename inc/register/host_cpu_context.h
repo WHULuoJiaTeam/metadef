@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,5 +31,10 @@ class HostCpuContext {
   Impl *impl_;
 };
 } // namespace ge
+
+extern "C" {
+// Unified definition for registering host_cpu_kernel_wrapper when so is opened
+FMK_FUNC_HOST_VISIBILITY ge::Status Initialize(const ge::HostCpuContext &ctx);
+}
 
 #endif //INC_REGISTER_HOST_CPU_CONTEXT_H_

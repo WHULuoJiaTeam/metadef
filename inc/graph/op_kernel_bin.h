@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +18,20 @@
 #ifndef INC_GRAPH_OP_KERNEL_BIN_H_
 #define INC_GRAPH_OP_KERNEL_BIN_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-#include "graph/def_types.h"
 
 namespace ge {
 class OpKernelBin {
  public:
-  OpKernelBin(const std::string &name, std::vector<char> &&data) : name_(name), data_(std::move(data)) {}
+  OpKernelBin(std::string name, std::vector<char> &&data) : name_(std::move(name)), data_(std::move(data)) {}
 
   ~OpKernelBin() = default;
 
   const std::string &GetName() const { return name_; }
-  const uint8_t *GetBinData() const { return ge::PtrToPtr<const char_t, const uint8_t>(data_.data()); }
+  const uint8_t *GetBinData() const { return (const uint8_t *)data_.data(); }
   size_t GetBinDataSize() const { return data_.size(); }
   OpKernelBin(const OpKernelBin &) = delete;
   const OpKernelBin &operator=(const OpKernelBin &) = delete;
@@ -42,9 +42,9 @@ class OpKernelBin {
 };
 
 using OpKernelBinPtr = std::shared_ptr<OpKernelBin>;
-constexpr char_t OP_EXTATTR_NAME_TBE_KERNEL[] = "tbeKernel";
-constexpr char_t OP_EXTATTR_NAME_THREAD_TBE_KERNEL[] = "thread_tbeKernel";
-constexpr char_t OP_EXTATTR_CUSTAICPU_KERNEL[] = "cust_aicpu_kernel";
+const char *const OP_EXTATTR_NAME_TBE_KERNEL = "tbeKernel";
+const char *const OP_EXTATTR_NAME_THREAD_TBE_KERNEL = "thread_tbeKernel";
+const char *const OP_EXTATTR_CUSTAICPU_KERNEL = "cust_aicpu_kernel";
 }  // namespace ge
 
 #endif  // INC_GRAPH_OP_KERNEL_BIN_H_

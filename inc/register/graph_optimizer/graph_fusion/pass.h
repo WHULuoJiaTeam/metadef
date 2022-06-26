@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,12 +43,12 @@ class Pass {
    */
   virtual Status Run(ge::ComputeGraph &graph) = 0;
 
-  void SetName(const std::string &name) { name_ = name; }
+  void SetName(const string &name) { name_ = name; }
 
-  std::string GetName() { return name_; }
+  string GetName() { return name_; }
 
  private:
-  std::string name_;
+  string name_;
 };
 
 }  // namespace fe

@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,8 +66,6 @@ typedef enum tagRtFeatureType {
 
 typedef enum tagRtDeviceFeatureType {
   FEATURE_TYPE_SCHE,
-  FEATURE_TYPE_BLOCKING_OPERATOR,
-  FEATURE_TYPE_FFTS_MODE,
   FEATURE_TYPE_END,
 } rtDeviceFeatureType_t;
 
@@ -80,17 +78,6 @@ typedef enum tagMemoryInfo {
     MEMORY_INFO_TS_4G_LIMITED = 0,
     MEMORY_INFO_RSV
 } rtMemoryInfo_t;
-
-typedef enum tagRtDeviceModuleType {
-  RT_MODULE_TYPE_SYSTEM = 0,
-  RT_MODULE_TYPE_AICPU,
-  RT_MODULE_TYPE_CCPU,
-  RT_MODULE_TYPE_DCPU,
-  RT_MODULE_TYPE_AICORE,
-  RT_MODULE_TYPE_TSCPU,
-  RT_MODULE_TYPE_PCIE,
-  RT_MODULE_TYPE_VECTOR_CORE
-} tagRtDeviceModuleType_t;
 
 /**
  * @ingroup dvrt_dev

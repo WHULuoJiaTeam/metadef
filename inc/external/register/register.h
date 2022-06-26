@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ using std::vector;
 
 /*lint -e148*/
 namespace ge {
+class Operator;
 class TensorDesc;
 class Tensor;
 class TBEPluginManager;
@@ -64,34 +65,36 @@ enum DynamicType {
 };
 struct DynamicInputOutputInfo {
   DynamicType type; // input/output
-  const char_t *port_name;
+  const char *port_name;
   int64_t port_name_len;
-  const char_t *attr_name;
+  const char *attr_name;
   int64_t attr_name_len;
   DynamicInputOutputInfo()
       : type(kInvalid), port_name(nullptr), port_name_len(0), attr_name(nullptr), attr_name_len(0) {}
-  DynamicInputOutputInfo(const DynamicType type_instance, const char_t *const port_name_instance,
-                         const int64_t port_name_len_instance, const char_t *const attr_name_instance,
-                         const int64_t attr_name_len_instance)
-      : type(type_instance), port_name(port_name_instance), port_name_len(port_name_len_instance),
-        attr_name(attr_name_instance), attr_name_len(attr_name_len_instance) {}
+  DynamicInputOutputInfo(DynamicType type, const char *port_name, int64_t port_name_len, const char *attr_name,
+                         int64_t attr_name_len)
+      : type(type),
+        port_name(port_name),
+        port_name_len(port_name_len),
+        attr_name(attr_name),
+        attr_name_len(attr_name_len) {}
 };
 Status AutoMappingByOpFn(const ge::Operator &op_src, ge::Operator &op);
 Status AutoMappingByOpFnDynamic(const ge::Operator &op_src, ge::Operator &op,
-                                const std::vector<DynamicInputOutputInfo> &dynamic_name_attr_value);
+                                const vector<DynamicInputOutputInfo> &dynamic_name_attr_value);
 ATTRIBUTED_DEPRECATED(Status AutoMappingByOpFn(const ge::Operator &, ge::Operator &))
 Status AutoMappingFn(const google::protobuf::Message *op_src, ge::Operator &op);
 ATTRIBUTED_DEPRECATED(Status AutoMappingByOpFnDynamic(const ge::Operator &, ge::Operator &,
-                      const std::vector<DynamicInputOutputInfo> &))
+                      const vector<DynamicInputOutputInfo> &))
 Status AutoMappingFnDynamic(const google::protobuf::Message *op_src, ge::Operator &op,
                             std::map<std::string, std::pair<std::string, std::string>> dynamic_name_attr_value,
-                            int32_t in_pos = -1, int32_t out_pos = -1);
+                            int in_pos = -1, int out_pos = -1);
 Status AutoMappingSubgraphIndex(const ge::Graph &graph,
-                                const std::function<int32_t(int32_t data_index)> &input,
-                                const std::function<int32_t(int32_t netoutput_index)> &output);
+                                const std::function<int(int data_index)> &input,
+                                const std::function<int(int netoutput_index)> &output);
 Status AutoMappingSubgraphIndex(const ge::Graph &graph,
-                                const std::function<Status(int32_t data_index, int32_t &parent_input_index)> &input,
-                                const std::function<Status(int32_t netoutput_index, int32_t &parent_output_index)> &output);
+                                const std::function<Status(int data_index, int &parent_input_index)> &input,
+                                const std::function<Status(int netoutput_index, int &parent_output_index)> &output);
 using google::protobuf::Message;
 class OpRegistrationDataImpl;
 class FrameworkRegistryImpl;
@@ -105,8 +108,8 @@ using ParseSubgraphFunc = std::function<Status(const std::string &subgraph_name,
 using ParseOpToGraphFunc = std::function<Status(const ge::Operator &, ge::Graph &)>;
 using ParseSubgraphFuncV2 = std::function<Status(const ge::AscendString &subgraph_name, const ge::Graph &graph)>;
 using AutoMappingSubgraphIOIndexFunc = std::function<Status(const ge::Graph &graph,
-    const std::function<Status(int32_t data_index, int32_t &parent_input_index)> &input,
-    const std::function<Status(int32_t netoutput_index, int32_t &parent_output_index)> &output)>;
+    const std::function<Status(int data_index, int &parent_input_index)> &input,
+    const std::function<Status(int netoutput_index, int &parent_output_index)> &output)>;
 
 class FMK_FUNC_HOST_VISIBILITY FMK_FUNC_DEV_VISIBILITY FrameworkRegistry {
  public:
@@ -127,12 +130,16 @@ class FMK_FUNC_HOST_VISIBILITY FMK_FUNC_DEV_VISIBILITY AutoMappingSubgraphIOInde
   ~AutoMappingSubgraphIOIndexFuncRegister() {}
 };
 
+#define REGISTER_AUTOMAPPING_SUBGRAPH_IO_INDEX_FUNC(framework, fun)             \
+  static AutoMappingSubgraphIOIndexFuncRegister                                 \
+    auto_mapping_subgraph_fun_##framework(framework, fun);                      \
+
 class FMK_FUNC_HOST_VISIBILITY FMK_FUNC_DEV_VISIBILITY OpRegistrationData {
  public:
-  ATTRIBUTED_DEPRECATED(OpRegistrationData(const char_t *))
+  ATTRIBUTED_DEPRECATED(OpRegistrationData(const char *))
   OpRegistrationData(const std::string &om_optype);
 
-  OpRegistrationData(const char_t *om_optype);
+  OpRegistrationData(const char *om_optype);
 
   ~OpRegistrationData();
 
@@ -143,10 +150,10 @@ class FMK_FUNC_HOST_VISIBILITY FMK_FUNC_DEV_VISIBILITY OpRegistrationData {
 
   OpRegistrationData &OriginOpType(const std::vector<ge::AscendString> &ori_op_type_list);
 
-  ATTRIBUTED_DEPRECATED(OpRegistrationData &OriginOpType(const char_t *))
+  ATTRIBUTED_DEPRECATED(OpRegistrationData &OriginOpType(const char *))
   OpRegistrationData &OriginOpType(const std::string &ori_optype);
 
-  OpRegistrationData &OriginOpType(const char_t *ori_op_type);
+  OpRegistrationData &OriginOpType(const char *ori_op_type);
 
   OpRegistrationData &ParseParamsFn(const ParseParamFunc &parseParamFn);
 
@@ -163,17 +170,17 @@ class FMK_FUNC_HOST_VISIBILITY FMK_FUNC_DEV_VISIBILITY OpRegistrationData {
 
   OpRegistrationData &ImplyType(const domi::ImplyType &imply_type);
 
-  ATTRIBUTED_DEPRECATED(OpRegistrationData &DelInputWithCond(int32_t, const char_t *, bool))
-  OpRegistrationData &DelInputWithCond(int32_t inputIdx, const std::string &attrName, bool attrValue);
+  ATTRIBUTED_DEPRECATED(OpRegistrationData &DelInputWithCond(int, const char *, bool))
+  OpRegistrationData &DelInputWithCond(int inputIdx, const std::string &attrName, bool attrValue);
 
-  OpRegistrationData &DelInputWithCond(int32_t input_idx, const char_t *attr_name, bool attr_value);
+  OpRegistrationData &DelInputWithCond(int input_idx, const char *attr_name, bool attr_value);
 
-  ATTRIBUTED_DEPRECATED(OpRegistrationData &DelInputWithOriginalType(int32_t, const char_t *))
-  OpRegistrationData &DelInputWithOriginalType(int32_t input_idx, const std::string &ori_type);
+  ATTRIBUTED_DEPRECATED(OpRegistrationData &DelInputWithOriginalType(int, const char *))
+  OpRegistrationData &DelInputWithOriginalType(int input_idx, const std::string &ori_type);
 
-  OpRegistrationData &DelInputWithOriginalType(int32_t input_idx, const char_t *ori_type);
+  OpRegistrationData &DelInputWithOriginalType(int input_idx, const char *ori_type);
 
-  OpRegistrationData &InputReorderVector(const std::vector<int32_t> &input_order);
+  OpRegistrationData &InputReorderVector(const vector<int> &input_order);
 
   OpRegistrationData &ParseOpToGraphFn(const ParseOpToGraphFunc &parse_op_to_graph_fn);
 
@@ -203,25 +210,20 @@ class FMK_FUNC_HOST_VISIBILITY FMK_FUNC_DEV_VISIBILITY OpRegistrationData {
 class FMK_FUNC_HOST_VISIBILITY FMK_FUNC_DEV_VISIBILITY OpReceiver {
  public:
   OpReceiver(OpRegistrationData &reg_data);
-  ~OpReceiver() = default;
+  ~OpReceiver() {}
 };
 
-}  // namespace domi
-namespace ge {
-using OpRegistrationData = domi::OpRegistrationData;
-using OpReceiver = domi::OpReceiver;
-} // namespace ge
-
-#define REGISTER_CUSTOM_OP(name) REGISTER_CUSTOM_OP_UNIQ_HELPER(__COUNTER__, (name))
-#define REGISTER_CUSTOM_OP_UNIQ_HELPER(ctr, name) REGISTER_CUSTOM_OP_UNIQ(ctr, (name))
+#define REGISTER_CUSTOM_OP(name) REGISTER_CUSTOM_OP_UNIQ_HELPER(__COUNTER__, name)
+#define REGISTER_CUSTOM_OP_UNIQ_HELPER(ctr, name) REGISTER_CUSTOM_OP_UNIQ(ctr, name)
 #define REGISTER_CUSTOM_OP_UNIQ(ctr, name)     \
   static OpReceiver register_op##ctr           \
       __attribute__((unused)) =                \
           OpRegistrationData(name)
+}  // namespace domi
 
-#define REGISTER_AUTOMAPPING_SUBGRAPH_IO_INDEX_FUNC(framework, fun)             \
-  static AutoMappingSubgraphIOIndexFuncRegister                                 \
-    auto_mapping_subgraph_fun_##framework(framework, (fun));
-
+namespace ge {
+using OpRegistrationData = domi::OpRegistrationData;
+using OpReceiver = domi::OpReceiver;
+} // namespace ge
 /*lint +e148*/
 #endif  // INC_EXTERNAL_REGISTER_REGISTER_H_

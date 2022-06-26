@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ OpsKernelBuilderRegistry::~OpsKernelBuilderRegistry() {
   }
 }
 void OpsKernelBuilderRegistry::Register(const string &lib_name, const OpsKernelBuilderPtr &instance) {
-  const auto it = kernel_builders_.emplace(lib_name, instance);
+  auto it = kernel_builders_.emplace(lib_name, instance);
   if (it.second) {
     GELOGI("Done registering OpsKernelBuilder successfully, kernel lib name = %s", lib_name.c_str());
   } else {
@@ -42,7 +42,7 @@ void OpsKernelBuilderRegistry::UnregisterAll() {
 }
 
 void OpsKernelBuilderRegistry::Unregister(const string &lib_name) {
-  (void)kernel_builders_.erase(lib_name);
+  kernel_builders_.erase(lib_name);
   GELOGI("OpsKernelBuilder of %s is unregistered", lib_name.c_str());
 }
 
@@ -55,7 +55,7 @@ OpsKernelBuilderRegistry &OpsKernelBuilderRegistry::GetInstance() {
 }
 
 OpsKernelBuilderRegistrar::OpsKernelBuilderRegistrar(const string &kernel_lib_name,
-                                                     const CreateFn fn)
+                                                     OpsKernelBuilderRegistrar::CreateFn fn)
     : kernel_lib_name_(kernel_lib_name) {
   GELOGI("To register OpsKernelBuilder, kernel lib name = %s", kernel_lib_name.c_str());
   std::shared_ptr<OpsKernelBuilder> builder;

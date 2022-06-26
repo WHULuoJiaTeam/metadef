@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,17 +28,19 @@
 #include "graph/detail/any_map.h"
 #include "graph/ge_error_codes.h"
 #include "graph/types.h"
-#include "graph/attr_store.h"
 
 namespace google {
 namespace protobuf {
 class Message;
-template<typename Key, typename T>
+template <typename Key, typename T>
 class Map;
 }  // namespace protobuf
 }  // namespace google
 
 namespace ge {
+using std::string;
+class GeAttrValue;
+
 namespace proto {
 class AttrDef;
 class TensorDef;
@@ -50,14 +52,13 @@ class OpDef;
 class GraphDef;
 }  // namespace proto
 
-using ProtoAttrMap = AttrStore;
-using ConstProtoAttrMap = const AttrStore;
+using ProtoAttrMap = ::google::protobuf::Map<::std::string, ::ge::proto::AttrDef>;  // lint !e1073
 using ProtoMsgOwner = std::shared_ptr<::google::protobuf::Message>;
 
-template<class ProtoType>
+template <class ProtoType>
 class GeIrProtoHelper {
  public:
-  GeIrProtoHelper(const ProtoMsgOwner &protoOwner, ProtoType *const protoMsg)
+  GeIrProtoHelper(const ProtoMsgOwner &protoOwner, ProtoType *protoMsg)
       : protoOwner_(protoOwner), protoMsg_(protoMsg) {}
 
   GeIrProtoHelper() {
@@ -66,47 +67,32 @@ class GeIrProtoHelper {
   }
   virtual ~GeIrProtoHelper() = default;
 
-  template<typename T>
+  template <typename T>
   GeIrProtoHelper(const GeIrProtoHelper<T> &other) {
     protoOwner_ = other.protoOwner_;
     protoMsg_ = other.protoMsg_;
   }
-
-  GeIrProtoHelper(const GeIrProtoHelper<ProtoType> &other) {
-    protoOwner_ = other.protoOwner_;
-    protoMsg_ = other.protoMsg_;
-  }
-  template<typename T>
+  template <typename T>
   GeIrProtoHelper &operator=(const GeIrProtoHelper<T> &other) {
     protoOwner_ = other.protoOnwer_;
     protoMsg_ = other.protoMsg_;
     return *this;
   }
-
-  GeIrProtoHelper &operator=(const GeIrProtoHelper<ProtoType> &other) {
-    protoOwner_ = other.protoOwner_;
-    protoMsg_ = other.protoMsg_;
-    return *this;
-  }
   void InitDefault();
-  template<typename T>
+  template <typename T>
   bool operator==(const GeIrProtoHelper<T> &other) const {
-    return (protoOwner_ == other.protoOwner_) && (protoMsg_ == other.protoMsg_);
+    return protoOwner_ == other.protoOwner_ && protoMsg_ == other.protoMsg_;
   }
 
-  inline const ProtoMsgOwner &GetProtoOwner() const {
-    return protoOwner_;
-  }
-  inline ProtoType *GetProtoMsg() const {
-    return protoMsg_;
-  }
+  inline const ProtoMsgOwner &GetProtoOwner() const { return protoOwner_; }
+  inline ProtoType *GetProtoMsg() const { return protoMsg_; }
   void CopyValueFrom(const GeIrProtoHelper<const ProtoType> &other) {
-    if ((other.protoMsg_ != nullptr) && (protoMsg_ != nullptr)) {
+    if (other.protoMsg_ != nullptr && protoMsg_ != nullptr) {
       *protoMsg_ = *other.protoMsg_;
     }
   }
   void MoveValueFrom(GeIrProtoHelper<ProtoType> &&other) {
-    if ((other.protoMsg_ != nullptr) && (protoMsg_ != nullptr)) {
+    if (other.protoMsg_ != nullptr && protoMsg_ != nullptr) {
       *protoMsg_ = std::move(*other.protoMsg_);
     }
   }
@@ -114,36 +100,33 @@ class GeIrProtoHelper {
   void Swap(GeIrProtoHelper<ProtoType> &other) {
     protoOwner_.swap(other.protoOwner_);
 
-    ProtoType *const temp = protoMsg_;
+    ProtoType *temp = protoMsg_;
     protoMsg_ = other.protoMsg_;
     other.protoMsg_ = temp;
   }
 
-  friend class GeIrProtoHelper<typename std::conditional<
-      std::is_const<ProtoType>::value, typename std::remove_const<ProtoType>::type, const ProtoType>::type>;
-  friend class ComputerGraphImpl;
-  friend class GeTensorSerializeUtils;
-
-private:
   // protoMsg_ is part of protoOwner_, they have the same runtime
   ProtoMsgOwner protoOwner_ = nullptr;
   ProtoType *protoMsg_ = nullptr;
+  friend class GeIrProtoHelper<typename std::conditional<
+      std::is_const<ProtoType>::value, typename std::remove_const<ProtoType>::type, const ProtoType>::type>;
 };
+
+using ProtoAttrMapHelper = GeIrProtoHelper<ProtoAttrMap>;
+using ConstProtoAttrMapHelper = GeIrProtoHelper<const ProtoAttrMap>;
 
 class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY AttrHolder {
  public:
   AttrHolder() = default;
   virtual ~AttrHolder() = default;
 
-  graphStatus SetAttr(const std::string &name, const AnyValue &value);
+  graphStatus SetAttr(const string &name, const GeAttrValue &value);
 
-  graphStatus TrySetAttr(const std::string &name, const AnyValue &value);
+  graphStatus GetAttr(const string &name, GeAttrValue &value) const;
 
-  graphStatus GetAttr(const std::string &name, AnyValue &value) const;
+  bool HasAttr(const string &name) const;
 
-  bool HasAttr(const std::string &name) const;
-
-  graphStatus DelAttr(const std::string &name);
+  graphStatus DelAttr(const string &name);
 
   void CopyAttrsFrom(const AttrHolder &holder);
 
@@ -154,31 +137,31 @@ class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY AttrHolder {
     extAttrs_.Swap(holder.extAttrs_);
   }
 
-  template<class T>
-  bool SetExtAttr(const std::string &name, const T &value) {
+  template <class T>
+  bool SetExtAttr(const string &name, const T &value) {
     return extAttrs_.Set(name, value);
   }
-  template<class T>
-  T TryGetExtAttr(const std::string &name, const T defaultValue) const {
+  template <class T>
+  T TryGetExtAttr(const string &name, T defaultValue) const {
     T ret(defaultValue);
-    (void) extAttrs_.Get(name, ret);
+    (void)extAttrs_.Get(name, ret);
     return ret;
   }
 
  protected:
-  AttrHolder & operator=(AttrHolder const &rhs) = default;
   graphStatus AddRequiredAttr(const std::string &name);
-  const std::set<std::string> GetAllAttrNames() const;
-  const std::map<std::string, AnyValue> GetAllAttrs() const;
+  const std::set<string> GetAllAttrNames() const;
+  const std::map<string, GeAttrValue> GetAllAttrs() const;  // lint !e1073
 
-  virtual ProtoAttrMap &MutableAttrMap() = 0;
-  virtual ConstProtoAttrMap &GetAttrMap() const = 0;
+  virtual ProtoAttrMapHelper MutableAttrMap() = 0;
+  virtual ConstProtoAttrMapHelper GetAttrMap() const = 0;
 
   friend class ModelSerializeImp;
   friend class AttrUtils;
   friend class AttrUtilsHelper;
 
-  std::vector<std::string> requiredAttrs_;
+  std::vector<string> requiredAttrs_;
+
  private:
   AnyMap extAttrs_;
 };

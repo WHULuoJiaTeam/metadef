@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 #define REGISTER_SCOPE_SCOPE_GRAPH_IMPL_H_
 
 #include "external/register/scope/scope_fusion_pass_register.h"
-#include "external/graph/types.h"
 #include "graph/operator_factory.h"
 #include "proto/tensorflow/graph.pb.h"
 #include "proto/tensorflow/node_def.pb.h"
@@ -34,7 +33,7 @@ using FusionInnerNodesInfo = std::vector<std::tuple<std::string, std::string,   
 class Scope::ScopeImpl {
  public:
   ScopeImpl() : father_scope_(nullptr) {}
-  Status Init(const std::string &name, const std::string &sub_type = "", Scope *const father_scope = nullptr);
+  Status Init(const std::string &name, const std::string &sub_type = "", Scope *father_scope = nullptr);
   ~ScopeImpl();
 
   const std::string &Name() const { return name_; }
@@ -44,7 +43,8 @@ class Scope::ScopeImpl {
   void AddNode(ge::OperatorPtr &node_def);
   const std::vector<ge::OperatorPtr> &Nodes() const { return nodes_; }
   const std::unordered_map<std::string, ge::OperatorPtr> &AllNodesMap();
-  void AddSubScope(Scope *const scope);
+  const std::map<std::string, ge::OperatorPtr> &AllNodesMapNew();
+  void AddSubScope(Scope *scope) { sub_scopes_[scope->Name()] = scope; }
   Scope *GetSubScope(const std::string &scope_name) const;
   const std::unordered_map<std::string, Scope *> &GetSubScopes() const { return sub_scopes_; }
   const std::vector<Scope *> &GetAllSubScopes();
@@ -83,16 +83,17 @@ class FusionScopesResult::InnerNodeInfo::InnerNodeInfoImpl {
   ge::graphStatus BuildOperator();
   ge::graphStatus SetInputFormat(const std::string &input_name, const std::string &format) ;
   ge::graphStatus SetOutputFormat(const std::string &output_name, const std::string &format);
-  ge::graphStatus SetDynamicInputFormat(const std::string &input_name, const uint32_t index, const std::string &format);
-  ge::graphStatus SetDynamicOutputFormat(const std::string &output_name, const uint32_t index, const std::string &format);
+  ge::graphStatus SetDynamicInputFormat(const std::string &input_name, uint32_t index, const std::string &format);
+  ge::graphStatus SetDynamicOutputFormat(const std::string &output_name, uint32_t index, const std::string &format);
   std::string GetName() const { return name_; }
   std::string GetType() const { return type_; }
   std::vector<std::pair<std::string, int32_t>> GetInputs() const { return inner_node_inputs_; }
   std::vector<std::pair<std::string, int32_t>> GetOutputs() const { return inner_node_outputs_; }
   ge::Operator *MutableOperator() { return &operator_; }
 
- private:
+ public:
   ge::Operator operator_;
+ private:
   std::string fusion_node_name_;
   std::string name_;
   std::string type_;
@@ -112,9 +113,7 @@ class FusionScopesResult::FusionScopesResultImpl {
   const std::string &Description() const { return description_; }
   void AddNodes(std::vector<ge::OperatorPtr> nodes);
   const std::vector<ge::OperatorPtr> &Nodes() const { return nodes_; }
-  void AddScopes(const std::vector<Scope *> &scopes) {
-    (void)scopes_.insert(scopes_.end(), scopes.begin(), scopes.end());
-  }
+  void AddScopes(const std::vector<Scope *> &scopes) { scopes_.insert(scopes_.end(), scopes.begin(), scopes.end()); }
   const std::vector<Scope *> &Scopes() const { return scopes_; }
   const std::map<std::string, std::vector<int32_t>> &GetInputs() const { return inputs_; }
   const std::map<std::string, std::vector<int32_t>> &GetOutputs() const { return outputs_; }
@@ -123,7 +122,7 @@ class FusionScopesResult::FusionScopesResultImpl {
   bool FindNodes(const std::string &node_name) const;
   bool FindScopes(const std::string &scope_name) const;
 
-  InnerNodeInfo *AddInnerNode(const std::string &name, const std::string &type);
+  InnerNodeInfo *AddInnerNode(const string &name, const string &type);
   InnerNodeInfo *MutableRecentInnerNode();
   InnerNodeInfo *MutableInnerNode(uint32_t index);
   FusionInnerNodesInfo GetInnerNodesInfo();
@@ -153,7 +152,7 @@ class ScopeTree::ScopeTreeImpl {
   const Scope *Root() const { return root_; }
 
  private:
-  std::vector<std::string> SplitNodeName(const std::string &node_name, const char_t delim) const;
+  std::vector<std::string> SplitNodeName(const std::string &node_name, char delim) const;
   Scope *root_;
   std::vector<Scope *> scopes_;
 };
@@ -178,19 +177,19 @@ class ScopeGraph::ScopeGraphImpl {
   void BuildScopeGraph(domi::tensorflow::GraphDef *graph_def);
   void AddFusionScopesResult(FusionScopesResult *result);
   const std::unordered_map<std::string, FusionScopesResult *> &FusionScopesResults() const { return fusion_results_; }
-  FusionScopesResult *GetFusionScopesResults(const domi::tensorflow::NodeDef *const node_def) const;
-  FusionScopesResult *GetFusionScopesResults(const std::string &node_name) const;
+  FusionScopesResult *GetFusionScopesResults(const domi::tensorflow::NodeDef *node_def) const;
+  FusionScopesResult *GetFusionScopesResults(const string &node_name) const;
   const std::unordered_map<std::string, ge::OperatorPtr> &GetNodesMap() const { return nodes_map_; }
   const std::map<std::string, ge::OperatorPtr> &GetNodesMapNew() const { return nodes_map_new_; }
   bool IsFusionOpChild(const std::string &node_name, std::vector<ScopeFusionOpInfo> &info_list);
   bool FusionOpChildIgnore(const ScopeFusionOpInfo &info);
-  bool IsFusionOp(const domi::tensorflow::NodeDef *const node_def);
-  Status GetInputOrOutputIndex(const ScopeFusionOpInfo &info, const int32_t old_index,
-                               const bool input, int32_t &new_index);
+  bool IsFusionOp(const domi::tensorflow::NodeDef *node_def);
+  Status GetInputOrOutputIndex(const ScopeFusionOpInfo &info, int32_t old_index, bool input, int32_t &new_index);
 
  private:
   std::vector<int32_t> GetFusionResultInputOrOutput(const ScopeFusionOpInfo &info,
-                                                    const bool input);  // input:true,output:false
+                                                    bool input);  // input:true,output:false
+  void CheckScopesResult(FusionScopesResult *fusion_node);
   std::unordered_map<std::string, FusionScopesResult *> fusion_results_;
   std::unordered_map<std::string, ge::OperatorPtr> nodes_map_;
   std::map<std::string, ge::OperatorPtr> nodes_map_new_;

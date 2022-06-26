@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 #ifndef INC_REGISTER_OP_REGISTRY_H_
 #define INC_REGISTER_OP_REGISTRY_H_
 
-#include <climits>
+#include <limits.h>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -30,18 +30,18 @@
 namespace domi {
 enum RemoveInputType {
   OMG_MOVE_TYPE_DTYPE = 0,
-  OMG_MOVE_TYPE_VALUE = 1,
-  OMG_MOVE_TYPE_SHAPE = 2,
-  OMG_MOVE_TYPE_FORMAT = 3,
-  OMG_MOVE_TYPE_AXIS = 4,
-  OMG_MOVE_TYPE_SCALAR_VALUE = 5,
+  OMG_MOVE_TYPE_VALUE,
+  OMG_MOVE_TYPE_SHAPE,
+  OMG_MOVE_TYPE_FORMAT,
+  OMG_MOVE_TYPE_AXIS,
+  OMG_MOVE_TYPE_SCALAR_VALUE,
   OMG_REMOVE_TYPE_WITH_COND = 1000,
-  OMG_REMOVE_INPUT_WITH_ORIGINAL_TYPE = 1001,
-  OMG_INPUT_REORDER = 1002,
+  OMG_REMOVE_INPUT_WITH_ORIGINAL_TYPE,
+  OMG_INPUT_REORDER,
 };
 
 struct RemoveInputConfigure {
-  int32_t inputIdx = INT_MAX;
+  int inputIdx = INT_MAX;
   std::string attrName;
   RemoveInputType moveType;
   bool attrValue = false;

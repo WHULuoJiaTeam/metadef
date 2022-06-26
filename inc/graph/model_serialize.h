@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,19 +23,32 @@
 #include "graph/buffer.h"
 #include "graph/compute_graph.h"
 #include "graph/model.h"
-#include "external/ge/ge_api_types.h"
 
 namespace ge {
 class ModelSerialize {
  public:
-  Buffer SerializeModel(const Model &model, const bool is_dump = false) const;
-  Status SerializeModel(const Model &model, const bool is_dump, proto::ModelDef &model_def) const;
+  Buffer SerializeModel(const Model &model, bool is_dump = false);
 
-  bool UnserializeModel(const uint8_t *const data, const size_t len, Model &model) const;
+  Model UnserializeModel(const uint8_t *data, size_t len);
+  Model UnserializeModel(ge::proto::ModelDef &model_def);
 
-  bool UnserializeModel(ge::proto::ModelDef &model_def, Model &model) const;
+  bool UnserializeModel(const uint8_t *data, size_t len, Model &model);
+  bool UnserializeModel(ge::proto::ModelDef &model_def, Model &model);
+
+  Buffer SerializeGraph(const ComputeGraphPtr &graph);
+
+  ComputeGraphPtr UnserializeGraph(const uint8_t *data, size_t len);
+
+  Buffer SerializeOpDesc(const ConstOpDescPtr &opDesc);
+  OpDescPtr UnserializeOpDesc(const uint8_t *data, size_t len);
+
+  size_t GetSerializeModelSize(const Model &model);
 
  private:
+  static std::map<std::string, GeAttrValue> &MutableTensorDescAttrMap(GeTensorDesc &tensorDesc);
+
+  static const std::map<std::string, GeAttrValue> &GetTensorDescAttrMap(const GeTensorDesc &tensorDesc);
+
   friend class ModelSerializeImp;
   friend class GraphDebugImp;
 };

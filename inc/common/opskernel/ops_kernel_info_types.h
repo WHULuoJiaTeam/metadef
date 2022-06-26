@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,13 @@
 #ifndef INC_COMMON_OPSKERNEL_OPS_KERNEL_INFO_TYPES_H_
 #define INC_COMMON_OPSKERNEL_OPS_KERNEL_INFO_TYPES_H_
 
-#include <cstdint>
+#include <stdint.h>
 #include <string>
 #include <vector>
 #include "graph/buffer.h"
 #include "runtime/rt_model.h"
+
+using std::string;
 
 namespace ge {
 /*lint -e148*/
@@ -51,15 +53,15 @@ struct Task {
 };
 
 struct OpInfo {
-  std::string engine;  // which engin
+  string engine;  // which engin
   /*lint -e148*/
-  std::string opKernelLib;  // which opsKernelStore
-  int32_t computeCost;     // compute cost
+  string opKernelLib;  // which opsKernelStore
+  int computeCost;     // compute cost
   bool flagPartial;    // whether to support is related to shape
   bool flagAsync;      // Whether to support asynchronous
   bool isAtomic;       // whether to support atomic addr clean
-  std::string opFileName;   // op file name
-  std::string opFuncName;   // op function name
+  string opFileName;   // op file name
+  string opFuncName;   // op function name
 };
 }  // namespace ge
 

@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,8 @@ namespace ge {
  * @brief init omg context
  * @return void
  */
-GE_FUNC_VISIBILITY Status InitDomiOmgContext(const string &input_shape, const string &input_format,
-                                             const string &net_format, bool is_dynamic_input);
+GE_FUNC_VISIBILITY Status InitDomiOmgContext(const string &input_shape, const string &input_format, const string &net_format,
+                          bool is_dynamic_input);
 
 /**
  * @ingroup domi_omg
@@ -62,10 +62,9 @@ GE_FUNC_VISIBILITY Status InitDomiOmgContext(const string &input_shape, const st
  * @param [in] atc_params multiply atc params
  * @return Status result code
  */
-GE_FUNC_VISIBILITY Status ParseGraph(ge::Graph &graph, const std::map<string, string> &atc_params,
-                                     const char *model_file, const char *weights_file, domi::FrameworkType type,
-                                     const char *op_conf = nullptr, const char *target = nullptr,
-                                     RunMode run_mode = GEN_OM_MODEL, bool is_dynamic_input = false);
+GE_FUNC_VISIBILITY Status ParseGraph(ge::Graph &graph, const std::map<string, string> &atc_params, const char *model_file,
+                  const char *weights_file, domi::FrameworkType type, const char *op_conf = nullptr,
+                  const char *target = nullptr, RunMode run_mode = GEN_OM_MODEL, bool is_dynamic_input = false);
 
 /**
  * @ingroup domi_omg
@@ -87,8 +86,7 @@ GE_FUNC_VISIBILITY Status ConvertPbtxtToJson(const char *model_file, const char 
  * @param [key] encrypted key
  * @return Status result code
  */
-GE_FUNC_VISIBILITY Status ConvertFwkModelToJson(domi::FrameworkType framework, const char *model_file,
-                                                const char *json_file);
+GE_FUNC_VISIBILITY Status ConvertFwkModelToJson(domi::FrameworkType framework, const char *model_file, const char *json_file);
 
 GE_FUNC_VISIBILITY void GetGroupName(ge::proto::ModelDef &model);
 
@@ -96,20 +94,18 @@ GE_FUNC_VISIBILITY void FindParserSo(const string &path, vector<string> &fileLis
 
 GE_FUNC_VISIBILITY Status DumpInfershapeJson(const ge::Graph &graph, const char *json_file);
 
-GE_FUNC_VISIBILITY Status SetOutputNodeInfo(ge::Graph &graph, const std::string &output_type,
-                                            const std::string &output_format);
+GE_FUNC_VISIBILITY Status SetOutputNodeInfo(ge::Graph &graph, const std::string &output_type, const std::string &output_format);
 
-GE_FUNC_VISIBILITY Status GetOutputLeaf(ge::NodePtr node,
-                                        std::vector<std::pair<ge::NodePtr, int32_t>> &output_nodes_info);
+GE_FUNC_VISIBILITY Status GetOutputLeaf(ge::NodePtr node, std::vector<std::pair<ge::NodePtr, int32_t>> &output_nodes_info);
 
-GE_FUNC_VISIBILITY void CreateOutputNodesInfo(std::vector<std::pair<ge::NodePtr, int32_t>> &output_nodes_info,
-                                              std::vector<std::string> &output_nodes_name);
+GE_FUNC_VISIBILITY void GetOutputNodesNameAndIndex(std::vector<std::pair<ge::NodePtr, int32_t>> &output_nodes_info,
+                                std::vector<std::string> &output_nodes_name);
 
 GE_FUNC_VISIBILITY void UpdateOmgCtxWithParserCtx();
 
 GE_FUNC_VISIBILITY void UpdateParserCtxWithOmgCtx();
 
-GE_FUNC_VISIBILITY void PrintModelInfo(ge::proto::ModelDef *model_def, uint32_t modeldef_size);
+GE_FUNC_VISIBILITY void PrintModelInfo(ge::proto::ModelDef *model_def);
 }  // namespace ge
 
 namespace domi {

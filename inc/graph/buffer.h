@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,9 @@
 #include "graph/compiler_options.h"
 
 namespace ge {
+
+using std::shared_ptr;
+
 class BufferImpl;
 using BufferImplPtr = std::shared_ptr<BufferImpl>;
 
@@ -34,12 +37,12 @@ class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY Buffer {
   Buffer();
   Buffer(const Buffer &other);
 
-  explicit Buffer(const std::size_t buffer_size, const std::uint8_t default_val = 0U);
+  explicit Buffer(std::size_t bufferSize, std::uint8_t defualtVal = 0);
 
   ~Buffer();
 
   Buffer &operator=(const Buffer &other);
-  static Buffer CopyFrom(const std::uint8_t *const data, const std::size_t buffer_size);
+  static Buffer CopyFrom(const std::uint8_t *data, std::size_t bufferSize);
 
   const std::uint8_t *GetData() const;
   std::uint8_t *GetData();
@@ -51,14 +54,14 @@ class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY Buffer {
   std::uint8_t *data();
   std::size_t size() const;
   void clear();
-  uint8_t operator[](const size_t index) const;
+  uint8_t operator[](size_t index) const;
 
  private:
   BufferImplPtr impl_;
 
   // Create from protobuf obj
-  Buffer(const ProtoMsgOwner &proto_owner, proto::AttrDef *const buffer);
-  Buffer(const ProtoMsgOwner &proto_owner, std::string *const buffer);
+  Buffer(const ProtoMsgOwner &protoOnwer, proto::AttrDef *buffer);
+  Buffer(const ProtoMsgOwner &protoOnwer, std::string *buffer);
 
   friend class GeAttrValueImp;
   friend class GeTensor;
@@ -68,8 +71,8 @@ class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY Buffer {
 class BufferUtils {
  public:
   static Buffer CreateShareFrom(const Buffer &other);
-  static Buffer CreateCopyFrom(const Buffer &other);
-  static Buffer CreateCopyFrom(const std::uint8_t *const data, const std::size_t buffer_size);
+  static Buffer CreateCopyFrom(const Buffer &other);  //lint !e148
+  static Buffer CreateCopyFrom(const std::uint8_t *data, std::size_t buffer_size);  //lint !e148
   static void ShareFrom(const Buffer &from, Buffer &to);
   static void CopyFrom(const Buffer &from, Buffer &to);
 };

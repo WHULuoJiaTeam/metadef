@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,33 +24,34 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include <utility>
 
 namespace fe {
 
 class FusionInfo {
  public:
-  explicit FusionInfo(const uint64_t session_id = 0, const std::string graph_id = "",
-                      const std::string pass_name = "", const int32_t match_times = 0, const int32_t effect_times = 0);
+  explicit FusionInfo(uint64_t session_id = 0, std::string graph_id = "", std::string pass_name = "",
+                      int32_t match_times = 0, int32_t effect_times = 0);
 
   virtual ~FusionInfo();
 
-  void AddMatchTimes(const int32_t match_times);
+  void AddMatchTimes(int32_t match_times);
 
-  void AddEffectTimes(const int32_t effect_times);
+  void AddEffectTimes(int32_t effect_times);
 
-  int32_t GetMatchTimes() const;
+  int32_t GetMatchTimes();
 
-  int32_t GetEffectTimes() const;
+  int32_t GetEffectTimes();
 
-  std::string GetGraphId() const;
+  std::string GetGraphId();
 
-  std::string GetPassName() const;
+  std::string GetPassName();
 
-  uint64_t GetSessionId() const;
+  uint64_t GetSessionId();
 
-  void SetMatchTimes(const int32_t match_times);
+  void SetMatchTimes(int32_t match_times);
 
-  void SetEffectTimes(const int32_t effect_times);
+  void SetEffectTimes(int32_t effect_times);
 
  private:
   uint64_t session_id_;
@@ -70,13 +71,13 @@ class FusionStatisticRecorder {
 
   static FusionStatisticRecorder &Instance();
 
-  void UpdateGraphFusionMatchTimes(const FusionInfo &fusion_info);
+  void UpdateGraphFusionMatchTimes(FusionInfo &fusion_info);
 
-  void UpdateGraphFusionEffectTimes(const FusionInfo &fusion_info);
+  void UpdateGraphFusionEffectTimes(FusionInfo &fusion_info);
 
-  void UpdateBufferFusionMatchTimes(const FusionInfo &fusion_info);
+  void UpdateBufferFusionMatchTimes(FusionInfo &fusion_info);
 
-  void UpdateBufferFusionEffectTimes(const FusionInfo &fusion_info);
+  void UpdateBufferFusionEffectTimes(FusionInfo &fusion_info);
 
   void GetAndClearFusionInfo(const std::string &session_graph_id,
                              std::map<std::string, FusionInfo> &graph_fusion_info_map,
@@ -91,8 +92,7 @@ class FusionStatisticRecorder {
   FusionStatisticMap buffer_fusion_info_map_;
   void GetFusionInfo(const std::string &session_graph_id, std::map<std::string, FusionInfo> &graph_fusion_info_map,
                      std::map<std::string, FusionInfo> &buffer_fusion_info_map);
-  void ClearFusionInfo(const std::string& session_graph_id);
-
+  void ClearFusionInfo(std::string session_graph_id);
   std::recursive_mutex mutex_;
 };
 }  // namespace fe

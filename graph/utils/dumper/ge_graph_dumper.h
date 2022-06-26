@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef GRAPH_UTILS_DUMPER_GE_GRAPH_DUMPER_H_
-#define GRAPH_UTILS_DUMPER_GE_GRAPH_DUMPER_H_
+#ifndef INC_89E3042EF25240149AD95BEE22C88126
+#define INC_89E3042EF25240149AD95BEE22C88126
 
 #include "graph/compute_graph.h"
 
 namespace ge {
 struct GeGraphDumper {
-  GeGraphDumper() = default;
-  GeGraphDumper(const GeGraphDumper &) = delete;
-  GeGraphDumper &operator=(const GeGraphDumper &) = delete;
-  GeGraphDumper(GeGraphDumper &&) = delete;
-  GeGraphDumper &operator=(GeGraphDumper &&) = delete;
-  virtual void Dump(const ge::ComputeGraphPtr &graph, const std::string &suffix) = 0;
-  virtual ~GeGraphDumper() = default;
+  virtual void Dump(const ge::ComputeGraphPtr &graph, const std::string &suffix){}
+  virtual ~GeGraphDumper() {}
 };
 
 struct GraphDumperRegistry {
   static GeGraphDumper &GetDumper();
-  static void Register(GeGraphDumper &dumper);
-  static void Unregister();
+  static void Register(GeGraphDumper &);
 };
 
 }  // namespace ge

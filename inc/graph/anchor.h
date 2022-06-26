@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,11 @@
 #include "graph/compiler_options.h"
 
 #include <memory>
+#include <string>
+#include <vector>
 #include "graph/ge_error_codes.h"
 #include "graph/range_vistor.h"
 #include "graph/types.h"
-#include "graph/node.h"
 
 namespace ge {
 enum AnchorStatus {
@@ -33,7 +34,47 @@ enum AnchorStatus {
   ANCHOR_DATA = 2,  // Effective
   ANCHOR_RESERVED = 3
 };
+using std::string;
+using std::vector;
+
+class Node;
+
+using NodePtr = std::shared_ptr<Node>;
+
+class Edge;
+
+using EdgePtr = std::shared_ptr<Edge>;
+
+class Anchor;
+
+using AnchorPtr = std::shared_ptr<Anchor>;
+
+class DataAnchor;
+
+using DataAnchorPtr = std::shared_ptr<DataAnchor>;
+
+class InDataAnchor;
+
+using InDataAnchorPtr = std::shared_ptr<InDataAnchor>;
+
+class OutDataAnchor;
+
+using OutDataAnchorPtr = std::shared_ptr<OutDataAnchor>;
+
+class ControlAnchor;
+
+using ControlAnchorPtr = std::shared_ptr<ControlAnchor>;
+
+class InControlAnchor;
+
+using InControlAnchorPtr = std::shared_ptr<InControlAnchor>;
+
+class OutControlAnchor;
+
+using OutControlAnchorPtr = std::shared_ptr<OutControlAnchor>;
+
 using ConstAnchor = const Anchor;
+
 class AnchorImpl;
 using AnchorImplPtr = std::shared_ptr<AnchorImpl>;
 
@@ -45,18 +86,14 @@ class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY Anchor : public std::enable
   template <class T>
   using Vistor = RangeVistor<T, std::shared_ptr<ConstAnchor>>;
 
-  Anchor(const NodePtr& owner_node, const int32_t idx);
-  Anchor(const Anchor &) = delete;
-  Anchor(Anchor &&) = delete;
-  Anchor &operator=(const Anchor &) = delete;
-  Anchor &operator=(Anchor &&) = delete;
+  Anchor(const NodePtr& ownerNode, int idx);
+
   virtual ~Anchor();
 
  protected:
   // Whether the two anchor is equal
-  virtual bool Equal(const AnchorPtr anchor) const = 0;
-  virtual bool IsTypeOf(const TYPE type) const;
-  virtual TYPE GetSelfType() const;
+  virtual bool Equal(AnchorPtr anchor) const = 0;
+  virtual bool IsTypeOf(TYPE type) const;
 
  public:
   // Get all peer anchors connected to current anchor
@@ -75,23 +112,20 @@ class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY Anchor : public std::enable
   // Remove link with the given anchor
   graphStatus Unlink(const AnchorPtr &peer);
 
-  // insert node
-  // this--old_peer ---> this--first_peer   second_peer--old_peer
-  graphStatus Insert(const AnchorPtr &old_peer, const AnchorPtr &first_peer, const AnchorPtr &second_peer);
-
-  // Replace peer with new peer
-  graphStatus ReplacePeer(const AnchorPtr &old_peer, const AnchorPtr &new_peer);
+  // Replace peer with new peers
+  graphStatus ReplacePeer(const AnchorPtr &oldPeer, const AnchorPtr &firstPeer, const AnchorPtr &secondPeer);
 
   // Judge if the anchor is linked with the given anchor
-  bool IsLinkedWith(const AnchorPtr &peer) const;
+  bool IsLinkedWith(const AnchorPtr &peer);
 
   // Get anchor index of the node
-  int32_t GetIdx() const;
+  int GetIdx() const;
 
   // set anchor index of the node
-  void SetIdx(const int32_t index);
+  void SetIdx(int index);
 
  protected:
+  AnchorImplPtr impl_;
   template <class T>
   static Anchor::TYPE TypeOf() {
     static_assert(std::is_base_of<Anchor, T>::value, "T must be a Anchor!");
@@ -100,37 +134,30 @@ class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY Anchor : public std::enable
 
  public:
   template <class T>
-  static std::shared_ptr<T> DynamicAnchorCast(const AnchorPtr anchorPtr) {
+  static std::shared_ptr<T> DynamicAnchorCast(AnchorPtr anchorPtr) {
     static_assert(std::is_base_of<Anchor, T>::value, "T must be a Anchor!");
-    if ((anchorPtr == nullptr) || (!anchorPtr->IsTypeOf<T>())) {
+    if (anchorPtr == nullptr || !anchorPtr->IsTypeOf<T>()) {
       return nullptr;
     }
     return std::static_pointer_cast<T>(anchorPtr);
   }
 
   template <typename T>
-  bool IsTypeOf() const {
+  bool IsTypeOf() {
     return IsTypeOf(TypeOf<T>());
   }
-
- protected:
-  AnchorImplPtr impl_;
 };
 
 class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY DataAnchor : public Anchor {
   friend class AnchorUtils;
 
  public:
-  explicit DataAnchor(const NodePtr &owner_node, const int32_t idx);
-  DataAnchor(const DataAnchor &) = delete;
-  DataAnchor &operator=(const DataAnchor &) = delete;
-  DataAnchor(DataAnchor &&) = delete;
-  DataAnchor &operator=(DataAnchor &&) = delete;
+  explicit DataAnchor(const NodePtr &ownerNode, int idx);
+
   virtual ~DataAnchor() = default;
 
  protected:
-  bool IsTypeOf(const TYPE type) const override;
-  Anchor::TYPE GetSelfType() const override;
+  bool IsTypeOf(TYPE type) const override;
 
  private:
   Format format_{FORMAT_ND};
@@ -143,7 +170,7 @@ class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY InDataAnchor : public DataA
   friend class OutControlAnchor;
 
  public:
-  explicit InDataAnchor(const NodePtr &owner_node, const int32_t idx);
+  explicit InDataAnchor(const NodePtr &ownerNode, int idx);
 
   virtual ~InDataAnchor() = default;
 
@@ -154,9 +181,8 @@ class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY InDataAnchor : public DataA
   graphStatus LinkFrom(const OutDataAnchorPtr &src);
 
  protected:
-  bool Equal(const AnchorPtr anchor) const override;
-  bool IsTypeOf(const TYPE type) const override;
-  Anchor::TYPE GetSelfType() const override;
+  bool Equal(AnchorPtr anchor) const override;
+  bool IsTypeOf(TYPE type) const override;
 };
 
 class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY OutDataAnchor : public DataAnchor {
@@ -168,7 +194,7 @@ class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY OutDataAnchor : public Data
   template <class T>
   using Vistor = RangeVistor<T, std::shared_ptr<ConstAnchor>>;
 
-  explicit OutDataAnchor(const NodePtr &owner_node, const int32_t idx);
+  explicit OutDataAnchor(const NodePtr &ownerNode, int idx);
 
   virtual ~OutDataAnchor() = default;
   // Get dst in data anchor(one or more)
@@ -185,25 +211,20 @@ class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY OutDataAnchor : public Data
   graphStatus LinkTo(const InControlAnchorPtr &dest);
 
  protected:
-  bool Equal(const AnchorPtr anchor) const override;
-  bool IsTypeOf(const TYPE type) const override;
-  Anchor::TYPE GetSelfType() const override;
+  bool Equal(AnchorPtr anchor) const override;
+  bool IsTypeOf(TYPE type) const override;
 };
 
 class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY ControlAnchor : public Anchor {
  public:
-  explicit ControlAnchor(const NodePtr &owner_node);
+  explicit ControlAnchor(const NodePtr &ownerNode);
 
-  explicit ControlAnchor(const NodePtr &owner_node, const int32_t idx);
+  explicit ControlAnchor(const NodePtr &ownerNode, int idx);
+
   virtual ~ControlAnchor() = default;
 
  protected:
-  bool IsTypeOf(const TYPE type) const override;
-  Anchor::TYPE GetSelfType() const override;
-  ControlAnchor(const ControlAnchor &) = delete;
-  ControlAnchor &operator=(const ControlAnchor &) = delete;
-  ControlAnchor(ControlAnchor &&) = delete;
-  ControlAnchor &operator=(ControlAnchor &&) = delete;
+  bool IsTypeOf(TYPE type) const override;
 };
 
 class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY InControlAnchor : public ControlAnchor {
@@ -212,9 +233,9 @@ class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY InControlAnchor : public Co
   friend class OutDataAnchor;
 
  public:
-  explicit InControlAnchor(const NodePtr &owner_node);
+  explicit InControlAnchor(const NodePtr &ownerNode);
 
-  explicit InControlAnchor(const NodePtr &owner_node, const int32_t idx);
+  explicit InControlAnchor(const NodePtr &ownerNode, int idx);
 
   virtual ~InControlAnchor() = default;
 
@@ -229,9 +250,8 @@ class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY InControlAnchor : public Co
   graphStatus LinkFrom(const OutControlAnchorPtr &src);
 
  protected:
-  bool Equal(const AnchorPtr anchor) const override;
-  bool IsTypeOf(const TYPE type) const override;
-  Anchor::TYPE GetSelfType() const override;
+  bool Equal(AnchorPtr anchor) const override;
+  bool IsTypeOf(TYPE type) const override;
 };
 
 class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY OutControlAnchor : public ControlAnchor {
@@ -241,9 +261,9 @@ class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY OutControlAnchor : public C
   template <class T>
   using Vistor = RangeVistor<T, std::shared_ptr<ConstAnchor>>;
 
-  explicit OutControlAnchor(const NodePtr &owner_node);
+  explicit OutControlAnchor(const NodePtr &ownerNode);
 
-  explicit OutControlAnchor(const NodePtr &owner_node, const int32_t idx);
+  explicit OutControlAnchor(const NodePtr &ownerNode, int idx);
 
   virtual ~OutControlAnchor() = default;
 
@@ -258,9 +278,8 @@ class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY OutControlAnchor : public C
   graphStatus LinkTo(const InDataAnchorPtr &dest);
 
  protected:
-  bool Equal(const AnchorPtr anchor) const override;
-  bool IsTypeOf(const TYPE type) const override;
-  Anchor::TYPE GetSelfType() const override;
+  bool Equal(AnchorPtr anchor) const override;
+  bool IsTypeOf(TYPE type) const override;
 };
 }  // namespace ge
 #endif  // INC_GRAPH_ANCHOR_H_

@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@
 
 namespace ge {
 // Public attribute
-const std::string ATTR_NAME_OP_FILE_PATH = "_op_file_path";
-
 const std::string ATTR_NAME_FORCE_UNKNOWN_SHAPE = "_force_unknown_shape";
 
 const std::string ATTR_NAME_IS_UNKNOWN_SHAPE = "_is_unknown_shape";
@@ -82,8 +80,6 @@ const std::string ATTR_NAME_ALGO = "algo";
 const std::string ATTR_NAME_FORMAT = "format";
 
 const std::string ATTR_NAME_STORAGE_FORMAT = "storage_format";
-
-const std::string ATTR_NAME_ORIGIN_FORMAT_IS_SET = "origin_format_is_set";
 
 const std::string ATTR_NAME_STORAGE_SHAPE = "storage_shape";
 
@@ -173,7 +169,6 @@ const std::string ATTR_NAME_INPUT_ORIGIN_SIZE = "input_origin_size";
 
 const std::string ATTR_NAME_ROOT_GRAPH_ID = "_root_graph_id";
 const std::string ATTR_NAME_ROOT_GRAPH_NAME = "_root_graph_name";
-const std::string ATTR_NAME_IS_ROOT_GRAPH = "_is_root_graph";
 // Identify node connecting to input and output
 const std::string ATTR_NAME_NODE_CONNECT_INPUT = "_is_connected_to_data";
 const std::string ATTR_NAME_NODE_CONNECT_OUTPUT = "_is_connected_to_netoutput";
@@ -768,8 +763,6 @@ const std::string ATTR_MODEL_OPP_VERSION = "opp_version";
 
 const std::string ATTR_MODEL_SESSION_SCOPE_MEMORY_SIZE = "session_scope_memory_size";
 
-const std::string ATTR_NAME_FILE_CONSTANT_ID = "file_id";
-
 // Public attribute
 const std::string ATTR_NAME_IMPLY_TYPE = "imply_type";
 
@@ -784,6 +777,8 @@ const std::string ATTR_NAME_IO_OP = "io_op";
 const std::string ATTR_NAME_FUSION_SCOPE = "fusion_scope";
 
 const std::string ATTR_NAME_OPATTR = "opattr";
+
+const std::string ATTR_NAME_RELUFLAG = "relu_flag";
 
 const std::string ATTR_NAME_SEQLEN_INDEX = "seqlen_index";
 
@@ -897,7 +892,6 @@ const std::string LOG_TIME_STAMP_NOTIFY = "notify";
 const std::string SHAPEN_ATTR_N = "N";
 const std::string SHAPEN_ATTR_IN_TYPE = "in_type";
 const std::string SHAPEN_ATTR_OUT_TYPE = "dtype";
-const std::string ATTR_NAME_SPLIT_SHAPEN_ORIGIN_NAME = "_split_shapen_origin_name";
 
 //  GatherV2 attr def
 const std::string GATHERV2_ATTR_NAME_TAXIS = "Taxis";
@@ -924,9 +918,6 @@ const std::string ATTR_NAME_CONTINUOUS_INPUT = "continuous_input";
 const std::string ATTR_NAME_CONTINUOUS_INPUT_ALLOC = "continuous_input_alloc";
 
 const std::string ATTR_NAME_CONTINUOUS_OUTPUT = "continuous_output";
-
-// For AscendWeightQuant+Enter
-const std::string ATTR_NAME_FINAL_CONST_NODE = "_final_const_node";
 
 // attr _input_mutable = true means node will modify its input in runtime
 const std::string ATTR_NAME_MODIFY_INPUT = "_input_mutable";
@@ -1024,12 +1015,10 @@ const std::string ATTR_NAME_NEED_LX_FUSION = "_lx_fusion";
 const std::string ATTR_NAME_OPTIMIZE_GROUP = "_optimize_group";
 const std::string ATTR_NAME_OP_COMPILE_STRATEGY = "_op_compile_strategy";
 const std::string ATTR_NAME_TBE_KERNEL_NAME = "_tbe_kernel_name";
-const std::string ATTR_NAME_TBE_KERNEL_NAME_FOR_LOAD = "_tbe_kernel_name_for_load";
 const std::string ATTR_NAME_TBE_KERNEL_BUFFER = "_tbe_kernel_buffer";
 const std::string ATTR_NAME_DATA_SLICE = "_data_slice";
 const std::string ATTR_NAME_NEED_RECOVER_ATTR = "_need_recover_attr";
 const std::string ATTR_NAME_OFF_SUPERKERNEL_ATTR = "_off_superkernel";
-const std::string ATTR_NAME_SRC_CONST_NAME = "_src_const_name";
 
 // merge subgraph with output anchor map
 const std::string ATTR_NAME_FUSION_ORIGIN_NAME = "_fusion_origin_name";
@@ -1063,8 +1052,6 @@ const std::string EXT_ATTR_ATOMIC_TBE_KERNEL = "_atomic_tbe_kernel";
 // Source/dst format for Op FormatTransfer
 const std::string FORMAT_TRANSFER_SRC_FORMAT = "src_format";
 const std::string FORMAT_TRANSFER_DST_FORMAT = "dst_format";
-const std::string FORMAT_TRANSFER_SRC_SUBFORMAT = "src_subformat";
-const std::string FORMAT_TRANSFER_DST_SUBFORMAT = "dst_subformat";
 
 // For compile op by ge call
 const std::string ATTR_NEED_COMPILE = "_node_need_compile";
@@ -1157,7 +1144,6 @@ const std::string ATTR_VARIABLE_PLACEMENT = "_variable_placement";
 const std::string ATTR_INPUT_MEMORY_TYPE = "_input_memory_type";
 const std::string ATTR_OUTPUT_MEMORY_TYPE = "_output_memory_type";
 const std::string ATTR_NAME_SPECIAL_OUTPUT_SIZE = "_special_output_size";
-const std::string ATTR_NAME_SPECIAL_INPUT_SIZE = "_special_input_size";
 
 // stage
 const std::string ATTR_STAGE_LEVEL = "_stage_level";
@@ -1165,7 +1151,6 @@ const std::string ATTR_STAGE_LEVEL = "_stage_level";
 // input_output_offset
 const std::string ATTR_ZERO_COPY_BASIC_OFFSET = "_zero_copy_basic_offset";
 const std::string ATTR_ZERO_COPY_RELATIVE_OFFSET = "_zero_copy_relative_offset";
-const std::string ATTR_IS_ZERO_COPY_BLOCK = "_is_zero_copy_block";
 
 // mark node cannot be deleted
 const std::string ATTR_NAME_CANNOT_BE_DELETED = "_cannot_be_deleted";
@@ -1206,13 +1191,9 @@ const std::string ATTR_NAME_FORMAT_AGNOSTIC_EXCEPT_INPUT = "_format_agnostic_exc
 // for ffts/ffts_plus
 const std::string ATTR_NAME_FFTS_SUB_GRAPH = "_ffts_sub_graph";
 const std::string ATTR_NAME_THREAD_SCOPE_ID = "_thread_scope_id";
-const std::string ATTR_NAME_THREAD_MODE = "_thread_mode";
 const std::string ATTR_NAME_FFTS_PLUS_SUB_GRAPH = "_ffts_plus_sub_graph";
-const std::string ATTR_NAME_COMPOSITE_ENGINE_NAME = "_composite_engine_name";
-const std::string ATTR_NAME_COMPOSITE_ENGINE_KERNEL_LIB_NAME = "_composite_engine_kernel_lib_name";
-const std::string ATTR_NAME_CUBE_VECTOR_CORE_TYPE = "_cube_vector_core_type";
-const std::string ATTR_NAME_CACHE_PERSIST = "_cache_persist";
-const std::string ATTR_NAME_ALIAS_ENGINE_NAME = "_alias_engine_name";
+const std::string ATTR_NAME_COMPOUND_ENGINE_NAME = "_compound_engine_name";
+const std::string ATTR_NAME_COMPOUND_ENGINE_KERNEL_LIB_NAME = "_compound_engine_kernel_lib_name";
 
 // mark fuzz build scene
 const std::string ATTR_NAME_FUZZ_BUILD = "_fuzz_build";
@@ -1234,84 +1215,4 @@ const std::string ATTR_NAME_BUFFER_POOL_NODE_SIZE_AND_OFFSET = "_buffer_pool_nod
 
 // session scope memory
 const std::string ATTR_NAME_WORKSPACE_MEMORY_NO_REUSE_SCOPE = "_workspace_memory_no_reuse_scope";
-
-// for blocking op
-const std::string ATTR_NAME_IS_BLOCKING_OP = "_is_blocking_op";
-
-// for op specified engine
-const std::string ATTR_NAME_OP_SPECIFIED_ENGINE_NAME = "_specified_engine_name";
-const std::string ATTR_NAME_OP_SPECIFIED_KERNEL_LIB_NAME = "_specified_kernel_lib_name";
-
-// for pipeline partition
-const std::string ATTR_NAME_PIPELINE_PARTITIONED = "_pipeline_partitioned";
-const std::string ATTR_NAME_OUTPUT_PIPELINE = "_output_pipeline";
-
-// model deploy scheduler(mds)
-const std::string ATTR_NAME_GRADIENT_NODE = "_gradient_node";
-const std::string ATTR_NAME_TRAINABLE_VAR = "_trainable_var";
-const std::string ATTR_NAME_FISSION_FACTOR = "_fission_factor";
-const std::string ATTR_NAME_DEPLOY_INFO = "_deploy_info";
-const std::string ATTR_NAME_CUT_INFO = "_cut_info";
-const std::string ATTR_NAME_DEPLOY_DEVICE_TYPE = "_device_type";
-const std::string ATTR_NAME_DEPLOY_DEVICE_ID = "_device_id";
-const std::string ATTR_NAME_DEPLOY_GRAPH_INPUTS = "_graph_inputs";
-const std::string ATTR_NAME_DEPLOY_NEED_RETURN_RESULT = "_need_return_result";
-
-// for qos
-const std::string ATTR_NAME_QOS_SERVICE_LABEL = "_qos_service_label";
-
-// for constant folding, mark potential const
-const std::string ATTR_NAME_POTENTIAL_CONST = "_is_potential_const";
-const std::string ATTR_NAME_POTENTIAL_WEIGHT = "_potential_weight";
-const std::string ATTR_NAME_POTENTIAL_WEIGHT_INDICES = "_potential_weight_indices";
-
-// name of network output tensor
-const std::string ATTR_NAME_ORIGIN_OUTPUT_TENSOR_NAME = "_origin_output_tensor_name";
-
-// for scope op to record the input and output information of the original graph node
-const std::string ATTR_NAME_ORIGIN_GRAPH_NODE_INPUTS = "_origin_graph_node_inputs";
-const std::string ATTR_NAME_ORIGIN_GRAPH_NODE_OUTPUTS = "_origin_graph_node_outputs";
-
-// for operator resource list(e.g. queues, channels)
-const std::string ATTR_NAME_RESOURCE_LIST = "_resource_list";
-
-// for no tiling
-const std::string ATTR_NAME_OP_TILING_INLINE_ENGINE = "_op_tiling_inline_engine";
-const std::string ATTR_NAME_OP_EXPORT_SHAPE_ENGINE = "_op_export_shape_engine";
-const std::string ATTR_NAME_OP_MAX_SHAPE = "_op_max_shape";
-const std::string ATTR_NAME_OP_MAX_SIZE = "_op_max_size";
-const std::string ATTR_NAME_TENSOR_MAX_SHAPE = "_tensor_max_shape";
-const std::string ATTR_NAME_OP_NO_TILING = "_op_no_tiling";
-const std::string ATTR_NAME_TENSOR_DESC_MEM_OFFSET = "_tensor_desc_mem_offset";
-const std::string ATTR_NAME_TENSOR_NO_TILING_MEM_TYPE = "_tensor_no_tiling_mem_type";
-
-// for subgraph multi dims
-const std::string ATTR_NAME_SUBGRAPH_MULTI_DIMS_INDEX = "_subgraph_multi_dims_index";
-const std::string ATTR_NAME_SUBGRAPH_MULTI_DIMS_INPUT_SHAPE = "_subgraph_multi_dims_input_shape";
-const std::string ATTR_NAME_SUBGRAPH_MULTI_DIMS_INPUT_DIMS = "_subgraph_multi_dims_input_dims";
-const std::string ATTR_NAME_SUBGRAPH_IS_MULTI_DIMS = "_subgraph_is_multi_dims";
-const std::string ATTR_NAME_OP_MULTI_DIMS_INPUT_DIMS = "_op_multi_dims_input_dims";
-
-// for support BlockDim
-const std::string ATTR_NAME_SUPPORT_BLOCKDIM_FLAG = "_support_blockdim_flag";
-const std::string ATTR_NAME_BLOCKDIM_INDEX = "_blockdim_index";
-
-// for support dynamic data flow ops
-const std::string ATTR_NAME_DATA_FLOW_HANDLE = "_data_flow_handle";
-const std::string ATTR_NAME_DATA_FLOW_MAX_SIZE = "_data_flow_max_size";
-
-// mark node inserted by ge
-const std::string ATTR_NAME_IS_INSERTED_BY_GE = "_is_inserted_by_ge";
-
-// for cmo feature
-const std::string ATTR_NAME_MEMORY_REUSE_INFO = "_mem_reuse_info";
-const std::string ATTR_NAME_OP_READ_WRITE_INDEX = "_op_read_write_index";
-const std::string ATTR_NAME_MEM_RELEASE_FIRST_REUSE_FIRST = "_mem_release_first_reuse_first";
-
-// for support overflow detection
-const std::string GLOBLEWORKSPACE_STATUS = "_globleworkspace_status";
-const std::string GLOBLEWORKSPACE_STATUS_BYTES = "_globleworkspace_status_bytes";
-
-// for value depend
-const std::string ATTR_NAME_VALUE_DEPEND = "_is_value_depend";
 }  // namespace ge

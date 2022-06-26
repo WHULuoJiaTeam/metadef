@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,21 +22,26 @@
 #include <vector>
 #include "graph/ge_error_codes.h"
 
+using std::string;
+using std::map;
+
 namespace ge {
 class GEThreadLocalContext {
  public:
-  graphStatus GetOption(const std::string &key, std::string &option);
-  void SetGraphOption(std::map<std::string, std::string> options_map);
-  void SetSessionOption(std::map<std::string, std::string> options_map);
-  void SetGlobalOption(std::map<std::string, std::string> options_map);
+  graphStatus GetOption(const string &key, string &option);
+  void SetGraphOption(map<std::string, string> options_map);
+  void SetSessionOption(map<std::string, string> options_map);
+  void SetGlobalOption(map<std::string, string> options_map);
 
-  std::map<std::string, std::string> GetAllGraphOptions() const;
-  std::map<std::string, std::string> GetAllOptions() const;
+  map<string, string> GetAllGraphOptions() const;
+  map<string, string> GetAllSessionOptions() const;
+  map<string, string> GetAllGlobalOptions() const;
+  map<string, string> GetAllOptions() const;
 
  private:
-  std::map<std::string, std::string> graph_options_;
-  std::map<std::string, std::string> session_options_;
-  std::map<std::string, std::string> global_options_;
+  map<string, string> graph_options_;
+  map<string, string> session_options_;
+  map<string, string> global_options_;
 };  // class GEThreadLocalContext
 
 GEThreadLocalContext &GetThreadLocalContext();

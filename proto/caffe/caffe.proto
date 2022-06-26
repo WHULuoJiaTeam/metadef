@@ -438,7 +438,6 @@ message LayerParameter {
   optional BatchMatMulParameter batch_matmul_param = 235;
   optional SpatialTransformerParameter st_param = 5000;
   optional YoloV3DetectionOutputV2Parameter yolov3_detection_output_v2_param = 5001;
-  optional ContinuationIndicatorParameter continuation_indicator_param = 5002;
 }
 
 // Message that stores parameters used to apply transformation
@@ -1819,9 +1818,4 @@ message SpatialTransformerParameter {
     optional double theta_2_1 = 9;
     optional double theta_2_2 = 10;
     optional double theta_2_3 = 11;
-}
-
-message ContinuationIndicatorParameter {
-    optional uint32 time_step = 1 [default = 0];
-    optional uint32 batch_size = 2 [default = 0];
 }

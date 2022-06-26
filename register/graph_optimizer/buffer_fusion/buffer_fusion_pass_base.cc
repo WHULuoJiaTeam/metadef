@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,6 @@ Status BufferFusionPassBase::GetFusionNodes(const BufferFusionMapping &mapping,
   return SUCCESS;
 }
 
-Status BufferFusionPassBase::CalcFusionOpSliceInfo(vector<ge::NodePtr> &fusion_nodes, OpCalcInfo &op_slice_info) {
-  return SUCCESS;
-}
-
 std::vector<ge::NodePtr> BufferFusionPassBase::GetMatchedNodes(const BufferFusionMapping &mapping) {
   std::vector<ge::NodePtr> nodes;
   for (const auto &item : mapping) {
@@ -49,8 +45,8 @@ std::vector<ge::NodePtr> BufferFusionPassBase::GetMatchedNodesByDescName(const s
                                                                          const BufferFusionMapping &mapping) {
   std::vector<ge::NodePtr> nodes;
   for (const auto &item : mapping) {
-    const BufferFusionOpDesc *const op_desc = item.first;
-    if ((op_desc != nullptr) && (op_desc->desc_name == desc_name)) {
+    const BufferFusionOpDesc *op_desc = item.first;
+    if (op_desc != nullptr && op_desc->desc_name == desc_name) {
       for (const auto &node : item.second) {
         nodes.push_back(node);
       }
@@ -61,7 +57,7 @@ std::vector<ge::NodePtr> BufferFusionPassBase::GetMatchedNodesByDescName(const s
 
 ge::NodePtr BufferFusionPassBase::GetMatchedHeadNode(const std::vector<ge::NodePtr> &matched_nodes) {
   for (const auto &node : matched_nodes) {
-    const auto input_nodes = node->GetInDataNodes();
+    auto input_nodes = node->GetInDataNodes();
     bool find_flag = false;
     for (const auto &in_node : input_nodes) {
       // find the node from fuison sub graph
@@ -70,7 +66,7 @@ ge::NodePtr BufferFusionPassBase::GetMatchedHeadNode(const std::vector<ge::NodeP
         break;
       }
     }
-    if (!find_flag) {
+    if (find_flag == false) {
       return node;
     }
   }

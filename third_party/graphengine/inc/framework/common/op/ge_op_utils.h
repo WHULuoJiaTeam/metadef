@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@
 #include <memory>
 #include <vector>
 
-#include "framework/common/op/attr_value_util.h"
+#include "common/op/attr_value_util.h"
 #include "register/register_types.h"
 #include "register/register_error_codes.h"
-#include "framework/common/util.h"
+#include "common/util.h"
 #include "graph/attr_value.h"
 #include "graph/ge_tensor.h"
 #include "graph/node.h"
@@ -54,10 +54,6 @@ GE_FUNC_VISIBILITY extern const uint32_t SWITCH_FALSE_OUTPUT;
 GE_FUNC_VISIBILITY extern const uint32_t SWITCH_TRUE_OUTPUT;
 GE_FUNC_VISIBILITY extern const uint32_t SWITCH_DATA_INPUT;
 GE_FUNC_VISIBILITY extern const uint32_t SWITCH_PRED_INPUT;
-
-// Merge
-GE_FUNC_VISIBILITY extern const uint32_t MERGE_DATA_OUTPUT;
-GE_FUNC_VISIBILITY extern const uint32_t MERGE_INDEX_OUTPUT;
 
 // FunctionOp
 GE_FUNC_VISIBILITY extern const uint32_t IF_COND_INPUT;
@@ -96,7 +92,7 @@ class GE_FUNC_VISIBILITY OpUtils {
   /// @param [out] aipp_params aipp parameters
   /// @return enum of tagCCAippInputFormat
   ///
-  static Status ConvertAippParams(const NamedAttrs &aipp_attr, domi::AippOpParams *aipp_params);
+  static Status ConvertAippParams(const GeAttrValue::NamedAttrs &aipp_attr, domi::AippOpParams *aipp_params);
   static Status TransferDim(const std::vector<int64_t> &dim, std::vector<int64_t> &dim_vector);
   template <typename T>
   static void SliceData(const std::vector<char *> &input, int64_t chunk_size, std::vector<char *> &output,

@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,13 +35,15 @@ class ComputeGraph;
 
 using ComputeGraphPtr = std::shared_ptr<ComputeGraph>;
 
+class Node;
+
+using NodePtr = std::shared_ptr<Node>;
+using ConstNodePtr = std::shared_ptr<const Node>;
+using NodeRef = std::weak_ptr<Node>;
+
 class Anchor;
 
 using AnchorPtr = std::shared_ptr<Anchor>;
-
-class DataAnchor;
-
-using DataAnchorPtr = std::shared_ptr<DataAnchor>;
 
 class InDataAnchor;
 
@@ -63,7 +65,11 @@ class OutControlAnchor;
 
 using OutControlAnchorPtr = std::shared_ptr<OutControlAnchor>;
 
-using kFusionDataFlowVec_t = std::vector<std::multimap<std::string, ge::AnchorPtr>>;
+using OpDescPtr = std::shared_ptr<OpDesc>;
+
+using ConstNode = const Node;
+
+typedef std::vector<std::multimap<std::string, ge::AnchorPtr>> kFusionDataFlowVec_t;
 
 // Node is a component of ComputeGraph
 class Node : public std::enable_shared_from_this<Node> {
@@ -72,10 +78,6 @@ class Node : public std::enable_shared_from_this<Node> {
   friend class ModelSerializeImp;
 
  public:
-  using ConstNode = const Node;
-  using NodePtr = std::shared_ptr<Node>;
-  using ConstNodePtr = std::shared_ptr<const Node>;
-
   class NodeImpl;
   using NodeImplPtr = std::shared_ptr<NodeImpl>;
   template <class T>
@@ -85,6 +87,11 @@ class Node : public std::enable_shared_from_this<Node> {
   Node &operator=(const Node &) = delete;
   bool operator==(const Node &r_node) const;
 
+ protected:
+  Node();
+  Node(const OpDescPtr &op, const ComputeGraphPtr &ownerGraph);
+
+ public:
   graphStatus Init();
 
   std::string GetName() const;
@@ -100,16 +107,16 @@ class Node : public std::enable_shared_from_this<Node> {
   uint32_t GetAllOutDataAnchorsSize() const;
   Vistor<AnchorPtr> GetAllOutAnchors() const;
   Vistor<AnchorPtr> GetAllInAnchors() const;
-  InDataAnchorPtr GetInDataAnchor(const int32_t idx) const;
-  OutDataAnchorPtr GetOutDataAnchor(const int32_t idx) const;
+  InDataAnchorPtr GetInDataAnchor(int idx) const;
+  OutDataAnchorPtr GetOutDataAnchor(int idx) const;
   InControlAnchorPtr GetInControlAnchor() const;
   OutControlAnchorPtr GetOutControlAnchor() const;
   Vistor<NodePtr> GetInNodes() const;
   Vistor<NodePtr> GetOutNodes() const;
-  AnchorPtr GetInAnchor(const int32_t idx) const;
-  AnchorPtr GetOutAnchor(const int32_t idx) const;
+  AnchorPtr GetInAnchor(int idx) const;
+  AnchorPtr GetOutAnchor(int idx) const;
 
-  bool IsAllInNodesSeen(const std::unordered_set<Node *> &nodes_seen) const;
+  bool IsAllInNodesSeen(std::unordered_set<Node *> &nodes_seen) const;
 
   // All in Data nodes
   Vistor<NodePtr> GetInDataNodes() const;
@@ -139,19 +146,19 @@ class Node : public std::enable_shared_from_this<Node> {
 
   OpDescPtr GetOpDesc() const;
 
-  graphStatus UpdateOpDesc(const OpDescPtr &op_desc);
+  graphStatus UpdateOpDesc(const OpDescPtr &op);
 
   graphStatus AddLinkFrom(const NodePtr &input_node);
 
-  graphStatus AddLinkFrom(const uint32_t &index, const NodePtr input_node);
+  graphStatus AddLinkFrom(const uint32_t &index, NodePtr input_node);
 
-  graphStatus AddLinkFrom(const std::string &name, const NodePtr input_node);
+  graphStatus AddLinkFrom(const string &name, NodePtr input_node);
 
   graphStatus AddLinkFromForParse(const NodePtr &input_node);
 
-  void AddSendEventId(const uint32_t event_id);
+  void AddSendEventId(uint32_t event_id);
 
-  void AddRecvEventId(const uint32_t event_id);
+  void AddRecvEventId(uint32_t event_id);
 
   const std::vector<uint32_t> &GetSendEventIdList() const;
 
@@ -161,35 +168,27 @@ class Node : public std::enable_shared_from_this<Node> {
 
   void GetFusionOutputFlowList(kFusionDataFlowVec_t &fusion_output_list);
 
-  void SetFusionInputFlowList(const kFusionDataFlowVec_t &fusion_input_list);
+  void SetFusionInputFlowList(kFusionDataFlowVec_t &fusion_input_list);
 
-  void SetFusionOutputFlowList(const kFusionDataFlowVec_t &fusion_output_list);
+  void SetFusionOutputFlowList(kFusionDataFlowVec_t &fusion_output_list);
 
   bool GetHostNode() const;
-  void SetHostNode(const bool is_host);
+  void SetHostNode(bool is_host);
 
   void SetOrigNode(const NodePtr &orignode);
   NodePtr GetOrigNode();
-
- protected:
-  Node();
-  Node(const OpDescPtr &op, const ComputeGraphPtr &owner_graph);
 
  private:
   bool NodeMembersAreEqual(const Node &r_node) const;
   bool NodeAttrsAreEqual(const Node &r_node) const;
   bool NodeInConnectsAreEqual(const Node &r_node) const;
   bool NodeOutConnectsAreEqual(const Node &r_node) const;
-  bool NodeAnchorIsEqual(const AnchorPtr &left_anchor, const AnchorPtr &right_anchor, const size_t i) const;
+  bool NodeAnchorIsEqual(const AnchorPtr &l_anchor, const AnchorPtr &r_anchor, size_t i) const;
   NodeImplPtr impl_;
   friend class NodeUtils;
   friend class OnnxUtils;
   friend class TuningUtils;
 };
-using ConstNode = Node::ConstNode;
-using NodePtr = Node::NodePtr;
-using ConstNodePtr = Node::ConstNodePtr;
-using NodeToOutAnchor = std::pair<NodePtr, OutDataAnchorPtr>;
 }  // namespace ge
 
 #endif  // INC_GRAPH_NODE_H_

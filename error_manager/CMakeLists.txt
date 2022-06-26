@@ -6,7 +6,7 @@ set(SRC_LIST
 add_library(error_manager SHARED ${SRC_LIST})
 
 target_compile_options(error_manager PRIVATE
-    $<$<STREQUAL:${TARGET_SYSTEM_NAME},Linux>:-Werror -fno-common -Wextra -Wfloat-equal>
+    $<$<STREQUAL:${TARGET_SYSTEM_NAME},Linux>:-Werror -fno-common>
     $<$<AND:$<STREQUAL:${TARGET_SYSTEM_NAME},Windows>,$<STREQUAL:${CMAKE_CONFIGURATION_TYPES},Debug>>:/MTd>
     $<$<AND:$<STREQUAL:${TARGET_SYSTEM_NAME},Windows>,$<STREQUAL:${CMAKE_CONFIGURATION_TYPES},Release>>:/MT>
 )
@@ -55,7 +55,7 @@ target_compile_definitions(error_manager_static PRIVATE
 )
 
 target_compile_options(error_manager_static PRIVATE
-    $<$<STREQUAL:${TARGET_SYSTEM_NAME},Linux>:-Werror -fno-common -Wextra -Wfloat-equal>
+    $<$<STREQUAL:${TARGET_SYSTEM_NAME},Linux>:-Werror -fno-common>
     $<$<AND:$<STREQUAL:${TARGET_SYSTEM_NAME},Windows>,$<STREQUAL:${CMAKE_CONFIGURATION_TYPES},Debug>>:/MTd>
     $<$<AND:$<STREQUAL:${TARGET_SYSTEM_NAME},Windows>,$<STREQUAL:${CMAKE_CONFIGURATION_TYPES},Release>>:/MT>
 )

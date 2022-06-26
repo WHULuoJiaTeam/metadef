@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,9 @@ enum FrameworkType {
   CAFFE = 0,
   LUOJIANET = 1,
   TENSORFLOW = 3,
-  ANDROID_NN = 4,
-  ONNX = 5,
-  FRAMEWORK_RESERVED = 6
+  ANDROID_NN,
+  ONNX,
+  FRAMEWORK_RESERVED,
 };
 }  // namespace domi
 

@@ -11,13 +11,45 @@ option(ENABLE_OPEN_SRC "Enable graphengine compile in opensource." FALSE)
 
 if (ENABLE_OPEN_SRC)
     set(HI_PYTHON python3)
+
     include(cmake/external_libs/protobuf_shared.cmake)
     include(cmake/external_libs/protobuf_static.cmake)
     include(cmake/external_libs/protoc.cmake)
     include(cmake/external_libs/securec.cmake)
     include(cmake/external_libs/json.cmake)
+    include(cmake/external_libs/gtest.cmake)
     include(cmake/FindModule.cmake)
     include(cmake/intf_pub_linux.cmake)
+
+    if(DEFINED ENV{D_LINK_PATH})
+        # D_LINK_PATH is set
+        set(GE_LIB_PATH $ENV{D_LINK_PATH})
+        set(GE_SYS_ARCH "")
+        if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
+            # x86 ubuntu
+            set(GE_SYS_ARCH "x86_64")
+        elseif(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64")
+            # arm euleros
+            set(GE_SYS_ARCH "aarch64")
+        else()
+            message(FATAL_ERROR "Running on a unsupported architecture: ${SYSTEM_TYPE}, build terminated")
+        endif()
+        set(GE_LIB_PATH ${GE_LIB_PATH}/${GE_SYS_ARCH})
+        find_module(slog libalog.so ${GE_LIB_PATH})
+        find_module(static_mmpa libmmpa.a ${GE_LIB_PATH})
+    elseif(DEFINED ENV{ASCEND_CUSTOM_PATH})
+        set(ASCEND_DIR $ENV{ASCEND_CUSTOM_PATH})
+        set(ASCEND_ATC_DIR ${ASCEND_DIR}/atc/lib64)
+        find_module(slog libalog.so ${ASCEND_ATC_DIR})
+        find_module(static_mmpa libmmpa.a ${ASCEND_ATC_DIR})
+    endif()
+
+    if(ENABLE_GE_COV OR ENABLE_GE_UT)
+        message(STATUS "Runing on llt mode, no need to depend other component")
+    elseif(ENABLE_METADEF_UT OR ENABLE_METADEF_COV)
+        add_subdirectory(tests)
+    endif()
+
 endif()
 
 set(METADEF_PROTO_LIST
@@ -39,7 +71,6 @@ set(METADEF_PROTO_LIST
     "${METADEF_DIR}/proto/tensorflow/tensor_shape.proto"
     "${METADEF_DIR}/proto/tensorflow/types.proto"
     "${METADEF_DIR}/proto/tensorflow/versions.proto"
-    "${METADEF_DIR}/proto/var_manager.proto"
 )
 
 protobuf_generate(metadef_protos METADEF_PROTO_SRCS METADEF_PROTO_HDRS ${METADEF_PROTO_LIST} TARGET)
@@ -53,7 +84,6 @@ set(METADEF_GRAPH_PROTO_SRCS
     "${CMAKE_BINARY_DIR}/proto/metadef_protos/proto/fwk_adapter.pb.cc"
     "${CMAKE_BINARY_DIR}/proto/metadef_protos/proto/op_mapping.pb.cc"
     "${CMAKE_BINARY_DIR}/proto/metadef_protos/proto/onnx/ge_onnx.pb.cc"
-    "${CMAKE_BINARY_DIR}/proto/metadef_protos/proto/var_manager.pb.cc"
 )
 
 set(METADEF_TENSORFLOW_PROTO_SRCS
@@ -82,9 +112,9 @@ target_compile_definitions(metadef_graph_protos_obj PRIVATE
 )
 target_link_libraries(metadef_graph_protos_obj PRIVATE ascend_protobuf $<BUILD_INTERFACE:intf_pub>)
 target_compile_options(metadef_graph_protos_obj PRIVATE
-    $<$<STREQUAL:${TARGET_SYSTEM_NAME},Linux>:-O2 -fPIC -Wextra -Wfloat-equal>
+    $<$<STREQUAL:${TARGET_SYSTEM_NAME},Linux>:-O2 -fPIC>
     $<$<OR:$<STREQUAL:${PRODUCT_SIDE},host>,$<STREQUAL:${ENABLE_OPEN_SRC},True>>:-fexceptions>
-    $<$<OR:$<STREQUAL:${TARGET_SYSTEM_NAME},Linux>,$<STREQUAL:${TARGET_SYSTEM_NAME},Android>>: -fno-common -Wextra -Wfloat-equal>
+    $<$<OR:$<STREQUAL:${TARGET_SYSTEM_NAME},Linux>,$<STREQUAL:${TARGET_SYSTEM_NAME},Android>>: -Wno-deprecated-declarations -fno-common>
     $<$<AND:$<STREQUAL:${TARGET_SYSTEM_NAME},Windows>,$<STREQUAL:${CMAKE_CONFIGURATION_TYPES},Debug>>:/MTd>
     $<$<AND:$<STREQUAL:${TARGET_SYSTEM_NAME},Windows>,$<STREQUAL:${CMAKE_CONFIGURATION_TYPES},Release>>:/MT>
 )
@@ -102,29 +132,16 @@ target_compile_definitions(metadef_tensorflow_protos_obj PRIVATE
 )
 target_link_libraries(metadef_tensorflow_protos_obj PRIVATE ascend_protobuf $<BUILD_INTERFACE:intf_pub>)
 target_compile_options(metadef_tensorflow_protos_obj PRIVATE
-    $<$<STREQUAL:${TARGET_SYSTEM_NAME},Linux>:-O2 -fPIC -Wextra -Wfloat-equal>
+    $<$<STREQUAL:${TARGET_SYSTEM_NAME},Linux>:-O2 -fPIC>
     $<$<OR:$<STREQUAL:${PRODUCT_SIDE},host>,$<STREQUAL:${ENABLE_OPEN_SRC},True>>:-fexceptions>
-    $<$<OR:$<STREQUAL:${TARGET_SYSTEM_NAME},Linux>,$<STREQUAL:${TARGET_SYSTEM_NAME},Android>>: -fno-common -Wextra -Wfloat-equal>
+    $<$<OR:$<STREQUAL:${TARGET_SYSTEM_NAME},Linux>,$<STREQUAL:${TARGET_SYSTEM_NAME},Android>>: -Wno-deprecated-declarations -fno-common>
     $<$<AND:$<STREQUAL:${TARGET_SYSTEM_NAME},Windows>,$<STREQUAL:${CMAKE_CONFIGURATION_TYPES},Debug>>:/MTd>
     $<$<AND:$<STREQUAL:${TARGET_SYSTEM_NAME},Windows>,$<STREQUAL:${CMAKE_CONFIGURATION_TYPES},Release>>:/MT>
 )
 
-if (ENABLE_MS_TESTCASES)
-    set(ENABLE_OPEN_SRC TRUE)
-endif()
 add_subdirectory(graph)
 add_subdirectory(error_manager)
 if (NOT ENABLE_D AND NOT ENABLE_ACL AND NOT ENABLE_MS_TESTCASES)
     add_subdirectory(register)
 endif ()
-
-if(ENABLE_GE_COV OR ENABLE_GE_UT)
-    message(STATUS "Runing on llt mode, no need to depend other component")
-elseif(ENABLE_METADEF_UT OR ENABLE_METADEF_COV)
-    include(cmake/external_libs/gtest.cmake)
-    include(cmake/init_test_depends.cmake)
-    add_subdirectory(tests)
-else()
-    include(cmake/init_depends.cmake)
-endif()
 

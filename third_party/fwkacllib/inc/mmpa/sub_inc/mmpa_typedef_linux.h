@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,9 +79,6 @@ typedef long LONG;
 #define MMPA_THREAD_SCHED_FIFO SCHED_FIFO
 #define MMPA_THREAD_SCHED_OTHER SCHED_OTHER
 #define MMPA_THREAD_MIN_STACK_SIZE PTHREAD_STACK_MIN
-
-#define MMPA_PATH_SEPARATOR_STR "/"
-#define MMPA_PATH_SEPARATOR_CHAR '/'
 
 #define MM_MUTEX_INITIALIZER PTHREAD_MUTEX_INITIALIZER
 

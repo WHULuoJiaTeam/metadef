@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,11 @@
  * limitations under the License.
  */
 
-#include "register/infer_data_slice_registry.h"
-#include "external/graph/types.h"
 #include "graph/operator_factory_impl.h"
+#include "register/infer_data_slice_registry.h"
 
 namespace ge {
-InferDataSliceFuncRegister::InferDataSliceFuncRegister(const char_t *const operator_type,
+InferDataSliceFuncRegister::InferDataSliceFuncRegister(const char *operator_type,
                                                        const InferDataSliceFunc &infer_data_slice_func) {
   (void)OperatorFactoryImpl::RegisterInferDataSliceFunc(operator_type, infer_data_slice_func);
 }

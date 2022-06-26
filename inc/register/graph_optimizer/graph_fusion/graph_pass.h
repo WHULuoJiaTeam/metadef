@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 #ifndef INC_REGISTER_GRAPH_OPTIMIZER_GRAPH_PASS_H_
 #define INC_REGISTER_GRAPH_OPTIMIZER_GRAPH_PASS_H_
 
+#include <string>
 #include "register/graph_optimizer/graph_fusion/pass.h"
 
 namespace fe {
@@ -35,7 +36,7 @@ class GraphPass : public Pass<ge::ComputeGraph> {
    * @return NOT_CHANGED, the graph did not change
    * @return FAILED, fail to modify graph
    */
-  virtual Status Run(ge::ComputeGraph &graph) override = 0;
+  virtual Status Run(ge::ComputeGraph &graph) = 0;
 };
 
 }  // namespace fe

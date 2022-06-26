@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,10 @@
 #include "register/op_tiling_registry.h"
 
 namespace optiling {
-extern "C" ge::graphStatus OpParaCalculateV2(const ge::Operator &op, OpRunInfoV2 &run_info);
-extern "C" ge::graphStatus OpAtomicCalculateV2(const ge::Node &node, OpRunInfoV2 &run_info);
-extern "C" ge::graphStatus OpFftsCalculateV2(const ge::Node &node, std::vector<OpRunInfoV2> &op_run_info);
+
+extern "C" ge::graphStatus OpParaCalculateV2(const ge::Node &node, optiling::utils::OpRunInfo &run_info);
+extern "C" ge::graphStatus OpAtomicCalculateV2(const ge::Node &node, optiling::utils::OpRunInfo &run_info);
+
 }  // namespace optiling
+
 #endif  // INC_REGISTER_OP_TILING_H_

@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,10 +32,10 @@ enum MemoryType { DDR = 0, HBM };
 enum L2Type { Cache = 0, Buff };
 
 typedef struct tag_str_info {
-  std::string aic_version;
-  std::string ccec_aic_version;
-  std::string ccec_aiv_version;
-  std::string is_support_ai_cpu_compiler;
+  string aic_version;
+  string ccec_aic_version;
+  string ccec_aiv_version;
+  string is_support_ai_cpu_compiler;
 } StrInfo;
 
 typedef struct tag_so_c_info {
@@ -71,7 +71,6 @@ typedef struct tag_ai_core_spec {
   uint32_t unzip_channels;
   uint8_t unzip_is_tight;
   uint8_t cube_vector_split;
-  uint8_t sparsity;
 } AiCoreSpec;
 
 typedef struct tag_ai_core_memory_rates {
@@ -127,18 +126,18 @@ typedef struct tag_platform_info {
   SoCInfo soc_info;
   AiCoreSpec ai_core_spec;
   AiCoreMemoryRates ai_core_memory_rates;
-  std::map<std::string, std::vector<std::string>> ai_core_intrinsic_dtype_map;
+  map<string, vector<string>> ai_core_intrinsic_dtype_map;
   VectorCoreSpec vector_core_spec;
   VectorCoreMemoryRates vector_core_memory_rates;
   CPUCache cpucache;
-  std::map<std::string, std::vector<std::string>> vector_core_intrinsic_dtype_map;
+  map<string, vector<string>> vector_core_intrinsic_dtype_map;
 } PlatformInfo;
 
 typedef struct tag_optional_info {
-  std::string soc_version;
-  std::string core_type;
+  string soc_version;
+  string core_type;
   uint32_t ai_core_num;
-  std::string l1_fusion_flag;
+  string l1_fusion_flag;
 } OptionalInfo;
 }  // namespace fe
 #endif

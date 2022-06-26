@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ class AlignedPtr {
  public:
   using Deleter = std::function<void(uint8_t *)>;
   using Allocator = std::function<void(std::unique_ptr<uint8_t[], Deleter> &base_addr)>;
-  explicit AlignedPtr(const size_t buffer_size, const size_t alignment = 16U);
+  explicit AlignedPtr(size_t buffer_size, size_t alignment = 16);
   AlignedPtr() = default;
   ~AlignedPtr() = default;
   AlignedPtr(const AlignedPtr &) = delete;
@@ -40,8 +40,8 @@ class AlignedPtr {
 
   static std::shared_ptr<AlignedPtr> BuildFromAllocFunc(const AlignedPtr::Allocator &alloc_func,
                                                         const AlignedPtr::Deleter &delete_func);
-  static std::shared_ptr<AlignedPtr> BuildFromData(uint8_t * const data,
-                                                   const AlignedPtr::Deleter &delete_func);
+  static std::shared_ptr<AlignedPtr> BuildFromData(uint8_t *data,
+                                                   const AlignedPtr::Deleter &delete_func);  /*lint !e148*/
  private:
   std::unique_ptr<uint8_t[], AlignedPtr::Deleter> base_ = nullptr;
   uint8_t *aligned_addr_ = nullptr;

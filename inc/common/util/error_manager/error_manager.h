@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,28 +26,16 @@
 #include <cstring>
 
 namespace error_message {
-using char_t = char;
 #ifdef __GNUC__
-int32_t FormatErrorMessage(char_t *str_dst, size_t dst_max,
-                           const char_t *format, ...)__attribute__((format(printf, 3, 4)));
-inline std::string TrimPath(const std::string &str) {
-  if (str.find_last_of('/') != std::string::npos) {
-    return str.substr(str.find_last_of('/') + 1U);
-  }
-  return str;
-}
+int FormatErrorMessage(char *str_dst, size_t dst_max, const char *format, ...) __attribute__((format(printf, 3, 4)));
+#define TRIM_PATH(x) strrchr(x, '/') ? strrchr(x, '/') + 1 : x
 #else
-int32_t FormatErrorMessage(char_t *str_dst, size_t dst_max, const char_t *format, ...);
-inline std::string TrimPath(const std::string &str) {
-  if (str.find_last_of('\\') != std::string::npos) {
-    return str.substr(str.find_last_of('\\') + 1U);
-  }
-  return str;
-}
+int FormatErrorMessage(char *str_dst, size_t dst_max, const char *format, ...);
+#define TRIM_PATH(x) strrchr(x, '\\') ? strrchr(x, '\\') + 1 : x
 #endif
 }
 
-constexpr size_t const LIMIT_PER_MESSAGE = 512U;
+#define LIMIT_PER_MESSAGE 512
 
 ///
 /// @brief Report error message
@@ -65,47 +53,61 @@ constexpr size_t const LIMIT_PER_MESSAGE = 512U;
 #define REPORT_ENV_ERROR(error_code, key, value)                                            \
   ErrorManager::GetInstance().ATCReportErrMessage(error_code, key, value)
 
-#define REPORT_INNER_ERROR(error_code, fmt, ...)                                                                     \
-do {                                                                                                                 \
-  std::vector<char> error_string(LIMIT_PER_MESSAGE, '\0');                                                           \
-  if (error_message::FormatErrorMessage(error_string.data(), error_string.size(), fmt, ##__VA_ARGS__) > 0) {         \
-    if (error_message::FormatErrorMessage(error_string.data(), error_string.size(), "%s[FUNC:%s][FILE:%s][LINE:%d]", \
-        error_string.data(), &__FUNCTION__[0], error_message::TrimPath(std::string(__FILE__)).c_str(),               \
-        __LINE__) > 0) {                                                                                             \
-      (void)ErrorManager::GetInstance().ReportInterErrMessage(error_code, std::string(error_string.data()));         \
-    }                                                                                                                \
-  }                                                                                                                  \
-} while (false)
+#define REPORT_INNER_ERROR(error_code, fmt, ...)                                                         \
+do {                                                                                                     \
+  char error_message_str[LIMIT_PER_MESSAGE] = {0};                                                       \
+  if (error_message::FormatErrorMessage(error_message_str, LIMIT_PER_MESSAGE, fmt, ##__VA_ARGS__) < 0) { \
+    break;                                                                                               \
+  }                                                                                                      \
+  if (error_message::FormatErrorMessage(                                                                 \
+          error_message_str, LIMIT_PER_MESSAGE, "%s[FUNC:%s][FILE:%s][LINE:%d]",                         \
+          error_message_str, __FUNCTION__, TRIM_PATH(__FILE__), __LINE__) < 0) {                         \
+    break;                                                                                               \
+  }                                                                                                      \
+  ErrorManager::GetInstance().ReportInterErrMessage(error_code, std::string(error_message_str));         \
+} while (0)
 
-#define REPORT_CALL_ERROR REPORT_INNER_ERROR
+#define REPORT_CALL_ERROR(error_code, fmt, ...)                                                  \
+do {                                                                                             \
+  char error_message_str[LIMIT_PER_MESSAGE] = {0};                                                       \
+  if (error_message::FormatErrorMessage(error_message_str, LIMIT_PER_MESSAGE, fmt, ##__VA_ARGS__) < 0) { \
+    break;                                                                                               \
+  }                                                                                                      \
+  if (error_message::FormatErrorMessage(                                                                 \
+          error_message_str, LIMIT_PER_MESSAGE, "%s[FUNC:%s][FILE:%s][LINE:%d]",                         \
+          error_message_str, __FUNCTION__, TRIM_PATH(__FILE__), __LINE__) < 0) {                         \
+    break;                                                                                               \
+  }                                                                                                      \
+  ErrorManager::GetInstance().ReportInterErrMessage(error_code, std::string(error_message_str));         \
+} while (0)
 
 namespace error_message {
   // first stage
-  constexpr char_t const *kInitialize   = "INIT";
-  constexpr char_t const *kModelCompile = "COMP";
-  constexpr char_t const *kModelLoad    = "LOAD";
-  constexpr char_t const *kModelExecute = "EXEC";
-  constexpr char_t const *kFinalize     = "FINAL";
+  constexpr char const *kInitialize   = "INIT";
+  constexpr char const *kModelCompile = "COMP";
+  constexpr char const *kModelLoad    = "LOAD";
+  constexpr char const *kModelExecute = "EXEC";
+  constexpr char const *kFinalize     = "FINAL";
 
   // SecondStage
   // INITIALIZE
-  constexpr char_t const *kParser               = "PARSER";
-  constexpr char_t const *kOpsProtoInit         = "OPS_PRO";
-  constexpr char_t const *kSystemInit           = "SYS";
-  constexpr char_t const *kEngineInit           = "ENGINE";
-  constexpr char_t const *kOpsKernelInit        = "OPS_KER";
-  constexpr char_t const *kOpsKernelBuilderInit = "OPS_KER_BLD";
+  constexpr char const *kParser               = "PARSER";
+  constexpr char const *kOpsProtoInit         = "OPS_PRO";
+  constexpr char const *kSystemInit           = "SYS";
+  constexpr char const *kEngineInit           = "ENGINE";
+  constexpr char const *kOpsKernelInit        = "OPS_KER";
+  constexpr char const *kOpsKernelBuilderInit = "OPS_KER_BLD";
   // MODEL_COMPILE
-  constexpr char_t const *kPrepareOptimize    = "PRE_OPT";
-  constexpr char_t const *kOriginOptimize     = "ORI_OPT";
-  constexpr char_t const *kSubGraphOptimize   = "SUB_OPT";
-  constexpr char_t const *kMergeGraphOptimize = "MERGE_OPT";
-  constexpr char_t const *kPreBuild           = "PRE_BLD";
-  constexpr char_t const *kStreamAlloc        = "STM_ALLOC";
-  constexpr char_t const *kMemoryAlloc        = "MEM_ALLOC";
-  constexpr char_t const *kTaskGenerate       = "TASK_GEN";
+  constexpr char const *kPrepareOptimize    = "PRE_OPT";
+  constexpr char const *kOriginOptimize     = "ORI_OPT";
+  constexpr char const *kSubGraphOptimize   = "SUB_OPT";
+  constexpr char const *kMergeGraphOptimize = "MERGE_OPT";
+  constexpr char const *kPreBuild           = "PRE_BLD";
+  constexpr char const *kStreamAlloc        = "STM_ALLOC";
+  constexpr char const *kMemoryAlloc        = "MEM_ALLOC";
+  constexpr char const *kTaskGenerate       = "TASK_GEN";
   // COMMON
-  constexpr char_t const *kOther = "DEFAULT";
+  constexpr char const *kOther = "DEFAULT";
 
   struct Context {
     uint64_t work_stream_id;
@@ -127,16 +129,16 @@ class ErrorManager {
   /// @brief init
   /// @return int 0(success) -1(fail)
   ///
-  int32_t Init();
+  int Init();
 
   ///
   /// @brief init
   /// @param [in] path: current so path
   /// @return int 0(success) -1(fail)
   ///
-  int32_t Init(const std::string path);
+  int Init(std::string path);
 
-  int32_t ReportInterErrMessage(const std::string error_code, const std::string &error_msg);
+  int ReportInterErrMessage(std::string error_code, const std::string &error_msg);
 
   ///
   /// @brief Report error message
@@ -144,21 +146,21 @@ class ErrorManager {
   /// @param [in] args_map: parameter map
   /// @return int 0(success) -1(fail)
   ///
-  int32_t ReportErrMessage(const std::string error_code, const std::map<std::string, std::string> &args_map);
+  int ReportErrMessage(std::string error_code, const std::map<std::string, std::string> &args_map);
 
   ///
   /// @brief output error message
   /// @param [in] handle: print handle
   /// @return int 0(success) -1(fail)
   ///
-  int32_t OutputErrMessage(int32_t handle);
+  int OutputErrMessage(int handle);
 
   ///
   /// @brief output  message
   /// @param [in] handle: print handle
   /// @return int 0(success) -1(fail)
   ///
-  int32_t OutputMessage(int32_t handle);
+  int OutputMessage(int handle);
 
   std::string GetErrorMessage();
 
@@ -169,7 +171,7 @@ class ErrorManager {
   /// @param [in] key: vector parameter key
   /// @param [in] value: vector parameter value
   ///
-  void ATCReportErrMessage(const std::string error_code, const std::vector<std::string> &key = {},
+  void ATCReportErrMessage(std::string error_code, const std::vector<std::string> &key = {},
                            const std::vector<std::string> &value = {});
 
   ///
@@ -178,8 +180,8 @@ class ErrorManager {
   /// @param [in] msg: failed message map, key is error code, value is op_name
   /// @return int 0(success) -1(fail)
   ///
-  int32_t ReportMstuneCompileFailedMsg(const std::string &root_graph_name,
-                                       const std::map<std::string, std::string> &msg);
+  int ReportMstuneCompileFailedMsg(const std::string &root_graph_name,
+                                   const std::map<std::string, std::string> &msg);
 
   ///
   /// @brief get graph compile failed message in mstune case
@@ -187,7 +189,7 @@ class ErrorManager {
   /// @param [out] msg_map: failed message map, key is error code, value is op_name list
   /// @return int 0(success) -1(fail)
   ///
-  int32_t GetMstuneCompileFailedMsg(const std::string &graph_name,
+  int GetMstuneCompileFailedMsg(const std::string &graph_name,
                                 std::map<std::string,
                                 std::vector<std::string>> &msg_map);
 
@@ -197,7 +199,7 @@ class ErrorManager {
 
   // @brief generate work_stream_id by args sessionid and graphid, clear error_message stored by same work_stream_id
   // used in external api entrance
-  void GenWorkStreamIdBySessionGraph(const uint64_t session_id, const uint64_t graph_id);
+  void GenWorkStreamIdBySessionGraph(uint64_t session_id, uint64_t graph_id);
 
   const std::string &GetLogHeader();
 
@@ -206,9 +208,6 @@ class ErrorManager {
   void SetErrorContext(error_message::Context error_context);
 
   void SetStage(const std::string &first_stage, const std::string &second_stage);
-
-  void SetStage(const error_message::char_t *first_stage, const size_t first_len,
-                const error_message::char_t *second_stage, const size_t second_len);
 
  private:
   struct ErrorInfoConfig {
@@ -234,28 +233,26 @@ class ErrorManager {
   ErrorManager &operator=(const ErrorManager &) = delete;
   ErrorManager &operator=(ErrorManager &&) = delete;
 
-  int32_t ParseJsonFile(const std::string path);
+  int ParseJsonFile(std::string path);
 
-  static int32_t ReadJsonFile(const std::string &file_path, void *const handle);
+  int ReadJsonFile(const std::string &file_path, void *handle);
 
   void ClassifyCompileFailedMsg(const std::map<std::string, std::string> &msg,
                                 std::map<std::string,
-                                std::vector<std::string>> &classified_msg);
+                                std::vector<std::string>> &classfied_msg);
 
-  bool IsInnerErrorCode(const std::string &error_code) const;
+  bool IsInnerErrorCode(const std::string &error_code);
 
-  bool IsParamCheckErrorId(const std::string &error_code) const;
-
-  inline bool IsValidErrorCode(const std::string &error_codes) const {
-    const uint32_t kErrorCodeValidLength = 6U;
-    return error_codes.size() == kErrorCodeValidLength;
+  inline bool IsValidErrorCode(const std::string &error_code) {
+    const uint32_t kErrorCodeValidLength = 6;
+    return error_code.size() == kErrorCodeValidLength;
   }
 
   std::vector<ErrorItem> &GetErrorMsgContainerByWorkId(uint64_t work_id);
   std::vector<ErrorItem> &GetWarningMsgContainerByWorkId(uint64_t work_id);
 
-  void ClearErrorMsgContainerByWorkId(const uint64_t work_stream_id);
-  void ClearWarningMsgContainerByWorkId(const uint64_t work_stream_id);
+  void ClearErrorMsgContainerByWorkId(uint64_t work_stream_id);
+  void ClearWarningMsgContainerByWorkId(uint64_t work_stream_id);
 
   bool is_init_ = false;
   std::mutex mutex_;
@@ -267,4 +264,5 @@ class ErrorManager {
 
   thread_local static error_message::Context error_context_;
 };
+
 #endif  // ERROR_MANAGER_H_

@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@
 #ifndef INC_COMMON_DYNAMIC_AIPP_H_
 #define INC_COMMON_DYNAMIC_AIPP_H_
 
-#include <cstdint>
+#include <stdint.h>
 
 /**
 * @ingroup dnn
 * @brief struct define of dynamic aipp batch parameter.
 */
-struct tagAippDynamicBatchPara {
+typedef struct tagAippDynamicBatchPara {
   int8_t cropSwitch;     // crop switch
   int8_t scfSwitch;      // resize switch
   int8_t paddingSwitch;  // 0: unable padding
@@ -65,14 +65,13 @@ struct tagAippDynamicBatchPara {
   uint16_t dtcPixelVarReciChn3;  // sfr_dtc_pixel_variance_reci_ch3
 
   int8_t reserve1[16];  // 32B assign, for ub copy
-};
-using kAippDynamicBatchPara = tagAippDynamicBatchPara;
+} kAippDynamicBatchPara;
 
 /**
 * @ingroup dnn
 * @brief struct define of dynamic aipp parameter. lite:64+96*batchNum byte ; tiny:64+64*batchNum byte
 */
-struct tagAippDynamicPara {
+typedef struct tagAippDynamicPara {
   uint8_t inputFormat;    // input format：YUV420SP_U8/XRGB8888_U8/RGB888_U8
   int8_t cscSwitch;       // csc switch
   int8_t rbuvSwapSwitch;  // rb/ub swap switch
@@ -101,7 +100,6 @@ struct tagAippDynamicPara {
   int8_t reserve4[16];  // 32B assign, for ub copy
 
   kAippDynamicBatchPara aippBatchPara;  // allow transfer several batch para.
-};
-using kAippDynamicPara = tagAippDynamicPara;
+} kAippDynamicPara;
 
 #endif  // INC_COMMON_DYNAMIC_AIPP_H_

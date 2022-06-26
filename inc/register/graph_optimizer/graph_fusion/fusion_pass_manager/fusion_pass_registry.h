@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ class FusionPassRegistry {
 
   static FusionPassRegistry &GetInstance();
 
-  void RegisterPass(const GraphFusionPassType &pass_type, const std::string &pass_name, CreateFn create_fn) const;
+  void RegisterPass(const GraphFusionPassType &pass_type, const std::string &pass_name, CreateFn create_fn);
 
   std::map<std::string, CreateFn> GetCreateFnByType(const GraphFusionPassType &pass_type);
 
@@ -44,7 +44,7 @@ class FusionPassRegistry {
 
 class FusionPassRegistrar {
  public:
-  FusionPassRegistrar(const GraphFusionPassType &pass_type, const std::string &pass_name, GraphPass *(*create_fn)());
+  FusionPassRegistrar(const GraphFusionPassType &pass_type, const std::string &pass_name, GraphPass *(*create_fun)());
   ~FusionPassRegistrar() {}
 };
 

@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,14 @@
 #include "graph/utils/graph_utils.h"
 
 namespace fe {
-extern const int64_t TBE_FUSION_OP_NUM_MAX;
-extern const int64_t TBE_PATTERN_NUM_MAX;
-extern const int64_t TBE_PATTERN_NUM_NONE;
-extern const int64_t TBE_PATTERN_NUM_DEFAULT;
-extern const int64_t TBE_OUTPUT_BRANCH_DEFAULT;
-extern const int64_t TBE_OUTPUT_BRANCH_SINGLE;
-extern const int64_t TBE_OUTPUT_BRANCH_MULTI;
-extern const int64_t TBE_PATTERN_GROUPID_INVALID;
+static const int TBE_FUSION_OP_NUM_MAX = 5;
+static const int TBE_PATTERN_NUM_MAX = 5;
+static const int TBE_PATTERN_NUM_NONE = 0;
+static const int TBE_PATTERN_NUM_DEFAULT = 1;
+static const int TBE_OUTPUT_BRANCH_DEFAULT = 0;
+static const int TBE_OUTPUT_BRANCH_SINGLE = 1;
+static const int TBE_OUTPUT_BRANCH_MULTI = 2;
+static const int TBE_PATTERN_GROUPID_INVALID = -1;
 
 enum SkipStatus { DISABLED = 0, AVAILABLE = 1, SKIPPED = 2 };
 
@@ -48,7 +48,6 @@ struct BufferFusionOpDesc {
   int64_t repeate_max;                         // opdesc max repeat num
   int64_t repeate_curr;                        // opdesc current repeat num
   bool match_status;
-  bool not_pattern;
   int64_t group_id;  // record desc groupid, need one desc matched at least in
                     // the same group
   ShapeTypeRule shape_type_rule;
@@ -68,30 +67,29 @@ class BufferFusionPattern {
 
   virtual ~BufferFusionPattern();
 
-  BufferFusionPattern &AddOpDesc(const std::string &desc_name, const std::vector<std::string> &types,
+  BufferFusionPattern &AddOpDesc(const std::string &desc_name, const std::vector<std::string> &patterns,
                                  int64_t repeat_min = TBE_PATTERN_NUM_DEFAULT,
                                  int64_t repeat_max = TBE_PATTERN_NUM_DEFAULT,
                                  int64_t group_id = TBE_PATTERN_GROUPID_INVALID,
-                                 ShapeTypeRule shape_type_rule = ONLY_SUPPORT_STATIC,
-                                 bool not_pattern = false);
+                                 ShapeTypeRule shape_type_rule = ONLY_SUPPORT_STATIC);
 
-  BufferFusionPattern &SetOutputs(const std::string &desc_name, const std::vector<std::string> &output_ids,
+  BufferFusionPattern &SetOutputs(const std::string &desc_name, const std::vector<std::string> &patterns,
                                   int64_t relation = TBE_OUTPUT_BRANCH_SINGLE, bool ignore_input_num = false,
                                   bool ignore_output_num = false);
 
-  BufferFusionPattern &SetHead(const std::vector<std::string> &head_ids);
+  BufferFusionPattern &SetHead(const std::vector<std::string> &op_patterns);
 
-  std::string GetName() const;
-  int64_t GetOpMaxCount() const;
-  std::vector<BufferFusionOpDesc *> GetOpDescs() const;
-  std::vector<BufferFusionOpDesc *> GetHead() const;
-  int64_t GetErrorCnt() const;
+  std::string GetName();
+  int64_t GetOpMaxCount();
+  std::vector<BufferFusionOpDesc *> GetOpDescs();
   bool GetOutputs(BufferFusionOpDesc *op_desc, std::vector<BufferFusionOpDesc *> &outputs, bool ignore_repeat = false);
+  std::vector<BufferFusionOpDesc *> GetHead();
+  int64_t GetErrorCnt();
+  void InitRepeatCurr(const BufferFusionPattern &pattern);
 
  private:
-  BufferFusionOpDesc *GetOpDesc(const std::string &desc_name) const;
-  void UpdateSkipStatus(const BufferFusionOpDesc *op_desc) const;
-
+  BufferFusionOpDesc *GetOpDesc(const std::string &desc_name);
+  void UpdateSkipStatus(BufferFusionOpDesc *op_desc);
   std::string name_;
   int64_t op_max_count_;
   std::vector<BufferFusionOpDesc *> ops_;

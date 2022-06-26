@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@
 
 #include <string>
 #include "proto/ge_ir.pb.h"
-#include "graph/detail/attributes_holder.h"
 
 namespace ge {
 class BufferImpl {
@@ -28,18 +27,18 @@ class BufferImpl {
   BufferImpl();
   ~BufferImpl();
   BufferImpl(const BufferImpl &other);
-  BufferImpl(const std::size_t buffer_size, const std::uint8_t default_val);
+  BufferImpl(std::size_t buffer_size, std::uint8_t default_val);
 
-  void CopyFrom(const std::uint8_t *const data, const std::size_t buffer_size);
-  BufferImpl(const std::shared_ptr<google::protobuf::Message> &proto_owner, proto::AttrDef *const buffer);
-  BufferImpl(const std::shared_ptr<google::protobuf::Message> &proto_owner, std::string *const buffer);
+  void CopyFrom(const std::uint8_t *data, std::size_t buffer_size);
+  BufferImpl(const std::shared_ptr<google::protobuf::Message> &proto_owner, proto::AttrDef *buffer);
+  BufferImpl(const std::shared_ptr<google::protobuf::Message> &proto_owner, std::string *buffer);
 
   BufferImpl &operator=(const BufferImpl &other);
   const std::uint8_t *GetData() const;
   std::uint8_t *GetData();
   std::size_t GetSize() const;
   void ClearBuffer();
-  uint8_t operator[](const size_t index) const;
+  uint8_t operator[](size_t index) const;
 
  private:
   friend class GeAttrValueImp;

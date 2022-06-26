@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ class GE_FUNC_VISIBILITY StringUtils {
  public:
   static std::string &Ltrim(std::string &s) {
 #if __cplusplus >= 201103L
-    (void)s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int c) { return std::isspace(c) == 0; }));
+    (void)s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int c) { return !std::isspace(c); }));
 #else
     (void)s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
 #endif
@@ -55,7 +55,7 @@ class GE_FUNC_VISIBILITY StringUtils {
   // lint -esym(551,*)
   static std::string &Rtrim(std::string &s) {  /*lint !e618*/
 #if __cplusplus >= 201103L
-    (void)s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int c) { return std::isspace(c) == 0; }));
+    (void)s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int c) { return !std::isspace(c); }));
 #else
     (void)s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
 #endif
@@ -77,8 +77,8 @@ class GE_FUNC_VISIBILITY StringUtils {
   ///  @param [in] delim  separator
   ///  @return string array after segmentation
   ///
-  static std::vector<std::string, std::allocator<std::string>> Split(const std::string &str, char delim) {
-    std::vector<std::string, std::allocator<std::string>> elems;
+  static std::vector<std::string> Split(const std::string &str, char delim) {
+    std::vector<std::string> elems;
 
     if (str.empty()) {
       elems.emplace_back("");
@@ -93,7 +93,7 @@ class GE_FUNC_VISIBILITY StringUtils {
     }
 
     auto str_size = str.size();
-    if ((str_size > 0) && (str[str_size - 1] == delim)) {
+    if (str_size > 0 && str[str_size - 1] == delim) {
       elems.emplace_back("");
     }
 

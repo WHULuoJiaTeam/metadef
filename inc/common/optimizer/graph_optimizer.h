@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,7 @@
 
 #include <map>
 #include <string>
-#include "graph_optimizer_types.h"
-#include "optimize_utility.h"
+#include "./graph_optimizer_types.h"
 #include "common/ge_inner_error_codes.h"
 #include "common/opskernel/ops_kernel_info_types.h"
 #include "graph/compute_graph.h"
@@ -36,21 +35,18 @@ class GraphOptimizer {
   virtual ~GraphOptimizer() {}
 
   // initialize graphOptimizer
-  virtual Status Initialize(const std::map<std::string, std::string> &options,
-                            OptimizeUtility *const optimize_utility) = 0;
+  virtual Status Initialize(const map<string, string> &options) = 0;
 
   // close graphOptimizer
   virtual Status Finalize() = 0;
 
   // optimize original graph for FE quant optimize
   virtual Status OptimizeGraphPrepare(ComputeGraph& graph) {
-    (void)graph;
     return SUCCESS;
   }
 
   // optimize graph before build for RTS
   virtual Status OptimizeGraphBeforeBuild(ComputeGraph& graph) {
-    (void)graph;
     return SUCCESS;
   }
 
@@ -59,7 +55,6 @@ class GraphOptimizer {
 
   // optimize original graph, using for conversion operator insert in graph preparation stage
   virtual Status OptimizeOriginalGraphJudgeInsert(ComputeGraph &graph) {
-    (void)graph;
     return SUCCESS;
   }
 
@@ -73,29 +68,13 @@ class GraphOptimizer {
   virtual Status GetAttributes(GraphOptimizerAttribute &attrs) const = 0;
 
   // optimize streamed Graph
-  virtual Status OptimizeStreamGraph(ComputeGraph &graph, const RunContext &context) {
-    (void)graph;
-    (void)context;
-    return SUCCESS;
-  }
-
-  // optimize streamed whole Graph
-  virtual Status OptimizeStreamedWholeGraph(ComputeGraph &graph) {
-    (void)graph;
-    return SUCCESS;
-  }
+  virtual Status OptimizeStreamGraph(ComputeGraph &graph, const RunContext &context) { return SUCCESS; }
 
   // op compile
-  virtual Status OptimizeFusedGraphAfterGraphSlice(ComputeGraph &graph) {
-    (void)graph;
-    return SUCCESS;
-  }
+  virtual Status OptimizeFusedGraphAfterGraphSlice(ComputeGraph &graph) { return SUCCESS; }
 
   // optimize whole graph, using after stage1
-  virtual Status OptimizeAfterStage1(ComputeGraph &graph) {
-    (void)graph;
-    return SUCCESS;
-  }
+  virtual Status OptimizeAfterStage1(ComputeGraph &graph) { return SUCCESS; }
 };
 }  // namespace ge
 /*lint +e148*/

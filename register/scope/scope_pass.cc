@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,12 @@
 
 namespace ge {
 ScopesResult::ScopesResult() {
-  impl_ = ge::ComGraphMakeUnique<ScopesResultImpl>();
+  impl_ = std::unique_ptr<ScopesResultImpl>(new (std::nothrow) ScopesResultImpl);
 }
 
 ScopesResult::ScopesResult(ScopesResult const &result) {
-  impl_ = ge::ComGraphMakeUnique<ScopesResultImpl>();
-  if ((impl_ == nullptr) || (result.impl_ == nullptr)) {
+  impl_ = std::unique_ptr<ScopesResultImpl>(new (std::nothrow) ScopesResultImpl);
+  if (impl_ == nullptr || result.impl_ == nullptr) {
     GELOGE(ge::MEMALLOC_FAILED, "ScopesResult is not properly initialized.");
     return;
   }
@@ -43,7 +43,7 @@ ScopesResult &ScopesResult::operator=(ScopesResult const &result) {
   if (&result == this) {
     return *this;
   }
-  if ((impl_ == nullptr) || (result.impl_ == nullptr)) {
+  if (impl_ == nullptr || result.impl_ == nullptr) {
     GELOGE(ge::MEMALLOC_FAILED, "ScopesResult is not properly initialized.");
     return *this;
   }
@@ -87,35 +87,40 @@ ScopeBasePass::ScopeBasePassImpl::~ScopeBasePassImpl() {
   }
 }
 
-Status ScopeBasePass::ScopeBasePassImpl::AddFusionScopesResultToScopeGraph(
-    const std::shared_ptr<ScopeGraph> &scope_graph, std::vector<ScopesResult> &scope_results) {
+Status ScopeBasePass::ScopeBasePassImpl::AddFusionScopesResultToScopeGraph(std::shared_ptr<ScopeGraph> &scope_graph,
+                                                                           std::vector<ScopesResult> &scope_results) {
   for (auto &rlt : scope_results) {
-    std::unique_ptr<FusionScopesResult> fusion_rlt = ComGraphMakeUnique<FusionScopesResult>();
+    FusionScopesResult *fusion_rlt = new (std::nothrow) FusionScopesResult();
     if (fusion_rlt == nullptr) {
       GELOGE(FAILED, "Alloc fusion_rlt failed.");
       return FAILED;
     }
     if (fusion_rlt->Init() != SUCCESS) {
       GELOGE(FAILED, "Init fusion_rlt failed.");
+      delete fusion_rlt;
+      fusion_rlt = nullptr;
       return FAILED;
     }
     auto &impl_fusion_rlt = fusion_rlt->impl_;
     auto &impl_scope_rlt = rlt.impl_;
     if (impl_scope_rlt == nullptr) {
       GELOGE(ge::MEMALLOC_FAILED, "ScopesResult is not properly initialized.");
+      delete fusion_rlt;
+      fusion_rlt = nullptr;
       continue;
     }
 
     impl_fusion_rlt->AddNodes(impl_scope_rlt->GetNodes());
     impl_fusion_rlt->AddScopes(impl_scope_rlt->GetScopes());
 
-    parent_->GenerateFusionResult(impl_scope_rlt->GetScopes(), fusion_rlt.get());
+    parent_->GenerateFusionResult(impl_scope_rlt->GetScopes(), fusion_rlt);
     if (impl_fusion_rlt->Type() == kScopeInvalidType) {
       GELOGE(FAILED, "Failed to set inner node for fusion op %s.", impl_fusion_rlt->Type().c_str());
+      delete fusion_rlt;
       return FAILED;
     }
     auto &impl_scope_graph = scope_graph->impl_;
-    impl_scope_graph->AddFusionScopesResult(fusion_rlt.release());
+    impl_scope_graph->AddFusionScopesResult(fusion_rlt);
   }
 
   return SUCCESS;
@@ -123,7 +128,7 @@ Status ScopeBasePass::ScopeBasePassImpl::AddFusionScopesResultToScopeGraph(
 
 Status ScopeBasePass::ScopeBasePassImpl::Run(std::shared_ptr<ScopeGraph> &scope_graph) {
   GE_CHECK_NOTNULL(scope_graph);
-  const ScopeTree *const scope_tree = scope_graph->GetScopeTree();
+  const ScopeTree *scope_tree = scope_graph->GetScopeTree();
   GE_CHECK_NOTNULL(scope_tree);
   GE_CHECK_NOTNULL(parent_);
   patterns_ = parent_->DefinePatterns();
@@ -175,24 +180,24 @@ bool ScopeBasePass::ScopeBasePassImpl::MatchAllBatches(const ScopeTree *scope_tr
   for (auto &scope_patterns : patterns_) {
     std::vector<Scope *> tmp_results;
     std::vector<Scope *> last_results;
-    uint32_t batch_num = 0U;
+    uint32_t batch_num = 0;
     for (auto &batch_patterns : scope_patterns) {
       ++batch_num;
       std::vector<Scope *> one_results;
-      const bool is_matched = MatchOneBatch(scope_tree, batch_patterns, one_results);
+      bool is_matched = MatchOneBatch(scope_tree, batch_patterns, one_results);
       if (!is_matched) {
         break;
       }
       if (batch_num == scope_patterns.size()) {
-        (void)last_results.insert(last_results.end(), one_results.begin(), one_results.end());
+        last_results.insert(last_results.end(), one_results.begin(), one_results.end());
       } else {
-        (void)tmp_results.insert(tmp_results.end(), one_results.begin(), one_results.end());
+        tmp_results.insert(tmp_results.end(), one_results.begin(), one_results.end());
       }
     }
     for (auto &tmp : tmp_results) {
       bool rollback = true;
       for (auto &result : last_results) {
-        if ((result->Name().length() <= tmp->Name().length()) && (tmp->Name().find(result->Name()) == 0U)) {
+        if ((result->Name().length() <= tmp->Name().length()) && (tmp->Name().find(result->Name()) == 0)) {
           rollback = false;
           break;
         }
@@ -202,13 +207,13 @@ bool ScopeBasePass::ScopeBasePassImpl::MatchAllBatches(const ScopeTree *scope_tr
         impl->SetSubType("");
       }
     }
-    (void)results.insert(results.end(), last_results.begin(), last_results.end());
+    results.insert(results.end(), last_results.begin(), last_results.end());
   }
 
   return !(results.empty());
 }
 
-bool ScopeBasePass::ScopeBasePassImpl::MatchOneBatch(const ScopeTree *const scope_tree,
+bool ScopeBasePass::ScopeBasePassImpl::MatchOneBatch(const ScopeTree *scope_tree,
                                                      const std::vector<ScopePattern *> &patternlist,
                                                      std::vector<Scope *> &results) {
   if (scope_tree == nullptr) {
@@ -218,7 +223,7 @@ bool ScopeBasePass::ScopeBasePassImpl::MatchOneBatch(const ScopeTree *const scop
 
   int32_t find = 0;
   auto &impl_scope_tree = scope_tree->impl_;
-  const Scope *const root = impl_scope_tree->Root();
+  const Scope *root = impl_scope_tree->Root();
   if (root != nullptr) {
     auto &impl_scope = root->impl_;
     const std::unordered_map<std::string, Scope *> &sub_scopes = impl_scope->GetSubScopes();
@@ -231,12 +236,12 @@ bool ScopeBasePass::ScopeBasePassImpl::MatchOneBatch(const ScopeTree *const scop
     }
   }
 
-  return (find > 0) ? true : false;
+  return find > 0 ? true : false;
 }
 
 bool ScopeBasePass::ScopeBasePassImpl::MatchOneScope(const ScopePattern *pattern, Scope *scope,
                                                      std::vector<Scope *> &results) {
-  if ((pattern == nullptr) || (scope == nullptr)) {
+  if (pattern == nullptr || scope == nullptr) {
     GELOGE(PARAM_INVALID, "Input param is nullptr");
     return false;
   }
@@ -255,7 +260,7 @@ bool ScopeBasePass::ScopeBasePassImpl::MatchOneScope(const ScopePattern *pattern
   std::stack<Scope *> scopes;
   scopes.push(scope);
   while (!scopes.empty()) {
-    const Scope *const current_scope = scopes.top();
+    Scope *current_scope = scopes.top();
     scopes.pop();
     auto &current_scope_impl = current_scope->impl_;
     const std::unordered_map<std::string, Scope *> &sub_scopes = current_scope_impl->GetSubScopes();
@@ -270,7 +275,7 @@ bool ScopeBasePass::ScopeBasePassImpl::MatchOneScope(const ScopePattern *pattern
       }
     }
   }
-  return (find > 0) ? true : false;
+  return find > 0 ? true : false;
 }
 
 Status ScopeBasePass::ScopeBasePassImpl::PrintFusionScopeInfo(std::shared_ptr<ScopeGraph> &scope_graph) {
@@ -289,16 +294,16 @@ Status ScopeBasePass::ScopeBasePassImpl::PrintFusionScopeInfo(std::shared_ptr<Sc
     auto &impl = result.second->impl_;
     const std::map<std::string, std::vector<int32_t>> &inputs = impl->GetInputs();
     for (auto &input : inputs) {
-      const std::vector<int32_t> indexs = input.second;
-      for (const int32_t index : indexs) {
+      std::vector<int32_t> indexs = input.second;
+      for (int32_t index : indexs) {
         GELOGI("FusionScope input node:%s,%d", input.first.c_str(), index);
       }
     }
 
     const std::map<std::string, std::vector<int32_t>> &outputs = impl->GetOutputs();
     for (auto &output : outputs) {
-      const std::vector<int32_t> indexs = output.second;
-      for (const int32_t index : indexs) {
+      std::vector<int32_t> indexs = output.second;
+      for (int32_t index : indexs) {
         GELOGI("FusionScope output node:%s,%d", output.first.c_str(), index);
       }
     }
@@ -323,7 +328,7 @@ Status ScopeBasePass::ScopeBasePassImpl::PrintFusionScopeInfo(std::shared_ptr<Sc
 }
 
 ScopeBasePass::ScopeBasePass() {
-  impl_ = ge::ComGraphMakeUnique<ScopeBasePassImpl>(this);
+  impl_ = std::unique_ptr<ScopeBasePassImpl>(new (std::nothrow) ScopeBasePassImpl(this));
 }
 
 ScopeBasePass::~ScopeBasePass() {}

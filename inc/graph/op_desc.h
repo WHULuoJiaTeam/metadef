@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,19 @@
 #ifndef INC_GRAPH_OP_DESC_H_
 #define INC_GRAPH_OP_DESC_H_
 
+#include <functional>
+#include <algorithm>
+#include <map>
+#include <memory>
+#include <string>
+#include <set>
 #include <unordered_set>
+#include <vector>
 #include "detail/attributes_holder.h"
 #include "graph/range_vistor.h"
-#include "graph/ge_tensor.h"
 
+#define DYNAMIN_INPUT_NAME(name, index) (((name)) + std::to_string((index)))
+#define DYNAMIN_OUTPUT_NAME(name, index) (((name)) + std::to_string((index)))
 namespace ge {
 using std::map;
 using std::pair;
@@ -31,6 +39,20 @@ using std::string;
 using std::vector;
 
 class Operator;
+class GeTensorDesc;
+
+using GeTensorDescPtr = shared_ptr<GeTensorDesc>;
+using ConstGeTensorDescPtr = shared_ptr<const GeTensorDesc>;
+
+class OpDesc;
+
+using OpDescPtr = shared_ptr<OpDesc>;
+using ConstOpDescPtr = shared_ptr<const OpDesc>;
+
+class GeAttrValue;
+
+using ConstOpDesc = const OpDesc;
+
 class OpDescImpl;
 using OpDescImplPtr = std::shared_ptr<OpDescImpl>;
 
@@ -42,69 +64,65 @@ enum SubgraphType {
 
 class OpDesc : public std::enable_shared_from_this<OpDesc>, public AttrHolder {
  public:
-  using OpDescPtr = std::shared_ptr<OpDesc>;
-  using ConstOpDescPtr = std::shared_ptr<const OpDesc>;
-
   template <class T>
-  using Vistor = RangeVistor<T, shared_ptr<const OpDesc>>;
+  using Vistor = RangeVistor<T, shared_ptr<ConstOpDesc>>;
 
   friend class GraphBuilderImpl;
 
   friend class OperatorImpl;
 
-  OpDesc(const std::string &name, const std::string &type);
+  OpDesc(const string &name, const string &type);
 
   OpDesc(const OpDesc &op_desc);
 
   OpDesc(OpDesc &&op_desc);
 
-  explicit OpDesc(const ge::proto::OpDef &op_def);
-
   OpDesc();
 
-  ~OpDesc() override;
+  ~OpDesc();
 
   bool operator==(const OpDesc &r_op_desc) const;
+  OpDesc& operator=(OpDesc op_desc);
 
-  std::string GetName() const;
+  string GetName() const;
 
-  void SetName(const std::string &name);
+  void SetName(const string &name);
 
-  std::string GetType() const;
+  string GetType() const;
 
-  void SetType(const std::string &type);
+  void SetType(const string &type);
 
   graphStatus AddInputDesc(const GeTensorDesc &input_desc);
 
-  graphStatus AddInputDesc(const std::string &name, const GeTensorDesc &input_desc);
+  graphStatus AddInputDesc(const string &name, const GeTensorDesc &input_desc);
 
-  graphStatus AddInputDesc(const uint32_t index, const ge::GeTensorDesc &input_desc);
+  graphStatus AddInputDesc(uint32_t index, const ge::GeTensorDesc &input_desc);
 
-  graphStatus AddInputDescMiddle(const std::string &name, const uint32_t num, const size_t index);
+  graphStatus AddInputDescForward(const string &name, const unsigned int num);
 
-  graphStatus AddOutputDescMiddle(const std::string &name, const uint32_t num, const size_t index);
+  graphStatus AddInputDescMiddle(const string &name, const unsigned int num, size_t index);
 
-  graphStatus AddOutputDescForward(const std::string &name, const uint32_t num);
+  graphStatus AddOutputDescMiddle(const string &name, const unsigned int num, size_t index);
 
-  graphStatus AddOptionalInputDesc(const std::string &name, const GeTensorDesc &input_desc);
+  graphStatus AddOutputDescForward(const string &name, const unsigned int num);
 
-  graphStatus UpdateInputDesc(const uint32_t index, const GeTensorDesc &tensor_desc);
+  graphStatus AddOptionalInputDesc(const string &name, const GeTensorDesc &input_desc);
 
-  graphStatus UpdateInputDesc(const std::string &name, const GeTensorDesc &tensor_desc);
+  graphStatus UpdateInputDesc(uint32_t index, const GeTensorDesc &tensor_desc);
 
-  bool InputIsSet(const std::string &name) const;
+  graphStatus UpdateInputDesc(const string &name, const GeTensorDesc &tensor_desc);
 
-  const GeTensorDesc &GetInputDesc(const uint32_t index) const;
+  bool InputIsSet(const string &name) const;
 
-  const GeTensorDesc &GetInputDesc(const std::string &name) const;
+  GeTensorDesc GetInputDesc(uint32_t index) const;
 
-  bool IsOptionalInput(const uint32_t index) const;
+  GeTensorDesc GetInputDesc(const string &name) const;
 
   Vistor<string> GetAllInputNames() const;
 
-  GeTensorDescPtr MutableInputDesc(const uint32_t index) const;
+  GeTensorDescPtr MutableInputDesc(uint32_t index) const;
 
-  GeTensorDescPtr MutableInputDesc(const std::string &name) const;
+  GeTensorDescPtr MutableInputDesc(const string &name) const;
 
   Vistor<GeTensorDesc> GetAllInputsDesc() const;
 
@@ -116,19 +134,19 @@ class OpDesc : public std::enable_shared_from_this<OpDesc>, public AttrHolder {
 
   graphStatus AddOutputDesc(const GeTensorDesc &output_desc);
 
-  graphStatus AddOutputDesc(const std::string &name, const GeTensorDesc &output_desc);
+  graphStatus AddOutputDesc(const string &name, const GeTensorDesc &output_desc);
 
-  graphStatus UpdateOutputDesc(const uint32_t index, const GeTensorDesc &tensor_desc);
+  graphStatus UpdateOutputDesc(uint32_t index, const GeTensorDesc &tensor_desc);
 
-  graphStatus UpdateOutputDesc(const std::string &name, const GeTensorDesc &tensor_desc);
+  graphStatus UpdateOutputDesc(const string &name, const GeTensorDesc &tensor_desc);
 
-  const GeTensorDesc &GetOutputDesc(const uint32_t index) const;
+  GeTensorDesc GetOutputDesc(uint32_t index) const;
 
-  const GeTensorDesc &GetOutputDesc(const std::string &name) const;
+  GeTensorDesc GetOutputDesc(const string &name) const;
 
-  GeTensorDescPtr MutableOutputDesc(const uint32_t index) const;
+  GeTensorDescPtr MutableOutputDesc(uint32_t index) const;
 
-  GeTensorDescPtr MutableOutputDesc(const std::string &name) const;
+  GeTensorDescPtr MutableOutputDesc(const string &name) const;
 
   uint32_t GetAllOutputsDescSize() const;
 
@@ -138,49 +156,45 @@ class OpDesc : public std::enable_shared_from_this<OpDesc>, public AttrHolder {
 
   size_t GetOutputsSize() const;
 
-  ConstGeTensorDescPtr GetOutputDescPtr(const uint32_t index) const;
+  ConstGeTensorDescPtr GetOutputDescPtr(uint32_t index) const;
 
-  ConstGeTensorDescPtr GetInputDescPtr(const uint32_t index) const;
+  ConstGeTensorDescPtr GetInputDescPtr(uint32_t index) const;
 
-  ConstGeTensorDescPtr GetInputDescPtrDfault(const uint32_t index) const;
+  ConstGeTensorDescPtr GetInputDescPtrDfault(uint32_t index) const;
 
-  ConstGeTensorDescPtr GetInputDescPtr(const std::string &name) const;
+  ConstGeTensorDescPtr GetInputDescPtr(const string &name) const;
 
-  graphStatus AddDynamicInputDesc(const std::string &name, const uint32_t num, const bool is_push_back = true);
+  graphStatus AddDynamicInputDesc(const string &name, const unsigned int num, bool isPushBack = true);
 
-  graphStatus AddDynamicInputDescByIndex(const std::string &name, const uint32_t num, const size_t index);
+  graphStatus AddDynamicInputDescByIndex(const string &name, const unsigned int num, size_t index);
 
-  graphStatus AddDynamicOutputDesc(const std::string &name, const uint32_t num, const bool is_push_back = true);
+  graphStatus AddDynamicOutputDesc(const string &name, const unsigned int num, bool isPushBack = true);
 
-  bool IsOptionalInput(const std::string &name) const;
+  bool IsOptionalInput(const string &name) const;
 
-  std::map<std::string, uint32_t> GetAllInputName() const;
+  bool IsOptionalInput(uint32_t index) const;
 
-  std::map<std::string, uint32_t> GetAllOutputName();
+  std::map<string, uint32_t> GetAllInputName() const;
 
-  std::map<std::string, uint32_t>& MutableAllInputName();
+  std::map<string, uint32_t> GetAllOutputName();
 
-  std::map<std::string, uint32_t>& MutableAllOutputName();
+  std::map<string, uint32_t>& MutableAllInputName();
 
-  bool UpdateInputName(const std::map<std::string, uint32_t> input_name_idx);
+  std::map<string, uint32_t>& MutableAllOutputName();
 
-  bool UpdateOutputName(const std::map<std::string, uint32_t> output_name_idx);
+  bool UpdateInputName(std::map<string, uint32_t> inputNameIdx);
+
+  bool UpdateOutputName(std::map<string, uint32_t> outputNameIdx);
 
   void AddInferFunc(const std::function<graphStatus(Operator &)> &func);
 
   std::function<graphStatus(Operator &)> GetInferFunc() const;
 
-  void *GetTilingFuncInfo() const;
-
-  void SetTilingFuncInfo(void *tiling_func_info);
-
-  void *GetAtomicTilingFuncInfo() const;
-
-  void SetAtomicTilingFuncInfo(void *atomic_tiling_func_info);
-
   graphStatus InferShapeAndType();
 
   void AddInferFormatFunc(const std::function<graphStatus(Operator &)> &func);
+
+  std::function<graphStatus(Operator &)> GetInferFormatFunc() const;
 
   graphStatus DefaultInferFormat();
 
@@ -196,16 +210,13 @@ class OpDesc : public std::enable_shared_from_this<OpDesc>, public AttrHolder {
 
   graphStatus CommonVerify() const;
 
-  graphStatus AddRegisterInputName(const std::string &name);
+  graphStatus AddRegisterInputName(const string &name);
 
-  graphStatus AddRegisterOutputName(const std::string &name);
+  graphStatus AddRegisterOutputName(const string &name);
 
-  std::vector<std::string> GetRegisterInputName() const;
+  vector<string> GetRegisterInputName() const;
 
-  std::vector<std::string> GetRegisterOutputName() const;
-
-  void AppendIrAttrName(const std::string &name);
-  const std::vector<std::string> &GetIrAttrNames() const;
+  vector<string> GetRegisterOutputName() const;
 
   using AttrHolder::AddRequiredAttr;
   using AttrHolder::DelAttr;
@@ -215,40 +226,46 @@ class OpDesc : public std::enable_shared_from_this<OpDesc>, public AttrHolder {
   using AttrHolder::HasAttr;
   using AttrHolder::SetAttr;
 
-  void SetId(const int64_t id);
+  void SetId(int64_t id);
   int64_t GetId() const;
-  void SetStreamId(const int64_t stream_id);
+  void SetStreamId(int64_t stream_id);
   int64_t GetStreamId() const;
-  void SetInputName(const std::vector<std::string> &input_name);
-  std::vector<std::string> GetInputName() const;
-  void SetSrcName(const std::vector<std::string> &src_name);
-  std::vector<std::string> GetSrcName() const;
-  void SetSrcIndex(const std::vector<int64_t> &src_index);
-  std::vector<int64_t> GetSrcIndex() const;
-  void SetInputOffset(const std::vector<int64_t> &input);
-  std::vector<int64_t> GetInputOffset() const;
-  void SetOutputOffset(const std::vector<int64_t> &output);
-  std::vector<int64_t> GetOutputOffset() const;
-  void SetDstName(const std::vector<std::string> &dst_name);
-  std::vector<std::string> GetDstName() const;
-  void SetDstIndex(const std::vector<int64_t> &dst_index);
-  void SetWorkspace(const std::vector<int64_t> &workspace);
-  std::vector<int64_t> GetWorkspace() const;
-  void SetWorkspaceBytes(const std::vector<int64_t> &workspace_bytes);
-  std::vector<int64_t> GetWorkspaceBytes() const;
-  void SetIsInputConst(const std::vector<bool> &is_input_const);
-  std::vector<bool> GetIsInputConst() const;
+  void SetInputName(const vector<string> &input_name);
+  vector<string> GetInputName() const;
+  void SetSrcName(const vector<string> &src_name);
+  vector<string> GetSrcName() const;
+  void SetSrcIndex(const vector<int64_t> &src_index);
+  vector<int64_t> GetSrcIndex() const;
+  void SetInputOffset(const vector<int64_t> &input);
+  vector<int64_t> GetInputOffset() const;
+  void SetOutputOffset(const vector<int64_t> &input);
+  vector<int64_t> GetOutputOffset() const;
+  void SetDstName(const vector<string> &dst_name);
+  vector<string> GetDstName() const;
+  void SetDstIndex(const vector<int64_t> &dst_index);
+  vector<int64_t> GetDstIndex() const;
+  void SetWorkspace(const vector<int64_t> &workspace);
+  vector<int64_t> GetWorkspace() const;
+  void SetWorkspaceBytes(const vector<int64_t> &workspace_bytes);
+  vector<int64_t> GetWorkspaceBytes() const;
+  void SetIsInputConst(const vector<bool> &is_input_const);
+  vector<bool> GetIsInputConst() const;
 
-  void SetOpInferDepends(const std::vector<std::string> &depend_names);
-  std::vector<std::string> GetOpInferDepends() const;
+  void SetOpInferDepends(const vector<string> &depend_names);
+  vector<string> GetOpInferDepends() const;
 
-  std::string GetInputNameByIndex(const uint32_t index) const;
-  std::string GetValidInputNameByIndex(const uint32_t index) const;
-  int32_t GetInputIndexByName(const std::string &name) const;
+  string GetInputNameByIndex(uint32_t index) const;
+  string GetValidInputNameByIndex(uint32_t index) const;
+  int GetValidInputIndexByName(const string &name) const;
+  int GetInputIndexByName(const string &name) const;
 
-  std::string GetOutputNameByIndex(const uint32_t index) const;
+  string GetOutputNameByIndex(uint32_t index) const;
 
-  int32_t GetOutputIndexByName(const std::string &name) const;
+  int GetOutputIndexByName(const string &name) const;
+
+  graphStatus RestoreInputNameIdx(const string &name, const int &index);
+
+  graphStatus RestoreOutputNameIdx(const string &name, const int &index);
 
   graphStatus CallInferFunc(Operator &op);
 
@@ -260,14 +277,14 @@ class OpDesc : public std::enable_shared_from_this<OpDesc>, public AttrHolder {
 
   std::string GetOpEngineName() const;
 
-  void RegisterSubgraphIrName(const std::string &name, const SubgraphType type);
+  void RegisterSubgraphIrName(const std::string &name, SubgraphType type);
   const std::map<std::string, SubgraphType> &GetSubgraphIrNames() const;
   SubgraphType GetSubgraphTypeByIrName(const std::string &name) const;
 
   graphStatus AddSubgraphName(const std::string &name);
   const std::map<std::string, uint32_t> &GetSubgraphNameIndexes() const;
 
-  std::string GetSubgraphInstanceName(const uint32_t index) const;
+  std::string GetSubgraphInstanceName(uint32_t index) const;
   const std::vector<std::string> &GetSubgraphInstanceNames() const;
   /// Does not provide functions `AddSubgraphInstance` or `AppendSubgraphInstance`,
   /// because this kind of functions will only append a new subgraph instance name
@@ -276,7 +293,7 @@ class OpDesc : public std::enable_shared_from_this<OpDesc>, public AttrHolder {
   /// \param index
   /// \param name
   /// \return
-  graphStatus SetSubgraphInstanceName(const uint32_t index, const std::string &name);
+  graphStatus SetSubgraphInstanceName(uint32_t index, const std::string &name);
   void RemoveSubgraphInstanceName(const std::string &name);
 
   graphStatus GetSubgraphNameByInstanceName(const std::string &instance_name, std::string &subgraph_name) const;
@@ -284,10 +301,11 @@ class OpDesc : public std::enable_shared_from_this<OpDesc>, public AttrHolder {
   graphStatus InferDataSlice();
 
  protected:
-  ProtoAttrMap &MutableAttrMap() override;
-  ConstProtoAttrMap &GetAttrMap() const override;
+  ProtoAttrMapHelper MutableAttrMap() override;
+  ConstProtoAttrMapHelper GetAttrMap() const override;
 
  private:
+  OpDesc(const ProtoMsgOwner &proto_msg_owner, ge::proto::OpDef *op_def);
   bool OpDescMembersAreEqual(const OpDesc &r_op_desc) const;
   bool OpDescAttrsAreEqual(const OpDesc &r_op_desc) const;
   bool OpDescGenTensorDescsAreEqual(const OpDesc &r_op_desc) const;
@@ -300,9 +318,5 @@ class OpDesc : public std::enable_shared_from_this<OpDesc>, public AttrHolder {
   friend class OnnxUtils;
   friend class GraphUtils;
 };
-
-using OpDescPtr = OpDesc::OpDescPtr;
-using ConstOpDescPtr = OpDesc::ConstOpDescPtr;
-using ConstOpDesc = const OpDesc;
 }  // namespace ge
 #endif  // INC_GRAPH_OP_DESC_H_

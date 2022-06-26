@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,139 +15,205 @@
  * limitations under the License.
  */
 
-#ifndef INC_EXTERNAL_REGISTER_OP_TILING_REGISTRY_H_
-#define INC_EXTERNAL_REGISTER_OP_TILING_REGISTRY_H_
+#ifndef INC_REGISTER_OP_TILING_REGISTRY_H_
+#define INC_REGISTER_OP_TILING_REGISTRY_H_
 
+#include "external/graph/ascend_string.h"
+#include "external/graph/operator.h"
+#include "external/graph/tensor.h"
+#include "external/register/register_error_codes.h"
+#include "external/register/register_types.h"
 #include <functional>
-#include <unordered_map>
+#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
-#include "external/graph/operator.h"
-#include "external/register/register_error_codes.h"
-#include "external/register/register_types.h"
-#include "external/register/op_compile_info_base.h"
-#include "external/register/op_tiling_info.h"
 
-#define REGISTER_OP_TILING(optype, opfunc) REGISTER_OP_TILING_UNIQ_HELPER(optype, (opfunc), __COUNTER__)
+extern const char *ATTR_NAME_ATOMIC_CLEAN_WORKSPACE;
 
-#define REGISTER_OP_TILING_UNIQ_HELPER(optype, opfunc, counter) REGISTER_OP_TILING_UNIQ(optype, (opfunc), counter)
+#define REGISTER_OP_TILING(optype, opfunc) REGISTER_OP_TILING_UNIQ_HELPER(optype, opfunc, __COUNTER__)
+
+#define REGISTER_OP_TILING_UNIQ_HELPER(optype, opfunc, counter) REGISTER_OP_TILING_UNIQ(optype, opfunc, counter)
 
 #define REGISTER_OP_TILING_UNIQ(optype, opfunc, counter)                                                               \
-  static optiling::OpTilingFuncRegistry g_##optype##TilingRegistryInterfV1##counter(#optype, (opfunc))
+  static OpTilingRegistryInterf g_##optype##TilingRegistryInterf##counter(#optype, opfunc)
 
-#define REGISTER_OP_TILING_V2(optype, opfunc) REGISTER_OP_TILING_UNIQ_HELPER_V2(optype, (opfunc), __COUNTER__)
+#define REGISTER_OP_TILING_V2(optype, opfunc) REGISTER_OP_TILING_UNIQ_HELPER_V2(optype, opfunc, __COUNTER__)
 
-#define REGISTER_OP_TILING_UNIQ_HELPER_V2(optype, opfunc, counter) REGISTER_OP_TILING_UNIQ_V2(optype, (opfunc), counter)
+#define REGISTER_OP_TILING_UNIQ_HELPER_V2(optype, opfunc, counter) REGISTER_OP_TILING_UNIQ_V2(optype, opfunc, counter)
 
 #define REGISTER_OP_TILING_UNIQ_V2(optype, opfunc, counter)                                                            \
-  static optiling::OpTilingFuncRegistry g_##optype##TilingRegistryInterfV2##counter(#optype, (opfunc))
-
-#define REGISTER_OP_TILING_V3(optype, tilingfunc, parsefunc)                                                           \
-  REGISTER_OP_TILING_UNIQ_HELPER_V3(optype, (tilingfunc), (parsefunc), __COUNTER__)
-
-#define REGISTER_OP_TILING_UNIQ_HELPER_V3(optype, tilingfunc, parsefunc, counter)                                      \
-  REGISTER_OP_TILING_UNIQ_V3(optype, (tilingfunc), (parsefunc), counter)
-
-#define REGISTER_OP_TILING_UNIQ_V3(optype, tilingfunc, parsefunc, counter)                                             \
-  static optiling::OpTilingFuncRegistry g_##optype##TilingRegistryInterfV3##counter(#optype, (tilingfunc), (parsefunc))
-
-#define REGISTER_OP_TILING_V4(optype, tilingfunc, parsefunc)                                                           \
-  REGISTER_OP_TILING_UNIQ_HELPER_V4(optype, (tilingfunc), (parsefunc), __COUNTER__)
-
-#define REGISTER_OP_TILING_UNIQ_HELPER_V4(optype, tilingfunc, parsefunc, counter)                                      \
-  REGISTER_OP_TILING_UNIQ_V4(optype, (tilingfunc), (parsefunc), counter)
-
-#define REGISTER_OP_TILING_UNIQ_V4(optype, tilingfunc, parsefunc, counter)                                             \
-  static optiling::OpTilingFuncRegistry g_##optype##TilingRegistryInterfV4##counter(#optype, (tilingfunc), (parsefunc))
-
+  static optiling::utils::OpTilingRegistryInterf_V2 g_##optype##TilingRegistryInterf##counter(#optype, opfunc)
 
 using Status = domi::Status;
 namespace optiling {
-template<class T>
-ByteBuffer &ByteBufferPut(ByteBuffer &buf, const T &buffer_value) {
-  (void) buf.write(reinterpret_cast<const ge::char_t *>(&buffer_value), static_cast<int64_t>(sizeof(buffer_value)));
-  (void) buf.flush();
-  return buf;
-}
 
-template<class T>
-ByteBuffer &ByteBufferGet(ByteBuffer &buf, T &buffer_value) {
-  (void) buf.read(reinterpret_cast<ge::char_t *>(&buffer_value), static_cast<int64_t>(sizeof(buffer_value)));
-  return buf;
-}
+extern thread_local int64_t last_op_tiling_perf;
 
-size_t ByteBufferGetAll(ByteBuffer &buf, ge::char_t *dest, size_t dest_len);
-ByteBuffer &ByteBufferPut(ByteBuffer &buf, const uint8_t *data, size_t data_len);
+enum TensorArgType {
+  TA_NONE,
+  TA_SINGLE,
+  TA_LIST,
+};
+
+using ByteBuffer = std::stringstream;
+
+class TeOpVarAttrArgsImpl;
+class TeOpVarAttrArgs {
+  friend class VarAttrHelper;
+
+ public:
+  TeOpVarAttrArgs() = default;
+  ~TeOpVarAttrArgs() = default;
+
+  const uint8_t *GetData(const std::string &name, const std::string &dtype, size_t &size) const;
+
+ private:
+  std::shared_ptr<TeOpVarAttrArgsImpl> impl_;
+};
+
+struct TeOpTensor {
+  std::vector<int64_t> shape;
+  std::vector<int64_t> ori_shape;
+  std::string format;
+  std::string ori_format;
+  std::string dtype;
+  std::string name;
+  std::map<std::string, std::string> attrs;
+};
+
+struct TeOpTensorArg {
+  TensorArgType arg_type;
+  std::vector<TeOpTensor> tensor;
+};
+
+struct OpRunInfo {
+  uint32_t block_dim;
+  std::vector<int64_t> workspaces;
+  ByteBuffer tiling_data;
+  bool clear_atomic;
+  uint32_t tiling_key;
+};
+
+using TeOpAttrArgs = std::vector<std::string>;
+using TeConstTensorData = std::tuple<const uint8_t *, size_t, ge::Tensor>;
+
+struct TeOpParas {
+  std::vector<TeOpTensorArg> inputs;
+  std::vector<TeOpTensorArg> outputs;
+  std::map<std::string, TeConstTensorData> const_inputs;
+  TeOpAttrArgs attrs;
+  std::string op_type;
+  TeOpVarAttrArgs var_attrs;
+};
+
+struct OpCompileInfo {
+  std::string str;
+  std::string key;
+};
 
 using OpTilingFunc = std::function<bool(const TeOpParas &, const OpCompileInfo &, OpRunInfo &)>;
-using OpTilingFuncPtr = std::shared_ptr<OpTilingFunc>;
+
+using OpTilingFuncPtr = bool (*)(const TeOpParas &, const OpCompileInfo &, OpRunInfo &);
+
 class FMK_FUNC_HOST_VISIBILITY OpTilingRegistryInterf {
  public:
   OpTilingRegistryInterf(std::string op_type, OpTilingFunc func);
   ~OpTilingRegistryInterf() = default;
-  static std::unordered_map<std::string, OpTilingFunc> &RegisteredOpInterf();
+  static std::map<std::string, OpTilingFunc> &RegisteredOpInterf();
 };
 
-using OpRunInfoV2 = utils::OpRunInfo;
-using OpCompileInfoV2 = utils::OpCompileInfo;
-using OpTilingFuncV2 = std::function<bool(const ge::Operator &, const OpCompileInfoV2 &, OpRunInfoV2 &)>;
-using OpTilingFuncV2Ptr = std::shared_ptr<OpTilingFuncV2>;
-class FMK_FUNC_HOST_VISIBILITY OpTilingRegistryInterf_V2 {
-public:
-  OpTilingRegistryInterf_V2(const std::string &op_type, OpTilingFuncV2 func);
-  ~OpTilingRegistryInterf_V2() = default;
-  static std::unordered_map<std::string, OpTilingFuncV2> &RegisteredOpInterf();
-};
+template<class T>
+ByteBuffer &ByteBufferPut(ByteBuffer &buf, const T &value) {
+  buf.write(reinterpret_cast<const char *>(&value), sizeof(value));
+  buf.flush();
+  return buf;
+}
 
-using OpTilingFuncV3 = std::function<bool(const ge::Operator &, const void *, OpRunInfoV2 &)>;
-using OpParseFuncV3 = std::function<void*(const ge::Operator &, const ge::AscendString &)>;
-using OpTilingFuncV4 = std::function<bool(const ge::Operator &, const CompileInfoPtr, OpRunInfoV2 &)>;
-using OpParseFuncV4 = std::function<CompileInfoPtr(const ge::Operator &, const ge::AscendString &)>;
+template<class T>
+ByteBuffer &ByteBufferGet(ByteBuffer &buf, T &value) {
+  buf.read(reinterpret_cast<char *>(&value), sizeof(value));
+  return buf;
+}
 
-class OpTilingFuncInfo {
-public:
-  explicit OpTilingFuncInfo(const std::string &op_type);
-  OpTilingFuncInfo() = default;
-  ~OpTilingFuncInfo() = default;
+size_t ByteBufferGetAll(ByteBuffer &buf, char *dest, size_t dest_len);
+ByteBuffer &ByteBufferPut(ByteBuffer &buf, const uint8_t *data, size_t dest_len);
 
-  bool IsFunctionV4();
-  bool IsFunctionV3();
-  bool IsFunctionV2();
-  bool IsFunctionV1();
-  void SetOpTilingFunc(OpTilingFunc &tiling_func);
-  void SetOpTilingFuncV2(OpTilingFuncV2 &tiling_func);
-  void SetOpTilingFuncV3(OpTilingFuncV3 &tiling_func, OpParseFuncV3 &parse_func);
-  void SetOpTilingFuncV4(OpTilingFuncV4 &tiling_func, OpParseFuncV4 &parse_func);
-  const OpTilingFunc& GetOpTilingFunc();
-  const OpTilingFuncV2& GetOpTilingFuncV2();
-  const OpTilingFuncV3& GetOpTilingFuncV3();
-  const OpParseFuncV3& GetOpParseFuncV3();
-  const OpTilingFuncV4& GetOpTilingFuncV4();
-  const OpParseFuncV4& GetOpParseFuncV4();
-  const std::string& GetOpType() const {
-    return op_type_;
+namespace utils {
+class OpRunInfoImpl;
+class OpRunInfo {
+ public:
+  OpRunInfo();
+  ~OpRunInfo() = default;
+  OpRunInfo(uint32_t block_dim, bool clear_atomic, uint32_t tiling_key);
+  // Copy
+  OpRunInfo(const OpRunInfo &runinfo);
+  // Move
+  OpRunInfo(OpRunInfo &&runinfo);
+  // Copy
+  OpRunInfo &operator=(const OpRunInfo &runinfo);
+  // Move
+  OpRunInfo &operator=(OpRunInfo &&runinfo);
+
+  void SetBlockDim(uint32_t block_dim);
+  uint32_t GetBlockDim();
+
+  void AddWorkspace(int64_t workspace);
+  size_t GetWorkspaceNum();
+  ge::graphStatus GetWorkspace(size_t idx, int64_t &workspace);
+  ge::graphStatus GetAllWorkspaces(std::vector<int64_t> &workspace);
+
+  template<class T>
+  void AddTilingData(const T &value) {
+    AddTilingData(reinterpret_cast<const char *>(&value), sizeof(value));
   }
+  void AddTilingData(const char *value, size_t size);
+  ByteBuffer &GetAllTilingData();
+  void InternelSetTiling(ByteBuffer &value);
 
-private:
-  std::string op_type_;
-  OpTilingFunc tiling_func_;
-  OpTilingFuncV2 tiling_func_v2_;
-  OpTilingFuncV3 tiling_func_v3_;
-  OpParseFuncV3 parse_func_v3_;
-  OpTilingFuncV4 tiling_func_v4_;
-  OpParseFuncV4 parse_func_v4_;
+  void SetClearAtomic(bool clear_atomic);
+  bool GetClearAtomic() const;
+
+  void SetTilingKey(uint32_t tiling_key);
+  uint32_t GetTilingKey() const;
+
+ private:
+  std::shared_ptr<OpRunInfoImpl> impl_;
 };
 
-class FMK_FUNC_HOST_VISIBILITY OpTilingFuncRegistry {
-public:
-  OpTilingFuncRegistry(const std::string &op_type, OpTilingFunc tiling_func);
-  OpTilingFuncRegistry(const std::string &op_type, OpTilingFuncV2 tiling_func);
-  OpTilingFuncRegistry(const std::string &op_type, OpTilingFuncV3 tiling_func, OpParseFuncV3 parse_func);
-  OpTilingFuncRegistry(const std::string &op_type, OpTilingFuncV4 tiling_func, OpParseFuncV4 parse_func);
-  ~OpTilingFuncRegistry() = default;
-  static std::unordered_map<std::string, OpTilingFuncInfo> &RegisteredOpFuncInfo();
-};
+class OpCompileInfoImpl;
+class OpCompileInfo {
+ public:
+  OpCompileInfo();
+  ~OpCompileInfo() = default;
+  OpCompileInfo(const ge::AscendString &key, const ge::AscendString &value);
+  // Copy
+  OpCompileInfo(const OpCompileInfo &compileinfo);
+  // Move
+  OpCompileInfo(OpCompileInfo &&compileinfo);
+  // Copy
+  OpCompileInfo &operator=(const OpCompileInfo &compileinfo);
+  // Move
+  OpCompileInfo &operator=(OpCompileInfo &&compileinfo);
 
+  void SetKey(const ge::AscendString &key);
+  const ge::AscendString &GetKey() const;
+
+  void SetValue(const ge::AscendString &value);
+  const ge::AscendString &GetValue() const;
+
+ private:
+  std::shared_ptr<OpCompileInfoImpl> impl_;
+};
+using OpTilingFuncV2 = std::function<bool(const ge::Operator &, const OpCompileInfo &, OpRunInfo &)>;
+using OpTilingFuncV2Ptr = bool (*)(const ge::Operator &, const OpCompileInfo &, OpRunInfo &);
+class FMK_FUNC_HOST_VISIBILITY OpTilingRegistryInterf_V2 {
+ public:
+  OpTilingRegistryInterf_V2(std::string op_type, OpTilingFuncV2 func);
+  ~OpTilingRegistryInterf_V2() = default;
+  static std::map<std::string, OpTilingFuncV2> &RegisteredOpInterf();
+};
+}  // namespace utils
 }  // namespace optiling
-#endif  // INC_EXTERNAL_REGISTER_OP_TILING_REGISTRY_H_
+
+#endif  // INC_REGISTER_OP_TILING_REGISTRY_H_

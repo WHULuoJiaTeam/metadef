@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,10 +75,10 @@ class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY TensorDesc {
   void SetFormat(Format format);
 
   Shape GetOriginShape() const;
-  void SetOriginShape(const Shape &origin_shape);
+  void SetOriginShape(const Shape &originShape);
 
   Format GetOriginFormat() const;
-  void SetOriginFormat(Format origin_format);
+  void SetOriginFormat(Format originFormat);
 
   DataType GetDataType() const;
   void SetDataType(DataType dt);
@@ -87,26 +87,22 @@ class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY TensorDesc {
   std::string GetName() const;
   graphStatus GetName(AscendString &name);
 
-  ATTRIBUTED_DEPRECATED(void SetName(const char_t *))
+  ATTRIBUTED_DEPRECATED(void SetName(const char *))
   void SetName(const std::string &name);
-  void SetName(const char_t *name);
+  void SetName(const char *name);
 
   // Attr acess
   void SetSize(int64_t size);
   int64_t GetSize() const;
 
   int64_t GetRealDimCnt() const;
-  void SetRealDimCnt(const int64_t real_dim_cnt);
+  void SetRealDimCnt(const int64_t realDimCnt);
 
   void SetPlacement(Placement placement);
   Placement GetPlacement() const;
 
-  void SetConstData(std::unique_ptr<uint8_t[]> const_data_buffer, const size_t &const_data_len);
-  bool GetConstData(uint8_t **const_data_buffer, size_t &const_data_len) const;
-
  private:
   std::shared_ptr<TensorDescImpl> impl;
-  friend class TensorAdapter;
 };
 
 class TensorImpl;
@@ -115,13 +111,13 @@ class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY Tensor {
   using DeleteFunc = std::function<void(uint8_t *)>;
   Tensor();
   ~Tensor() = default;
-  explicit Tensor(const TensorDesc &tensor_desc);
-  Tensor(const TensorDesc &tensor_desc, const std::vector<uint8_t> &data);
-  Tensor(const TensorDesc &tensor_desc, const uint8_t *data, size_t size);
-  Tensor(TensorDesc &&tensor_desc, std::vector<uint8_t> &&data);
+  explicit Tensor(const TensorDesc &tensorDesc);
+  Tensor(const TensorDesc &tensorDesc, const std::vector<uint8_t> &data);
+  Tensor(const TensorDesc &tensorDesc, const uint8_t *data, size_t size);
+  Tensor(TensorDesc &&tensorDesc, std::vector<uint8_t> &&data);
 
   TensorDesc GetTensorDesc() const;
-  graphStatus SetTensorDesc(const TensorDesc &tensor_desc);
+  graphStatus SetTensorDesc(const TensorDesc &tensorDesc);
 
   const uint8_t *GetData() const;
   uint8_t *GetData();
@@ -131,9 +127,9 @@ class GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY Tensor {
   graphStatus SetData(std::vector<uint8_t> &&data);
   graphStatus SetData(const std::vector<uint8_t> &data);
   graphStatus SetData(const uint8_t *data, size_t size);
-  ATTRIBUTED_DEPRECATED(graphStatus SetData(const char_t *data))
+  ATTRIBUTED_DEPRECATED(graphStatus SetData(const char *data))
   graphStatus SetData(const std::string &data);
-  graphStatus SetData(const char_t *data);
+  graphStatus SetData(const char *data);
   ATTRIBUTED_DEPRECATED(graphStatus SetData(const std::vector<AscendString> &))
   graphStatus SetData(const std::vector<std::string> &data);
   graphStatus SetData(const std::vector<AscendString> &datas);

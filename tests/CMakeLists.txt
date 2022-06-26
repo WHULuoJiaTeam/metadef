@@ -1,4 +1,5 @@
-# Copyright 2019-2020 Huawei Technologies Co., Ltd
+# Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+# Copyright 2021, 2022 Huawei Technologies Co., Ltd
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +18,7 @@ project(tests CXX C)
 add_subdirectory(depends/slog)
 add_subdirectory(depends/mmpa)
 add_subdirectory(depends/profiler)
+add_subdirectory(depends/error_manager)
 
 if (ENABLE_METADEF_COV OR ENABLE_METADEF_UT)
     add_subdirectory(ut)

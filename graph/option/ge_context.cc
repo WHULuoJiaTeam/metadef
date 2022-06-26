@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,31 +15,31 @@
  * limitations under the License.
  */
 
-#include "graph/ge_context.h"
-#include "graph/ge_global_options.h"
-#include "graph/ge_local_context.h"
-#include "graph/types.h"
+#include "./ge_context.h"
+#include "./ge_global_options.h"
+#include "./ge_local_context.h"
 #include "framework/common/debug/ge_log.h"
 
 namespace ge {
 namespace {
-const uint64_t kMinTrainingTraceJobId = 65536U;
-const int32_t kDecimal = 10;
-const char_t *kHostExecPlacement = "HOST";
+const int64_t kMinTrainingTraceJobId = 65536;
+const int kDecimal = 10;
+const char *kHostExecPlacement = "HOST";
 }
 GEContext &GetContext() {
   static GEContext ge_context{};
   return ge_context;
 }
 
-thread_local uint64_t GEContext::session_id_ = 0UL;
-thread_local uint64_t GEContext::context_id_ = 0UL;
+thread_local uint64_t GEContext::session_id_ = 0;
+thread_local uint64_t GEContext::context_id_ = 0;
+thread_local uint64_t GEContext::work_stream_id_ = 0;
 
 graphStatus GEContext::GetOption(const std::string &key, std::string &option) {
   return GetThreadLocalContext().GetOption(key, option);
 }
 
-bool GEContext::GetHostExecFlag() const {
+bool GEContext::GetHostExecFlag() {
   std::string exec_placement;
   if (GetThreadLocalContext().GetOption("ge.exec.placement", exec_placement) != GRAPH_SUCCESS) {
     GELOGD("get option ge.exec.placement failed.");
@@ -50,14 +50,14 @@ bool GEContext::GetHostExecFlag() const {
 }
 
 std::map<std::string, std::string> &GetMutableGlobalOptions() {
-  static std::map<std::string, std::string> context_global_options{};
-  return context_global_options;
+  static std::map<std::string, std::string> global_options{};
+  return global_options;
 }
 
 void GEContext::Init() {
-  std::string session_id;
+  string session_id;
   (void)GetOption("ge.exec.sessionId", session_id);
-  try {
+  try{
     session_id_ = static_cast<uint64_t>(std::stoi(session_id.c_str()));
   } catch (std::invalid_argument &) {
     GELOGW("[Init][GetSessionId] Transform option session_id %s to int failed, as catching invalid_argument exception",
@@ -67,9 +67,9 @@ void GEContext::Init() {
            session_id.c_str());
   }
 
-  std::string device_id;
+  string device_id;
   (void)GetOption("ge.exec.deviceId", device_id);
-  try {
+  try{
     device_id_ = static_cast<uint32_t>(std::stoi(device_id.c_str()));
   } catch (std::invalid_argument &) {
     GELOGW("[Init][GetDeviceId] Transform option device_id %s to int failed, as catching invalid_argument exception",
@@ -79,11 +79,11 @@ void GEContext::Init() {
            device_id.c_str());
   }
 
-  std::string job_id;
+  string job_id;
   (void)GetOption("ge.exec.jobId", job_id);
   std::string s_job_id = "";
-  for (const auto c : job_id) {
-    if ((c >= '0') && (c <= '9')) {
+  for (auto c : job_id) {
+    if (c >= '0' && c <= '9') {
       s_job_id += c;
     }
   }
@@ -91,22 +91,30 @@ void GEContext::Init() {
     trace_id_ = kMinTrainingTraceJobId;
     return;
   }
-  const auto d_job_id = std::strtoll(s_job_id.c_str(), nullptr, kDecimal);
-  if (static_cast<uint64_t>(d_job_id) < kMinTrainingTraceJobId) {
-    trace_id_ = static_cast<uint64_t>(d_job_id) + kMinTrainingTraceJobId;
+  int64_t d_job_id = std::strtoll(s_job_id.c_str(), nullptr, kDecimal);
+  if (d_job_id < kMinTrainingTraceJobId) {
+    trace_id_ = d_job_id + kMinTrainingTraceJobId;
   } else {
-    trace_id_ = static_cast<uint64_t>(d_job_id);
+    trace_id_ = d_job_id;
   }
 }
 
-uint64_t GEContext::SessionId() const { return session_id_; }
+uint64_t GEContext::SessionId() { return session_id_; }
 
-uint32_t GEContext::DeviceId() const { return device_id_; }
+uint64_t GEContext::ContextId() { return context_id_; }
 
-void GEContext::SetSessionId(const uint64_t session_id) { session_id_ = session_id; }
+uint64_t GEContext::WorkStreamId() { return work_stream_id_; }
 
-void GEContext::SetContextId(const uint64_t context_id) { context_id_ = context_id; }
+uint32_t GEContext::DeviceId() { return device_id_; }
 
-void GEContext::SetCtxDeviceId(const uint32_t device_id) { device_id_ = device_id; }
+uint64_t GEContext::TraceId() { return trace_id_; }
+
+void GEContext::SetSessionId(uint64_t session_id) { session_id_ = session_id; }
+
+void GEContext::SetContextId(uint64_t context_id) { context_id_ = context_id; }
+
+void GEContext::SetWorkStreamId(uint64_t work_stream_id) { work_stream_id_ = work_stream_id; }
+
+void GEContext::SetCtxDeviceId(uint32_t device_id) { device_id_ = device_id; }
 
 }  // namespace ge

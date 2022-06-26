@@ -2,19 +2,18 @@
 #include <mutex>
 #include <map>
 #include "graph/debug/ge_log.h"
-#include "graph/debug/ge_util.h"
 
 namespace ge {
 class OpKernelRegistry::OpKernelRegistryImpl {
  public:
-  void RegisterHostCpuOp(const std::string &op_type, const OpKernelRegistry::CreateFn create_fn) {
-    const std::lock_guard<std::mutex> lock(mu_);
+  void RegisterHostCpuOp(const std::string &op_type, OpKernelRegistry::CreateFn create_fn) {
+    std::lock_guard<std::mutex> lock(mu_);
     create_fns_[op_type] = create_fn;
   }
 
   OpKernelRegistry::CreateFn GetCreateFn(const std::string &op_type) {
-    const std::lock_guard<std::mutex> lock(mu_);
-    const auto it = create_fns_.find(op_type);
+    std::lock_guard<std::mutex> lock(mu_);
+    auto it = create_fns_.find(op_type);
     if (it == create_fns_.end()) {
       return nullptr;
     }
@@ -28,7 +27,7 @@ class OpKernelRegistry::OpKernelRegistryImpl {
 };
 
 OpKernelRegistry::OpKernelRegistry() {
-  impl_ = ge::ComGraphMakeUnique<OpKernelRegistryImpl>();
+  impl_ = std::unique_ptr<OpKernelRegistryImpl>(new(std::nothrow) OpKernelRegistryImpl);
 }
 
 OpKernelRegistry::~OpKernelRegistry() {
@@ -50,7 +49,7 @@ bool OpKernelRegistry::IsRegistered(const std::string &op_type) {
   return impl_->GetCreateFn(op_type) != nullptr;
 }
 
-void OpKernelRegistry::RegisterHostCpuOp(const std::string &op_type, const CreateFn create_fn) {
+void OpKernelRegistry::RegisterHostCpuOp(const std::string &op_type, CreateFn create_fn) {
   if (impl_ == nullptr) {
     GELOGE(MEMALLOC_FAILED,
            "[Check][Param:impl_]Failed to register %s, OpKernelRegistry is not properly initialized",
@@ -68,7 +67,7 @@ std::unique_ptr<HostCpuOp> OpKernelRegistry::CreateHostCpuOp(const std::string &
     return nullptr;
   }
 
-  const auto create_fn = impl_->GetCreateFn(op_type);
+  auto create_fn = impl_->GetCreateFn(op_type);
   if (create_fn == nullptr) {
     GELOGD("Host Cpu op is not registered. op type = %s", op_type.c_str());
     return nullptr;
@@ -77,7 +76,7 @@ std::unique_ptr<HostCpuOp> OpKernelRegistry::CreateHostCpuOp(const std::string &
   return std::unique_ptr<HostCpuOp>(create_fn());
 }
 
-HostCpuOpRegistrar::HostCpuOpRegistrar(const char_t *const op_type, HostCpuOp *(*const create_fn)()) {
+HostCpuOpRegistrar::HostCpuOpRegistrar(const char *op_type, HostCpuOp *(*create_fn)()) {
   if (op_type == nullptr) {
     GELOGE(PARAM_INVALID, "[Check][Param:op_type]is null,Failed to register host cpu op");
     return;

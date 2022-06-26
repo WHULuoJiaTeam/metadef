@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,17 +34,7 @@ namespace fe {
     }                                              \
   } while (0)
 
-#define FE_MAKE_SHARED(exec_expr0, exec_expr1) \
-  do {                                         \
-    try {                                      \
-      exec_expr0;                              \
-    } catch (...) {                            \
-      GELOGW("Make shared failed");            \
-      exec_expr1;                              \
-    }                                          \
-  } while (0)
-
-FusionPattern::FusionPattern(const std::string name) : name_(name), output_(nullptr), has_error_(false) {}
+FusionPattern::FusionPattern(string name) : name_(name), output_(nullptr), has_error_(false) {}
 
 FusionPattern::~FusionPattern() {}
 
@@ -52,7 +42,7 @@ FusionPattern::~FusionPattern() {}
  * @ingroup fe
  * @brief set pattern name
  */
-FusionPattern &FusionPattern::SetName(const std::string &name) {
+FusionPattern &FusionPattern::SetName(const string &name) {
   name_ = name;
   return *this;
 }
@@ -61,21 +51,20 @@ FusionPattern &FusionPattern::SetName(const std::string &name) {
  * @ingroup fe
  * @brief add Op description with unknown number of args
  */
-FusionPattern &FusionPattern::AddOpDesc(const std::string &id, const std::initializer_list<std::string> &types) {
-  return AddOpDesc(id, std::vector<std::string>(types));
+FusionPattern &FusionPattern::AddOpDesc(const string &id, const initializer_list<string> &types) {
+  return AddOpDesc(id, vector<string>(types));
 }
 
 /**
  * @ingroup fe
  * @brief add Op description with vector
  */
-FusionPattern &FusionPattern::AddOpDesc(const std::string &id, const std::vector<std::string> &types) {
+FusionPattern &FusionPattern::AddOpDesc(const string &id, const vector<string> &types) {
   FE_PATTERN_ERROR_RETURN_IF(id.empty(), "ID cannot be empty.");
 
   FE_PATTERN_ERROR_RETURN_IF(GetOpDesc(id) != nullptr, "ID already exists. (id:%s)", id.c_str());
 
-  std::shared_ptr<OpDesc> op;
-  FE_MAKE_SHARED(op = std::make_shared<OpDesc>(), return *this);
+  std::shared_ptr<OpDesc> op(new (std::nothrow) OpDesc());
   FE_PATTERN_ERROR_RETURN_IF(op == nullptr, "new an object failed.");
 
   op->id = id;
@@ -92,23 +81,23 @@ FusionPattern &FusionPattern::AddOpDesc(const std::string &id, const std::vector
  * @ingroup fe
  * @brief set input Ops with unknown number of args
  */
-FusionPattern &FusionPattern::SetInputs(const std::string &id, const std::initializer_list<std::string> &input_ids) {
-  return SetInputs(id, std::vector<std::string>(input_ids));
+FusionPattern &FusionPattern::SetInputs(const string &id, const initializer_list<string> &input_ids) {
+  return SetInputs(id, vector<string>(input_ids));
 }
 
 /**
  * @ingroup fe
  * @brief set input Ops with vector
  */
-FusionPattern &FusionPattern::SetInputs(const std::string &id, const std::vector<std::string> &input_ids) {
+FusionPattern &FusionPattern::SetInputs(const string &id, const vector<string> &input_ids) {
   FE_PATTERN_ERROR_RETURN_IF(id.empty(), "Id cannot be empty.");
-  const std::shared_ptr<FusionPattern::OpDesc> op_desc = GetOpDesc(id);
+  std::shared_ptr<FusionPattern::OpDesc> op_desc = GetOpDesc(id);
   FE_PATTERN_ERROR_RETURN_IF(op_desc == nullptr, "Id does not exist. (id:%s)", id.c_str());
 
   op_desc->inputs.clear();
 
-  for (const std::string &input_id : input_ids) {
-    const std::shared_ptr<FusionPattern::OpDesc> input_op_desc = GetOpDesc(input_id);
+  for (const string &input_id : input_ids) {
+    std::shared_ptr<FusionPattern::OpDesc> input_op_desc = GetOpDesc(input_id);
     FE_PATTERN_ERROR_RETURN_IF(input_op_desc == nullptr, "Id does not exist. (id:%s)", input_id.c_str());
     op_desc->inputs.push_back(input_op_desc);
   }
@@ -120,9 +109,9 @@ FusionPattern &FusionPattern::SetInputs(const std::string &id, const std::vector
  * @ingroup fe
  * @brief set output Op
  */
-FusionPattern &FusionPattern::SetOutput(const std::string &id) {
+FusionPattern &FusionPattern::SetOutput(const string &id) {
   FE_PATTERN_ERROR_RETURN_IF(id.empty(), "Id cannot be empty.");
-  const std::shared_ptr<FusionPattern::OpDesc> op_desc = GetOpDesc(id);
+  std::shared_ptr<FusionPattern::OpDesc> op_desc = GetOpDesc(id);
   FE_PATTERN_ERROR_RETURN_IF(op_desc == nullptr, "Id does not exist. (id:%s)", id.c_str());
 
   op_desc->is_output = true;
@@ -163,13 +152,12 @@ bool FusionPattern::Build() {
  * @ingroup fe
  * @brief get pattern name
  */
-const std::string &FusionPattern::GetName() const { return name_; }
+const string &FusionPattern::GetName() const { return name_; }
 /**
  * @ingroup fe
  * @brief get the OpDesc of input Ops (const)
  */
-
-const std::vector<std::shared_ptr<FusionPattern::OpDesc>> *FusionPattern::GetInputs(
+const vector<std::shared_ptr<FusionPattern::OpDesc>> *FusionPattern::GetInputs(
     const std::shared_ptr<FusionPattern::OpDesc> op_desc) {
   if (op_desc == nullptr) {
     return nullptr;
@@ -192,7 +180,7 @@ void FusionPattern::Dump() const {
   oss << std::endl << "Pattern (" << name_ << "):" << std::endl;
   for (const auto &op : ops_) {
     oss << "  " << op->id << ": {";
-    for (const std::string &type : op->types) {
+    for (const string &type : op->types) {
       oss << type << ", ";
     }
     oss << "} {";
@@ -214,8 +202,8 @@ void FusionPattern::Dump() const {
  * @ingroup fe
  * @brief get OpDesc based on ID, return nullptr if failed
  */
-std::shared_ptr<FusionPattern::OpDesc> FusionPattern::GetOpDesc(const std::string &id) const {
-  const auto it = op_map_.find(id);
+std::shared_ptr<FusionPattern::OpDesc> FusionPattern::GetOpDesc(const string &id) const {
+  auto it = op_map_.find(id);
   if (it != op_map_.end()) {
     return it->second;
   }

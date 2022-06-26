@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +27,14 @@
 #include "register/graph_optimizer/graph_fusion/fusion_pattern.h"
 #include "register/graph_optimizer/graph_fusion/graph_pass.h"
 
-namespace fe {
 using std::initializer_list;
 using std::map;
 using std::string;
 using std::vector;
+
 using namespace std;
 
+namespace fe {
 enum GraphFusionPassType {
   BUILT_IN_GRAPH_PASS = 0,
   BUILT_IN_VECTOR_CORE_GRAPH_PASS,
@@ -41,8 +42,6 @@ enum GraphFusionPassType {
   CUSTOM_VECTOR_CORE_GRAPH_PASS,
   SECOND_ROUND_BUILT_IN_GRAPH_PASS,
   BUILT_IN_BEFORE_TRANSNODE_INSERTION_GRAPH_PASS,
-  BUILT_IN_PREPARE_GRAPH_PASS,
-  BUILT_IN_BEFORE_QUANT_OPTIMIZATION_GRAPH_PASS,
   GRAPH_FUSION_PASS_TYPE_RESERVED
 };
 class PatternFusionBasePassImpl;
@@ -55,11 +54,11 @@ using PatternFusionBasePassImplPtr = std::shared_ptr<PatternFusionBasePassImpl>;
 class GraphFusionPassBase : public GraphPass {
  public:
   using OpDesc = FusionPattern::OpDesc;
-  using Mapping = std::map<const std::shared_ptr<OpDesc>, std::vector<ge::NodePtr>>;
-  using Mappings = std::vector<Mapping>;
+  using Mapping = map<const std::shared_ptr<OpDesc>, vector<ge::NodePtr>>;
+  using Mappings = vector<Mapping>;
 
   GraphFusionPassBase();
-  virtual ~GraphFusionPassBase() override;
+  virtual ~GraphFusionPassBase();
 
   /** execute pass
    *
@@ -68,14 +67,14 @@ class GraphFusionPassBase : public GraphPass {
    * @return NOT_CHANGED, the graph did not change
    * @return FAILED, fail to modify graph
    */
-  virtual Status Run(ge::ComputeGraph &graph) override;
+  Status Run(ge::ComputeGraph &graph) override;
 
  protected:
   /** define pattern
    *
    * @return NA
    */
-  virtual std::vector<FusionPattern *> DefinePatterns() = 0;
+  virtual vector<FusionPattern *> DefinePatterns() = 0;
 
   /** do fusion according to nodes matched
    *
@@ -85,14 +84,14 @@ class GraphFusionPassBase : public GraphPass {
    * @return NOT_CHANGED, the graph did not change
    * @return FAILED, fail to modify graph
    */
-  virtual Status Fusion(ge::ComputeGraph &graph, Mapping &mapping, std::vector<ge::NodePtr> &new_nodes) = 0;
+  virtual Status Fusion(ge::ComputeGraph &graph, Mapping &mapping, vector<ge::NodePtr> &new_nodes) = 0;  // lint !e148
 
   /** get nodes from matched result
    *
    * @param mapping match result
    * @return nodes result
    */
-  static ge::NodePtr GetNodeFromMapping(const std::string &id, const Mapping &mapping);
+  static ge::NodePtr GetNodeFromMapping(const string &id, const Mapping &mapping);
 
  private:
   /** match all nodes in graph according to pattern
@@ -102,9 +101,9 @@ class GraphFusionPassBase : public GraphPass {
    * @return SUCCESS, successfully add edge
    * @return FAILED, fail
    */
-  bool MatchAll(const ge::ComputeGraph &graph, const FusionPattern &pattern, Mappings &mappings) const;
+  bool MatchAll(ge::ComputeGraph &graph, const FusionPattern &pattern, Mappings &mappings);
 
-  Status RunOnePattern(ge::ComputeGraph &graph, const FusionPattern &pattern, bool &changed);
+  Status RunOnePattern(ge::ComputeGraph &graph, const FusionPattern &pattern, bool &changed);  // lint !e148
 
   /** Internal implement class ptr */
   std::shared_ptr<PatternFusionBasePassImpl> pattern_fusion_base_pass_impl_ptr_;

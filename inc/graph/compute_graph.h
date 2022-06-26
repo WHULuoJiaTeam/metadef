@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ class ComputeGraphImpl;
 using ComputeGraphImplPtr = std::shared_ptr<ComputeGraphImpl>;
 
 using NodeFilter = std::function<bool(const Node &)>;
-using GraphFilter = std::function<bool(const Node &, const char_t *, const ComputeGraphPtr &)>;
+using GraphFilter = std::function<bool(const Node &, const char *, const ComputeGraphPtr &)>;
 
 class ComputeGraph : public std::enable_shared_from_this<ComputeGraph>, public AttrHolder {
   friend class GraphUtils;
@@ -52,9 +52,9 @@ class ComputeGraph : public std::enable_shared_from_this<ComputeGraph>, public A
   using Vistor = RangeVistor<T, std::shared_ptr<ConstComputeGraph>>;
 
   explicit ComputeGraph(const std::string &name);
-  virtual ~ComputeGraph() override;
-  ComputeGraph(const ge::ComputeGraph& compute_graph);
-  ComputeGraph(ge::ComputeGraph&& compute_graph);
+  ~ComputeGraph() override;
+  ComputeGraph(const ge::ComputeGraph&);
+  ComputeGraph(ge::ComputeGraph&&);
 
   std::string GetName() const;
   void SetName(const std::string &name);
@@ -68,8 +68,8 @@ class ComputeGraph : public std::enable_shared_from_this<ComputeGraph>, public A
   Vistor<NodePtr> GetAllNodes() const;
   // is_unknown_shape: false, same with GetAllNodes func
   // is_unknown_shape: true, same with GetDirectNodes func
-  Vistor<NodePtr> GetNodes(const bool is_unknown_shape) const;
-  Vistor<NodePtr> GetNodes(const bool is_unknown_shape, const NodeFilter &node_filter, const GraphFilter &graph_filter) const;
+  Vistor<NodePtr> GetNodes(bool is_unknown_shape) const;
+  Vistor<NodePtr> GetNodes(bool is_unknown_shape, const NodeFilter &node_filter, const GraphFilter &graph_filter) const;
   size_t GetDirectNodesSize() const;
   Vistor<NodePtr> GetDirectNode() const;
   Vistor<NodePtr> GetInputNodes() const;
@@ -77,15 +77,16 @@ class ComputeGraph : public std::enable_shared_from_this<ComputeGraph>, public A
 
   NodePtr FindNode(const std::string &name) const;
   NodePtr FindFirstNodeMatchType(const std::string &name) const;
+  /*lint -e504*/
   // AddNode with NodePtr
-  NodePtr AddNode(const NodePtr node);
-  NodePtr AddNode(const OpDescPtr op);
-  NodePtr AddNode(const OpDescPtr op, const int64_t id);    // for unserialize
-  NodePtr AddNodeFront(const NodePtr node);
+  NodePtr AddNode(NodePtr node);
+  NodePtr AddNode(OpDescPtr op);
+  NodePtr AddNode(OpDescPtr op, int64_t id);    // for unserialize
+  NodePtr AddNodeFront(NodePtr node);
   NodePtr AddNodeFront(const OpDescPtr &op);
-  NodePtr AddInputNode(const NodePtr node);
-  NodePtr AddOutputNode(const NodePtr node);
-  NodePtr AddOutputNodeByIndex(const NodePtr node, const int32_t index);
+  NodePtr AddInputNode(NodePtr node);
+  NodePtr AddOutputNode(NodePtr node);
+  NodePtr AddOutputNodeByIndex(NodePtr node, int32_t index);
 
   graphStatus RemoveNode(const NodePtr &node);
   graphStatus RemoveInputNode(const NodePtr &node);
@@ -109,7 +110,7 @@ class ComputeGraph : public std::enable_shared_from_this<ComputeGraph>, public A
   void SetAllSubgraphs(const std::vector<std::shared_ptr<ComputeGraph>> &subgraphs);
 
   // obsolete
-  std::shared_ptr<ComputeGraph> AddSubGraph(const std::shared_ptr<ComputeGraph> sub_graph);
+  std::shared_ptr<ComputeGraph> AddSubGraph(std::shared_ptr<ComputeGraph> sub_graph);
   // obsolete
   graphStatus RemoveSubGraph(const std::shared_ptr<ComputeGraph> &sub_graph);
 
@@ -127,7 +128,7 @@ class ComputeGraph : public std::enable_shared_from_this<ComputeGraph>, public A
   ///
   graphStatus UpdateOutputMapping(const std::map<uint32_t, uint32_t> &output_mapping);
 
-  void TopologicalSorting(const std::function<bool (const NodePtr &, const NodePtr &)> comp);
+  void TopologicalSorting(std::function<bool (const NodePtr &, const NodePtr &)> comp);
   graphStatus TopologicalSorting();
   bool IsValid() const;
   void InValid();
@@ -137,39 +138,42 @@ class ComputeGraph : public std::enable_shared_from_this<ComputeGraph>, public A
 
   graphStatus IsolateNode(const NodePtr &node);
   graphStatus Verify();
+  graphStatus InferShape();
   graphStatus InferOriginFormat();
   graphStatus InferShapeInNeed();
+  graphStatus InsertEventNodes();
   graphStatus InsertGraphEvents();
   bool operator==(const ComputeGraph &r_compute_graph) const;
-  ComputeGraph& operator=(ge::ComputeGraph &compute_graph);
+  ComputeGraph& operator=(ge::ComputeGraph compute_graph);
 
+  /*lint +e504*/
   const std::map<std::vector<std::string>, std::vector<std::string>> &GetShareParamLayer() const;
 
   void SetShareParamLayer(const std::map<std::vector<std::string>, std::vector<std::string>> params_share_map);
 
   void SetInputsOrder(const std::vector<std::string> &inputs_order);
 
-  void SetGraphOutNodes(const std::map<std::string, std::vector<int32_t>> out_nodes_map);
+  void SetGraphOutNodes(std::map<std::string, std::vector<int32_t>> out_nodes_map);
 
-  void AppendGraphOutNodes(const std::map<std::string, std::vector<int32_t>> out_nodes_map);
+  void AppendGraphOutNodes(std::map<std::string, std::vector<int32_t>> out_nodes_map);
 
-  std::shared_ptr<ComputeGraph> GetParentGraph();
+  shared_ptr<ComputeGraph> GetParentGraph();
   void SetParentGraph(const shared_ptr<ComputeGraph> &parent);
-  std::shared_ptr<Node> GetParentNode();
+  shared_ptr<Node> GetParentNode();
   void SetParentNode(const shared_ptr<Node> &parent);
 
   const std::map<std::string, std::vector<int32_t>> &GetGraphOutNodes() const;
-  void SetOrigGraph(const ComputeGraphPtr orig_graph);
+  void SetOrigGraph(ComputeGraphPtr orig_graph);
 
   ComputeGraphPtr GetOrigGraph(void);
-  void SetOutputSize(const uint32_t size);
+  void SetOutputSize(uint32_t size);
   uint32_t GetOutputSize() const;
-  void SetInputSize(const uint32_t size);
+  void SetInputSize(uint32_t size);
   uint32_t GetInputSize() const;
 
   // false: known shape  true: unknow shape
   bool GetGraphUnknownFlag() const;
-  void SetGraphUnknownFlag(const bool flag);
+  void SetGraphUnknownFlag(bool flag);
 
   ///
   /// Set is need train iteration.
@@ -177,7 +181,7 @@ class ComputeGraph : public std::enable_shared_from_this<ComputeGraph>, public A
   /// times(according variant "npu_runconfig/iterations_per_loop").
   /// @param need_iteration is need iteration
   ///
-  void SetNeedIteration(const bool need_iteration);
+  void SetNeedIteration(bool need_iteration);
 
   void SetUserDefOutput(const std::string &output_name);
 
@@ -203,22 +207,22 @@ class ComputeGraph : public std::enable_shared_from_this<ComputeGraph>, public A
   void SetGraphTargetNodesInfo(const std::vector<NodePtr> &target_nodes_info);
   const std::vector<NodePtr> &GetGraphTargetNodesInfo() const;
 
-  void SetSessionID(const uint64_t session_id);
+  void SetSessionID(uint64_t session_id);
   uint64_t GetSessionID() const;
 
-  void SetGraphID(const uint32_t graph_id);
+  void SetGraphID(uint32_t graph_id);
   uint32_t GetGraphID() const;
 
-  void SaveDataFormat(const ge::Format data_format);
+  void SaveDataFormat(ge::Format data_format);
   ge::Format GetDataFormat() const;
   bool IsSummaryGraph() const;
-  void SetSummaryFlag(const bool is_summary_graph);
+  void SetSummaryFlag(bool is_summary_graph);
 
   /// nodes like : (a) <--- (c) ---> (b)
   /// node a and b have only one parent node c, and a is connected to c firstly
   /// topo order of DFS is `c, b, a` with `dfs_reverse=false` as default
   /// in same case, user could get `c, a, b` with `dfs_reverse=true`
-  graphStatus TopologicalSortingGraph(const bool dfs_reverse = false);
+  graphStatus TopologicalSortingGraph(bool dfs_reverse = false);
   /**
    *  Move Send Event nodes after it`s control node
    *  Move Recv Event nodes before it`s control node
@@ -226,27 +230,27 @@ class ComputeGraph : public std::enable_shared_from_this<ComputeGraph>, public A
   graphStatus ReorderEventNodes();
 
  protected:
-  virtual ProtoAttrMap &MutableAttrMap() override;
-  virtual ConstProtoAttrMap &GetAttrMap() const override;
+  ProtoAttrMapHelper MutableAttrMap() override;
+  ConstProtoAttrMapHelper GetAttrMap() const override;
 
  private:
   graphStatus DFSTopologicalSorting(std::vector<NodePtr> &node_vec, std::map<NodePtr, uint32_t> &map_in_edge_num,
-                                    std::vector<NodePtr> &stack, const bool reverse);
+                                    std::vector<NodePtr> &stack, bool reverse);
   graphStatus BFSTopologicalSorting(std::vector<NodePtr> &node_vec, std::map<NodePtr, uint32_t> &map_in_edge_num,
                                     std::deque<NodePtr> &stack);
   graphStatus CollectBreadthOutNode(const NodePtr &node, std::map<NodePtr, uint32_t> &map_in_edge_num,
                                     std::map<string, NodePtr> &breadth_node_map);
 
-  graphStatus SortNodes(std::vector<NodePtr> &stack, std::map<NodePtr, uint32_t> &map_in_edge_num);
+  graphStatus SortNodes(std::vector<NodePtr> &stack, std::map<NodePtr, uint32_t> &mapInEdgeNum);
   Vistor<NodePtr> AllGraphNodes(std::vector<ComputeGraphPtr> &subgraphs) const;
   Vistor<NodePtr> GetAllNodes(const NodeFilter &node_filter, const GraphFilter &graph_filter) const;
-  size_t GetInEdgeSize(const NodePtr &node) const;
-  size_t GetOutEdgeSize(const NodePtr &node) const;
-  graphStatus RemoveExtraOutEdge(const NodePtr &node) const;
+  size_t GetInEdgeSize(const NodePtr &node);
+  size_t GetOutEdgeSize(const NodePtr &node);
+  graphStatus RemoveExtraOutEdge(const NodePtr &node);
   bool GraphMembersAreEqual(const ComputeGraph &r_graph) const;
   bool GraphAttrsAreEqual(const ComputeGraph &r_graph) const;
-  bool VectorInputNodePtrIsEqual(const std::vector<NodePtr> &left_nodes,
-                                 const std::vector<NodePtr> &right_nodes) const;
+  bool VectorInputNodePtrIsEqual(const std::vector<NodePtr> &r_node_ptr_vector,
+                                 const std::vector<NodePtr> &l_node_ptr_vector) const;
 
   void SetNodesOwner();
   /**

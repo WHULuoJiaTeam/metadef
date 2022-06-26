@@ -1,6 +1,6 @@
 /**
-* Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,14 +47,14 @@ struct ParserContext {
   // operator
   std::map<std::string, std::vector<int32_t>> out_nodes_map;
   // save the output node of the network, value = topName,
-  // tensorName indicates the output name of the operator.
-  std::vector<std::string> user_out_tensors;
+  // topName indicates the output name of the operator.
+  std::vector<std::string> user_out_nodes_top_vec;
   // net out nodes (where user_out_nodes or leaf nodes)
   std::vector<std::string> net_out_nodes;
-  // net out nodes tensor names(caffe or onnx)
-  std::vector<std::string> out_tensor_names;
-  // net data nodes tensor names(caffe or onnx)
-  std::vector<std::string> data_tensor_names;
+  // net data nodes top names(only caffe has top)
+  std::vector<std::string> data_top_names;
+  // net out nodes top names(only caffe has top)
+  std::vector<std::string> out_top_names;
   // Whether to use dynamic batch size or dynamic image size
   bool is_dynamic_input = false;
   bool train_flag = false;

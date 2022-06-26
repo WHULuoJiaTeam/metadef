@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,17 +52,6 @@ typedef enum tagRtAicpuScheType {
     SCHEDULE_SOFTWARE_OPT,
     SCHEDULE_HARDWARE, /* HWTS Schedule */
 } rtAicpuScheType;
-
-typedef enum tagRtDeviceCapabilityType {
-  RT_SCHEDULE_SOFTWARE = 0, // SoftWare Schedule
-  RT_SCHEDULE_SOFTWARE_OPT,
-  RT_SCHEDULE_HARDWARE, // HWTS Schedule
-  RT_AICPU_BLOCKING_OP_NOT_SUPPORT,
-  RT_AICPU_BLOCKING_OP_SUPPORT, // 1910/1980/1951 ts support AICPU blocking operation
-  RT_MODE_NO_FFTS,
-  RT_MODE_FFTS,
-  RT_MODE_FFTS_PLUS
-} rtDeviceCapabilityType;
 
 typedef enum tagRtVersion {
     VER_BEGIN = 0,

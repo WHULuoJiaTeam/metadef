@@ -1,6 +1,6 @@
 /**
  * Copyright 2021, 2022 LuoJiaNET Research and Development Group, Wuhan University
-* Copyright 2021, 2022 Huawei Technologies Co., Ltd
+ * Copyright 2021, 2022 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@
 
 #include <vector>
 #include <list>
-#include <memory>
 
 template <class E, class O>
 class RangeVistor {
@@ -28,8 +27,8 @@ class RangeVistor {
   using Iterator = typename std::vector<E>::iterator;
   using ConstIterator = typename std::vector<E>::const_iterator;
 
-  RangeVistor(const O owner, const std::vector<E> &vs) : owner_(owner), elements_(vs) {}
-  RangeVistor(const O owner, const std::list<E> &vs) : owner_(owner), elements_(vs.begin(), vs.end()) {}
+  RangeVistor(O owner, const std::vector<E> &vs) : owner_(owner), elements_(vs) {}
+  RangeVistor(O owner, const std::list<E> &vs) : owner_(owner), elements_(vs.begin(), vs.end()) {}
 
   ~RangeVistor() {}
 
@@ -45,9 +44,9 @@ class RangeVistor {
 
   bool empty() const { return elements_.empty(); }
 
-  E &at(const std::size_t index) { return elements_.at(index); }
+  E &at(std::size_t index) { return elements_.at(index); }
 
-  const E &at(const std::size_t index) const { return elements_.at(index); }
+  const E &at(std::size_t index) const { return elements_.at(index); }
 
  private:
   O owner_;
